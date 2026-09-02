@@ -57,6 +57,7 @@ export function resolveProjectCommand(
   kind: ProjectKind,
   action: ProjectRunAction,
   npmExecutable?: string,
+  environment: NodeJS.ProcessEnv = process.env,
 ): ProjectCommand {
   if (!PROJECT_ACTIONS[kind].includes(action)) {
     throw new Error(
@@ -70,7 +71,26 @@ export function resolveProjectCommand(
     return { executable: "npm", args: ["run", action] };
   }
 
-  const pathEntries = (process.env.Path ?? process.env.PATH ?? "")
+  // npm exposes the exact Node and CLI paths to scripts it starts. Prefer that
+  // matched pair over an unrelated PATH installation, which may be incomplete
+  // or a different version from the runtime that launched FlowCode.
+  const npmNodeExecutable = environment.npm_node_execpath;
+  const npmCli = environment.npm_execpath;
+  if (
+    npmNodeExecutable &&
+    npmCli &&
+    /^node(?:\.exe)?$/i.test(path.basename(npmNodeExecutable)) &&
+    /^npm-cli\.js$/i.test(path.basename(npmCli)) &&
+    existsSync(npmNodeExecutable) &&
+    existsSync(npmCli)
+  ) {
+    return {
+      executable: npmNodeExecutable,
+      args: [npmCli, "run", action],
+    };
+  }
+
+  const pathEntries = (environment.Path ?? environment.PATH ?? "")
     .split(path.delimiter)
     .filter(Boolean);
   for (const entry of pathEntries) {

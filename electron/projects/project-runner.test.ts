@@ -59,6 +59,28 @@ test("project command catalog is fixed by project kind and action", () => {
   }
 });
 
+test("Windows npm resolution prefers the matched runtime supplied by npm", async () => {
+  if (process.platform !== "win32") return;
+  const root = await mkdtemp(path.join(tmpdir(), "flowcode-npm-runtime-"));
+  const node = path.join(root, "node.exe");
+  const cli = path.join(root, "node_modules", "npm", "bin", "npm-cli.js");
+  await mkdir(path.dirname(cli), { recursive: true });
+  await writeFile(node, "placeholder");
+  await writeFile(cli, "placeholder");
+  try {
+    assert.deepEqual(
+      resolveProjectCommand("web-test", "test", undefined, {
+        Path: "C:\\unrelated",
+        npm_node_execpath: node,
+        npm_execpath: cli,
+      }),
+      { executable: node, args: [cli, "run", "test"] },
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("project command environment withholds ambient credentials", () => {
   const environment = projectRunnerEnvironment({
     Path: "C:\\Tools",
