@@ -56,6 +56,9 @@ export interface Scenario {
 
 // --- Event authoring helpers ------------------------------------------------
 
+// Keep the 0.5.0 product label in frozen fixtures so Stage 0 scores remain
+// comparable. The live analyzer treats both this legacy name and FlowCode as
+// recorder bracketing.
 const RECORDER_APP = "Skill Recorder";
 
 /** Focus the Skill Recorder window (to press Start/Stop) — recorder bracketing. */

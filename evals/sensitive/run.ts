@@ -54,7 +54,7 @@ async function main(): Promise<void> {
     process.exit(2);
   }
 
-  console.error(`\nSkill Recorder — sensitive detection + redaction evals`);
+  console.error(`\nFlowCode — sensitive detection + redaction evals`);
   console.error(`${textCases.length} text case(s) · ${frameCases.length} frame case(s)`);
 
   console.error(`${bar}\nText channels (secretlint + structured PII → redaction)`);

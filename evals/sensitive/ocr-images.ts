@@ -225,7 +225,7 @@ function loadSharp(): SharpModule | null {
 
 async function main(): Promise<void> {
   const keep = process.argv.includes("--keep");
-  console.error(`\nSkill Recorder — real-image OCR redaction eval (opt-in, non-hermetic)`);
+  console.error(`\nFlowCode — real-image OCR redaction eval (opt-in, non-hermetic)`);
 
   const sharp = loadSharp();
   if (!sharp) {

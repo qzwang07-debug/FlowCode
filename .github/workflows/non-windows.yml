@@ -28,6 +28,9 @@ jobs:
           node-version: 24.19.0
           cache: npm
 
+      - name: Use the reviewed npm version
+        run: npm install --global npm@11.17.0
+
       - name: Validate lockfile portability
         run: npm run check:lockfile
 
@@ -47,15 +50,15 @@ jobs:
       - name: Test commit-pinned source installation
         env:
           SKILL_RECORDER_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
-          SKILL_RECORDER_INSTALL_ROOT: ${{ runner.temp }}/skill-recorder-source
+          SKILL_RECORDER_INSTALL_ROOT: ${{ runner.temp }}/flowcode-source
           SKILL_RECORDER_NO_LAUNCH: "1"
         run: bash install.sh
 
       - name: Verify macOS relaunch app bundle
         if: runner.os == 'macOS'
         run: |
-          app="$HOME/Applications/Skill Recorder (Source).app"
-          stub="$app/Contents/MacOS/skill-recorder-source"
+          app="$HOME/Applications/FlowCode (Source).app"
+          stub="$app/Contents/MacOS/flowcode-source"
           plist="$app/Contents/Info.plist"
           test -d "$app"
           test -x "$stub"

@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -37,6 +39,7 @@ import {
   isLicenseFileName,
   legalTextSpecs,
   nativePayloadCandidates,
+  obtainGitFile,
   onnxRefForVersion,
   releaseTargets,
   resolveReviewedCommit,
@@ -172,6 +175,71 @@ test("Tesseract WebAssembly source and notices are pinned to the reviewed build"
     assert.doesNotMatch(notice.url, /\/(?:master|main|HEAD)(?:\/|$)/);
     assert.match(notice.outputPath, /^tesseract-core\//);
     assert.match(repoPolicy.remoteMaterials[notice.id], /^[a-f0-9]{64}$/);
+  }
+  const libtiffNotice = notices.find(
+    ({ id }) => id === "tesseract-core-libtiff-license",
+  );
+  assert.match(libtiffNotice.gitRevision, /^[a-f0-9]{40}$/);
+  assert.equal(
+    libtiffNotice.gitRepository,
+    "https://gitlab.com/libtiff/libtiff.git",
+  );
+  assert.equal(libtiffNotice.gitPath, "COPYRIGHT");
+});
+
+test("pinned Git-file fallback preserves exact reviewed bytes", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "flowcode-git-file-"));
+  const source = path.join(root, "source");
+  const cache = path.join(root, "cache", "NOTICE.txt");
+  const content = Buffer.from(
+    "Pinned compliance notice.\n".repeat(8),
+    "utf8",
+  );
+  try {
+    await mkdir(source, { recursive: true });
+    execFileSync("git", ["init", "--quiet"], { cwd: source, windowsHide: true });
+    execFileSync("git", ["config", "core.autocrlf", "false"], {
+      cwd: source,
+      windowsHide: true,
+    });
+    await writeFile(path.join(source, "NOTICE.txt"), content);
+    execFileSync("git", ["add", "NOTICE.txt"], { cwd: source, windowsHide: true });
+    execFileSync(
+      "git",
+      [
+        "-c",
+        "user.name=FlowCode Compliance Test",
+        "-c",
+        "user.email=flowcode@example.invalid",
+        "commit",
+        "--quiet",
+        "-m",
+        "fixture",
+      ],
+      { cwd: source, windowsHide: true },
+    );
+    const revision = execFileSync("git", ["rev-parse", "HEAD"], {
+      cwd: source,
+      encoding: "utf8",
+      windowsHide: true,
+    }).trim();
+    const expectedSha256 = createHash("sha256").update(content).digest("hex");
+
+    await obtainGitFile(
+      {
+        id: "fixture-notice",
+        fileName: "NOTICE.txt",
+        gitRepository: source,
+        gitRevision: revision,
+        gitPath: "NOTICE.txt",
+        expectedSha256,
+      },
+      cache,
+    );
+
+    assert.deepEqual(await readFile(cache), content);
+  } finally {
+    await rm(root, { recursive: true, force: true });
   }
 });
 
@@ -789,13 +857,13 @@ test("relinking instructions use platform-specific native paths", () => {
     /Contents\/Resources\/app\.asar\.unpacked\/node_modules\/@img\/sharp-libvips-darwin-arm64\/lib\/libvips-cpp\.8\.18\.3\.dylib/,
   );
   assert.match(mac, /takes no technical measure to prevent a\r?\nmodified replacement from running/);
-  assert.match(mac, /reverse engineer Skill Recorder to/);
+  assert.match(mac, /reverse engineer FlowCode to/);
   assert.match(mac, /- Sharp: 0\.35\.3/);
   assert.match(mac, /- Sharp\/libvips packaging: 1\.3\.2/);
   assert.match(mac, /- libvips: 8\.18\.3/);
 
   const linux = renderRelinking(native, { mode: "full", sources }, policy, "linux");
-  assert.match(linux, /libffmpeg\.so beside the Skill Recorder executable/);
+  assert.match(linux, /libffmpeg\.so beside the FlowCode executable/);
 });
 
 test("distributed notices match the reviewed Sharp and libvips versions", async () => {
@@ -901,7 +969,7 @@ test("source and release instructions remain compliance-preserving", async () =>
   assert.match(windowsInstaller, /\^\[0-9a-fA-F\]\{40\}\$/);
   assert.match(
     windowsInstaller,
-    /https:\/\/codeload\.github\.com\/microsoft\/skill-recorder\/zip\/\$Commit/,
+    /https:\/\/codeload\.github\.com\/qzwang07-debug\/FlowCode\/zip\/\$Commit/,
   );
   assert.match(windowsInstaller, /https:\/\/nodejs\.org\/dist\/index\.json/);
   assert.doesNotMatch(
@@ -962,7 +1030,7 @@ test("source and release instructions remain compliance-preserving", async () =>
   );
   assert.doesNotMatch(windowsInstaller, /\/(?:master|main)\/install\.ps1/i);
 
-  assert.match(windowsInstaller, /"Skill Recorder \(Source\)\.lnk"/);
+  assert.match(windowsInstaller, /"FlowCode \(Source\)\.lnk"/);
   assert.match(windowsInstaller, /SpecialFolder "Programs"/);
   assert.match(windowsInstaller, /SpecialFolder "DesktopDirectory"/);
   assert.match(windowsInstaller, /SKILL_RECORDER_NO_DESKTOP_SHORTCUT -ne "1"/);
@@ -976,7 +1044,7 @@ test("source and release instructions remain compliance-preserving", async () =>
   assert.match(unixInstaller, /\^\[0-9a-fA-F\]\{40\}\$/);
   assert.match(
     unixInstaller,
-    /https:\/\/codeload\.github\.com\/microsoft\/skill-recorder\/tar\.gz\/\$COMMIT/,
+    /https:\/\/codeload\.github\.com\/qzwang07-debug\/FlowCode\/tar\.gz\/\$COMMIT/,
   );
   assert.match(unixInstaller, /https:\/\/nodejs\.org\/dist\/latest-v24\.x/);
   assert.doesNotMatch(

@@ -1,6 +1,6 @@
-# Releasing Skill Recorder
+# Releasing FlowCode
 
-Skill Recorder uses semantic versions and two distinct release channels:
+FlowCode uses semantic versions and two distinct release channels:
 
 1. **Source-only releases** are the default. GitHub publishes the tagged
    repository source, and users build an exact commit locally with the
@@ -120,7 +120,7 @@ Create an annotated tag only after the commit passes:
 
 ```sh
 version="v0.2.0"
-git tag -a "$version" "$release_commit" -m "Skill Recorder $version"
+git tag -a "$version" "$release_commit" -m "FlowCode $version"
 git push origin "$version"
 ```
 
@@ -162,7 +162,7 @@ After preparing a notes file:
 ```sh
 gh release create "v0.2.0" \
   --verify-tag \
-  --title "Skill Recorder v0.2.0" \
+  --title "FlowCode v0.2.0" \
   --notes-file release-notes.txt
 ```
 
@@ -215,7 +215,7 @@ On clean supported machines:
 2. Compare its SHA-256 with the release notes.
 3. Run with `SKILL_RECORDER_NO_LAUNCH=1`.
 4. Confirm dependency installation and the platform license inventory succeed.
-5. Launch Skill Recorder and exercise recording, analysis, and skill creation.
+5. Launch FlowCode and exercise recording, analysis, and skill creation.
 6. Confirm update and uninstall instructions in `INSTALL.md`.
 
 Check that the GitHub Release tag still resolves to the recorded commit and

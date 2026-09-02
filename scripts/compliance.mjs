@@ -775,6 +775,13 @@ export function buildTesseractNoticeSpecs(tesseract) {
       fileName: `tesseract-core-${notice.outputFile}`,
       outputPath: `tesseract-core/${notice.outputFile}`,
       url: `${source.rawBase}/${revision}/${notice.path}`,
+      ...(name === "libtiff"
+        ? {
+            gitRepository: source.gitRepository,
+            gitRevision: revision,
+            gitPath: notice.path,
+          }
+        : {}),
       marker: notice.marker,
     };
   });
@@ -1449,10 +1456,11 @@ function renderLicenseInventory(inventory, lock, rootDir) {
       ].join("\n"),
   );
   return [
-    "SKILL RECORDER THIRD-PARTY LICENSES",
+    "FLOWCODE THIRD-PARTY LICENSES",
     "",
-    "These terms apply to the identified third-party components, not to Skill",
-    "Recorder's own MIT-licensed code.",
+    "These terms apply to the identified third-party components, not to FlowCode's",
+    "own MIT-licensed code. FlowCode is derived from Microsoft Skill Recorder and",
+    "retains its upstream copyright and MIT license notice.",
     "",
     `Platform: ${process.platform}-${process.arch}`,
     `package-lock.json SHA-256: ${packageLockHash}`,
@@ -1698,19 +1706,26 @@ async function prepareRemoteMaterials({
     const target = path.join(outputDir, ...spec.outputPath.split("/"));
     await mkdir(path.dirname(target), { recursive: true });
     const cache = path.join(rootDir, ".compliance-cache", "remote", spec.fileName);
-    await obtainFile(
-      {
-        ...spec,
-        expectedSha256: reviewedMaterialHash(
-          spec.id,
-          policy.remoteMaterials,
-          "Remote material",
-        ),
-      },
-      cache,
-      target,
-      fetchImpl,
-    );
+    const reviewedSpec = {
+      ...spec,
+      expectedSha256: reviewedMaterialHash(
+        spec.id,
+        policy.remoteMaterials,
+        "Remote material",
+      ),
+    };
+    let retrieval = "download";
+    try {
+      await obtainFile(reviewedSpec, cache, target, fetchImpl);
+    } catch (error) {
+      if (!spec.gitRepository || !spec.gitRevision || !spec.gitPath) throw error;
+      console.warn(
+        `Direct download failed for ${spec.id}; retrying from its pinned Git repository.`,
+      );
+      await obtainGitFile(reviewedSpec, cache);
+      await copyFile(cache, target);
+      retrieval = "git-file-fallback";
+    }
     const content = await readFile(target, "utf8");
     if (!content.includes(spec.marker)) {
       throw new Error(`${spec.id} does not contain expected marker "${spec.marker}".`);
@@ -1720,6 +1735,14 @@ async function prepareRemoteMaterials({
       url: spec.url,
       file: spec.outputPath,
       sha256: await sha256File(target),
+      retrieval,
+      ...(retrieval === "git-file-fallback"
+        ? {
+            gitRepository: spec.gitRepository,
+            gitRevision: spec.gitRevision,
+            gitPath: spec.gitPath,
+          }
+        : {}),
     };
   });
 }
@@ -1868,7 +1891,7 @@ async function obtainGitArchive(spec, cache, rootDir) {
   await rm(cache, { force: true });
   const repository = path.join(
     tmpdir(),
-    "skill-recorder-compliance-git",
+    "flowcode-compliance-git",
     `${createHash("sha256").update(spec.id).digest("hex").slice(0, 16)}-${process.pid}`,
   );
   const temporary = `${cache}.partial`;
@@ -1925,6 +1948,98 @@ async function obtainGitArchive(spec, cache, rootDir) {
   }
 }
 
+/**
+ * Reconstruct a reviewed remote text file from an exact Git blob when its pinned
+ * raw-download endpoint is unavailable. The blob is accepted only when it matches
+ * the same SHA-256 used for the direct download.
+ */
+export async function obtainGitFile(spec, cache) {
+  if (!/^[0-9a-f]{40}$/.test(spec.gitRevision ?? "")) {
+    throw new Error(`Git-file material ${spec.id} must use a full 40-character revision.`);
+  }
+  const gitPath = String(spec.gitPath ?? "").replaceAll("\\", "/");
+  const normalizedGitPath = path.posix.normalize(gitPath);
+  if (
+    !gitPath ||
+    gitPath !== normalizedGitPath ||
+    path.posix.isAbsolute(gitPath) ||
+    gitPath.split("/").includes("..") ||
+    gitPath.includes(":") ||
+    gitPath.includes("\0")
+  ) {
+    throw new Error(`Git-file material ${spec.id} has unsafe repository path ${spec.gitPath}.`);
+  }
+
+  await mkdir(path.dirname(cache), { recursive: true });
+  const cacheIsValid =
+    existsSync(cache) &&
+    statSync(cache).size >= 100 &&
+    (await hasExpectedFileHeader(spec.fileName, cache)) &&
+    (await sha256File(cache)) === spec.expectedSha256;
+  if (cacheIsValid) return;
+
+  await rm(cache, { force: true });
+  const repository = path.join(
+    tmpdir(),
+    "flowcode-compliance-git-file",
+    `${createHash("sha256").update(spec.id).digest("hex").slice(0, 16)}-${process.pid}`,
+  );
+  const temporary = `${cache}.partial`;
+  await rm(repository, { recursive: true, force: true });
+  await rm(temporary, { force: true });
+  await mkdir(repository, { recursive: true });
+
+  try {
+    await runGit(["init", "--quiet"], repository);
+    await runGit(
+      [
+        "fetch",
+        "--depth=1",
+        "--no-tags",
+        "--quiet",
+        spec.gitRepository,
+        spec.gitRevision,
+      ],
+      repository,
+    );
+    const resolvedRevision = await runGit(["rev-parse", "FETCH_HEAD"], repository);
+    if (resolvedRevision !== spec.gitRevision) {
+      throw new Error(
+        `Fetched ${spec.id} revision ${resolvedRevision}; expected ${spec.gitRevision}.`,
+      );
+    }
+
+    const content = await runGitBuffer(
+      [
+        "-c",
+        "core.autocrlf=false",
+        "-c",
+        "core.eol=lf",
+        "-c",
+        "core.attributesFile=",
+        "show",
+        `FETCH_HEAD:${gitPath}`,
+      ],
+      repository,
+    );
+    await writeFile(temporary, content);
+    if (!(await hasExpectedFileHeader(spec.fileName, temporary))) {
+      throw new Error(`Generated Git-file material ${spec.id} has invalid file content.`);
+    }
+    const actualHash = await sha256File(temporary);
+    if (actualHash !== spec.expectedSha256) {
+      throw new Error(
+        `Generated Git-file material ${spec.id} has SHA-256 ${actualHash}; ` +
+          `expected reviewed hash ${spec.expectedSha256}.`,
+      );
+    }
+    await rename(temporary, cache);
+  } finally {
+    await rm(temporary, { force: true });
+    await rm(repository, { recursive: true, force: true });
+  }
+}
+
 async function runGit(args, cwd) {
   try {
     const { stdout } = await execFileAsync("git", args, {
@@ -1938,6 +2053,26 @@ async function runGit(args, cwd) {
     throw new Error(`Git command failed while preparing compliance sources: ${detail}`, {
       cause: error,
     });
+  }
+}
+
+async function runGitBuffer(args, cwd) {
+  try {
+    const { stdout } = await execFileAsync("git", args, {
+      cwd,
+      encoding: "buffer",
+      windowsHide: true,
+      maxBuffer: 10 * 1024 * 1024,
+    });
+    return Buffer.isBuffer(stdout) ? stdout : Buffer.from(stdout);
+  } catch (error) {
+    const stderr = Buffer.isBuffer(error.stderr)
+      ? error.stderr.toString("utf8").trim()
+      : error.stderr?.trim();
+    throw new Error(
+      `Git command failed while preparing a compliance file: ${stderr || error.message}`,
+      { cause: error },
+    );
   }
 }
 
@@ -1977,8 +2112,8 @@ async function downloadWithRetry(url, target, fetchImpl) {
         headers: {
           accept: "application/octet-stream, text/plain;q=0.9, */*;q=0.8",
           "user-agent":
-            "Mozilla/5.0 (compatible; SkillRecorderCompliance/1.0; " +
-            "+https://github.com/microsoft/skill-recorder)",
+            "Mozilla/5.0 (compatible; FlowCodeCompliance/1.0; " +
+            "+https://github.com/qzwang07-debug/FlowCode)",
         },
       });
       if (!response.ok || !response.body) {
@@ -2018,8 +2153,8 @@ export function renderRelinking(native, sourceManifest, policy, platform = proce
     platform === "darwin"
       ? "Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/libffmpeg.dylib"
       : platform === "win32"
-        ? "ffmpeg.dll beside the Skill Recorder executable"
-        : "libffmpeg.so beside the Skill Recorder executable";
+        ? "ffmpeg.dll beside the FlowCode executable"
+        : "libffmpeg.so beside the FlowCode executable";
   const sharpBuildSource = sourceFile("sharp-libvips-build");
   const electronSource = sourceFile("electron");
   const ffmpegSource = sourceFile("electron-ffmpeg");
@@ -2032,8 +2167,10 @@ export function renderRelinking(native, sourceManifest, policy, platform = proce
   return [
     "# Replacing and relinking native libraries",
     "",
-    "Skill Recorder's own source is available under the MIT License at",
-    "https://github.com/microsoft/skill-recorder. The native libraries listed in",
+    "FlowCode's source is available under the MIT License at",
+    "https://github.com/qzwang07-debug/FlowCode. FlowCode is derived from Microsoft",
+    "Skill Recorder (https://github.com/microsoft/skill-recorder) and retains its",
+    "copyright and MIT license notice. The native libraries listed in",
     "`NATIVE-COMPONENTS.json` remain under their own licenses.",
     "",
     "The packaged application keeps Sharp, libvips, and related native modules outside",
@@ -2051,7 +2188,7 @@ export function renderRelinking(native, sourceManifest, policy, platform = proce
     "You may replace these files with ABI-compatible modified builds. The application",
     "loads them from the plain filesystem locations above; it does not verify their",
     "signatures or hashes at run time and takes no technical measure to prevent a",
-    "modified replacement from running. You may also reverse engineer Skill Recorder to",
+    "modified replacement from running. You may also reverse engineer FlowCode to",
     "the extent necessary to debug modifications you make to those libraries.",
     "",
     "Exact upstream sources, packaging scripts, and build patches are included under",
@@ -2070,7 +2207,7 @@ export function renderRelinking(native, sourceManifest, policy, platform = proce
     "3. Run the packaging build for this platform and architecture as documented by the",
     "   unpacked scripts.",
     `4. Copy the rebuilt libraries over the files listed above under \`${nativeLocation}\`,`,
-    "   keeping the same file names, then start Skill Recorder normally.",
+    "   keeping the same file names, then start FlowCode normally.",
     "",
     `For Electron FFmpeg, start from \`${ffmpegSource}\`, apply \`${ffmpegPatch}\`,`,
     `and use the Electron build integration in \`${electronSource}\`. Replace the`,
@@ -2097,7 +2234,7 @@ function renderComplianceReadme(includeSources) {
   return [
     "# License and source materials",
     "",
-    "Keep this entire directory with every distributed copy of Skill Recorder.",
+    "Keep this entire directory with every distributed copy of FlowCode.",
     "",
     "- `THIRD-PARTY-LICENSES.txt` contains per-package license and attribution text.",
     "- `NATIVE-THIRD-PARTY-NOTICES.md` identifies libraries embedded in native payloads.",

@@ -1,31 +1,36 @@
-# Repository instructions for coding agents
+# FlowCode repository instructions for coding agents
 
-## Pull requests target the active **release branch**, not `main`
+Before changing code, read `docs/flowcode-design.md`,
+`docs/flowcode-implementation-plan.md`, and the files/tests named by the active
+stage. Implement one stage at a time and do not pull later roadmap work forward.
 
-Ongoing work in this repository lands on the **current release branch**, not `main`.
-Release branches are named `release/<semver>` — currently **`release/0.3.0`**, the
-highest-versioned `release/*` branch on `origin`. `main` trails the release branch and
-only advances when a version is cut and merged (see [`RELEASING.md`](../RELEASING.md)).
+## Branch and remote policy
 
-Unless a task explicitly says otherwise:
+- Base ordinary FlowCode work on the current `origin/main` unless the task names a
+  different base.
+- Use a focused branch for each change; Codex branches use the `codex/` prefix.
+- `origin` is the FlowCode repository.
+- `upstream` is Microsoft Skill Recorder and is fetch-only. Never push to it.
+- Follow `docs/upstream-sync.md` for reviewed upstream merges.
+- Never push, publish, or create a release without explicit user authorization.
 
-- **Base new work on the current release branch**, not `main`:
+## Change safety
 
-  ```sh
-  git fetch origin
-  git switch -c <your-branch> origin/release/0.3.0
-  ```
+- Preserve unrelated user changes; do not reset or clean them.
+- Preserve the inherited recorder, privacy, sensitive-data, compliance, and
+  Skill/Automation Builder behavior until its replacement stage is accepted.
+- Keep `@github/copilot-sdk`, the Session schema, legacy preload/API names, and
+  `SKILL_RECORDER_*` compatibility overrides during Stage 0.
+- Do not combine a directory migration with a core behavior change.
 
-- **Open pull requests with the current release branch as the base**, not `main`:
+## Minimum validation
 
-  ```sh
-  gh pr create --repo microsoft/skill-recorder --base release/0.3.0 --head <your-branch>
-  ```
+```powershell
+npm run typecheck
+npm run typecheck:evals
+npm test
+npm run build
+```
 
-- **Find the current release branch** (pick the highest semver) with:
-
-  ```sh
-  git ls-remote --heads origin 'release/*'
-  ```
-
-Target `main` only for the release merge described in [`RELEASING.md`](../RELEASING.md).
+Dependency changes also require `npm run check:lockfile` and
+`npm run compliance:licenses`.

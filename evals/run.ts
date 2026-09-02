@@ -92,7 +92,7 @@ async function main(): Promise<void> {
     process.exit(2);
   }
 
-  console.error(`\nSkill Recorder — describer evals`);
+  console.error(`\nFlowCode — describer evals`);
   console.error(`${selected.length} scenario(s) · sessions root: ${root}`);
   if (flags.judge) console.error("semantic judge: ON");
   console.error(bar);

@@ -75,7 +75,7 @@ async function main(): Promise<void> {
     process.exit(2);
   }
 
-  console.error(`\nSkill Recorder — builder evals`);
+  console.error(`\nFlowCode — builder evals`);
   console.error(`${selected.length} scenario(s) · sessions root: ${root}`);
   console.error(bar);
 

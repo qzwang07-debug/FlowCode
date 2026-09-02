@@ -6,12 +6,20 @@ The project is based on [Microsoft Skill Recorder](https://github.com/microsoft/
 
 ## Status
 
-FlowCode is currently in the design and implementation-planning stage. The inherited Skill Recorder 0.5.0 code remains the working baseline while features are added incrementally.
+FlowCode is being implemented incrementally from the inherited Skill Recorder 0.5.0 code. Stage 0 establishes the FlowCode brand, upstream lineage, regression baseline, and Windows quality gate without changing recording or analysis behavior.
 
 ## Design documents
 
 - [Product and technical design](docs/flowcode-design.md)
 - [Staged AI implementation playbook](docs/flowcode-implementation-plan.md)
+- [Upstream synchronization policy](docs/upstream-sync.md)
+- [Architecture Decision Records](docs/adr/README.md)
+- [Stage 0 regression baseline](docs/baselines/2026-09-01-stage-0.md)
+
+## Development and release documentation
+
+- [`INSTALL.md`](INSTALL.md)
+- [`RELEASING.md`](RELEASING.md)
 
 ## Core direction
 
@@ -28,6 +36,7 @@ FlowCode is currently in the design and implementation-planning stage. The inher
 ```powershell
 npm ci
 npm run typecheck
+npm run typecheck:evals
 npm test
 npm run build
 ```

@@ -1,9 +1,9 @@
 {
-  "name": "skill-recorder",
+  "name": "flowcode",
   "version": "0.5.0",
-  "description": "Records a user's on-screen work session and derives a structured description for building AI-agent skills.",
-  "author": "Skill Recorder contributors",
-  "repository": "github:microsoft/skill-recorder",
+  "description": "FlowCode records desktop workflows and turns them into maintainable Playwright automation and web testing projects.",
+  "author": "FlowCode contributors",
+  "repository": "github:qzwang07-debug/FlowCode",
   "license": "MIT",
   "private": true,
   "type": "module",
@@ -19,7 +19,7 @@
     "check:lockfile": "node scripts/check-lockfile-portability.mjs",
     "typecheck": "tsc --noEmit",
     "typecheck:evals": "tsc --noEmit -p evals/tsconfig.json",
-    "test": "node --experimental-transform-types --no-warnings --import ./evals/register.mjs --test evals/builder-imports.test.ts common/architecture-registry.test.ts electron/architectures/catalogue-registry.test.ts common/audio.test.ts common/microphone.test.ts common/screen.test.ts common/narration.test.ts common/sensitive.test.ts electron/recording-controls-bounds.test.ts electron/recorder-window-sizing.test.ts electron/recording-privacy.test.ts electron/crash-guards.test.ts electron/recorder/controller.test.ts electron/recorder/session-store.test.ts electron/frames/extractor.test.ts electron/narration/audio-analysis.test.ts electron/narration/analyze-gate.test.ts electron/narration/transcribe.test.ts electron/narration/whisper.test.ts electron/sensitive/scanner.test.ts electron/sensitive/secrets.test.ts electron/sensitive/tessdata-source.test.ts electron/sensitive/ocr.test.ts electron/sensitive/frame-redact.test.ts electron/sensitive/frame-heuristics.test.ts electron/sessions.test.ts electron/debug-bundle.test.ts electron/skillbuilder/placement.test.ts src/skill-placement.test.ts scripts/compliance.test.mjs",
+    "test": "node --experimental-transform-types --no-warnings --import ./evals/register.mjs --test evals/builder-imports.test.ts common/architecture-registry.test.ts common/brand.test.ts electron/architectures/catalogue-registry.test.ts common/audio.test.ts common/microphone.test.ts common/screen.test.ts common/narration.test.ts common/sensitive.test.ts electron/recording-controls-bounds.test.ts electron/recorder-window-sizing.test.ts electron/recording-privacy.test.ts electron/crash-guards.test.ts electron/recorder/controller.test.ts electron/recorder/session-store.test.ts electron/frames/extractor.test.ts electron/narration/audio-analysis.test.ts electron/narration/analyze-gate.test.ts electron/narration/transcribe.test.ts electron/narration/whisper.test.ts electron/sensitive/scanner.test.ts electron/sensitive/secrets.test.ts electron/sensitive/tessdata-source.test.ts electron/sensitive/ocr.test.ts electron/sensitive/frame-redact.test.ts electron/sensitive/frame-heuristics.test.ts electron/sessions.test.ts electron/debug-bundle.test.ts electron/skillbuilder/placement.test.ts src/skill-placement.test.ts scripts/compliance.test.mjs",
     "eval": "node --experimental-transform-types --no-warnings --import ./evals/register.mjs evals/run.ts",
     "eval:builder": "node --experimental-transform-types --no-warnings --import ./evals/register.mjs evals/builder/run.ts",
     "eval:skill": "node --experimental-transform-types --no-warnings --import ./evals/register.mjs evals/skillbuilder/run.ts",
@@ -75,8 +75,10 @@
   },
   "overrides": {
     "adm-zip": "$adm-zip",
-    "fast-uri": "^3.1.4",
+    "fast-uri": "3.1.5",
     "global-agent": "^4.1.3",
+    "js-yaml": "4.3.1",
+    "nanoid": "3.3.18",
     "sharp": "$sharp",
     "tar": "^7.5.21"
   },
@@ -89,8 +91,8 @@
     "tesseract.js": false
   },
   "build": {
-    "appId": "com.skillrecorder.app",
-    "productName": "Skill Recorder",
+    "appId": "com.flowcode.app",
+    "productName": "FlowCode",
     "directories": {
       "output": "release"
     },
@@ -135,7 +137,7 @@
       "hardenedRuntime": false,
       "category": "public.app-category.developer-tools",
       "extendInfo": {
-        "NSMicrophoneUsageDescription": "Skill Recorder uses your microphone only while you turn on Narrate during a recording, to transcribe your spoken narration on this computer."
+        "NSMicrophoneUsageDescription": "FlowCode uses your microphone only while you turn on Narrate during a recording, to transcribe your spoken narration on this computer."
       }
     },
     "win": {
