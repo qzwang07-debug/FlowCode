@@ -23,6 +23,10 @@ const realTemplatesRoot = path.resolve(
 );
 
 test("both bundled templates pass manifest hashes and required-file validation", async () => {
+  assert.equal(
+    await readFile(path.join(realTemplatesRoot, ".gitattributes"), "utf8"),
+    "* text=auto eol=lf\n",
+  );
   const store = new TemplateStore(realTemplatesRoot);
   const templates = await store.list();
   assert.deepEqual(
@@ -34,6 +38,7 @@ test("both bundled templates pass manifest hashes and required-file validation",
   );
 
   for (const manifest of templates) {
+    assert.ok(manifest.files.some((file) => file.path === ".gitattributes"));
     await store.validate(manifest.id);
   }
 });

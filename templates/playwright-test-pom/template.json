@@ -7,6 +7,11 @@
   "description": "A TypeScript Playwright Test project organized around page objects and fixtures.",
   "files": [
     {
+      "path": ".gitattributes",
+      "sha256": "d60f352d0db1404c70afb4bb8b2ca3fd1c610572aa40720e8a0b7baa7885418c",
+      "required": true
+    },
+    {
       "path": ".env.example",
       "sha256": "4f98adfc69858315265034867b0d2d3b4652c65353f2f51a43bc43554ea153ac",
       "required": true
@@ -94,6 +99,6 @@
   ],
   "integrity": {
     "algorithm": "sha256",
-    "value": "be5bfede0da443f3e6c47ca044be8c7e5ee347b2c5502762972bf68a2b0d6542"
+    "value": "94378e5e4435dfcfec34a93ff0d95cf6f0c97486e2f5635215a1d0f0fc377fa1"
   }
 }

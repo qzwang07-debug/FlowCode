@@ -7,6 +7,11 @@
   "description": "A parameterized TypeScript Playwright workflow with a CLI and smoke test.",
   "files": [
     {
+      "path": ".gitattributes",
+      "sha256": "d60f352d0db1404c70afb4bb8b2ca3fd1c610572aa40720e8a0b7baa7885418c",
+      "required": true
+    },
+    {
       "path": ".env.example",
       "sha256": "7329338a5834a770ebc8815da964b932ecc920aa7b1f9e8a6b20928e8972a028",
       "required": true
@@ -99,6 +104,6 @@
   ],
   "integrity": {
     "algorithm": "sha256",
-    "value": "141189b5280a5bbd03e586e152a186335aab5bc8478506282e63490e1c32ca0c"
+    "value": "475e31fc57fbbc8ec8359bf3ce0dacba875d7c298cd66ceddb7d96c4041617d2"
   }
 }
