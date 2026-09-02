@@ -9,6 +9,13 @@ import {
   ProjectOpenRequestSchema,
 } from "./ipc";
 import {
+  ProjectFileReadRequestSchema,
+  ProjectRunControlRequestSchema,
+  ProjectRunStartRequestSchema,
+  WorktreeControlRequestSchema,
+  WorktreeCreateRequestSchema,
+} from "./project-runtime";
+import {
   FlowProjectSchema,
   ProjectRegistrySchema,
   TemplateManifestSchema,
@@ -147,6 +154,43 @@ test("project IPC accepts ids and location capabilities, never renderer paths", 
     ProjectOpenRequestSchema.safeParse({ projectId: "../outside" }).success,
     false,
   );
+  assert.equal(
+    ProjectFileReadRequestSchema.safeParse({
+      projectId: "project-checkout",
+      path: "C:\\outside\\secret.txt",
+    }).success,
+    false,
+  );
+  assert.equal(
+    ProjectRunStartRequestSchema.safeParse({
+      projectId: "project-checkout",
+      action: "test",
+      command: "Remove-Item C:\\work",
+    }).success,
+    false,
+  );
+  assert.equal(
+    ProjectRunControlRequestSchema.safeParse({
+      projectId: "project-checkout",
+      runId: "../run",
+    }).success,
+    false,
+  );
+  assert.equal(
+    WorktreeCreateRequestSchema.safeParse({
+      projectId: "project-checkout",
+      reason: "Manual review",
+      rootPath: "C:\\outside",
+    }).success,
+    false,
+  );
+  assert.equal(
+    WorktreeControlRequestSchema.safeParse({
+      projectId: "project-checkout",
+      worktreeId: "../worktree",
+    }).success,
+    false,
+  );
 });
 
 test("project IPC, preload, renderer route, and packaged templates stay wired together", () => {
@@ -156,6 +200,16 @@ test("project IPC, preload, renderer route, and packaged templates stay wired to
     IPC.selectProjectLocation,
     IPC.createProject,
     IPC.openProject,
+    IPC.projectRuntime,
+    IPC.readProjectFile,
+    IPC.startProjectRun,
+    IPC.cancelProjectRun,
+    IPC.readProjectRunLog,
+    IPC.projectRunLog,
+    IPC.createProjectWorktree,
+    IPC.acceptProjectWorktree,
+    IPC.rollbackProjectWorktree,
+    IPC.cleanupProjectWorktree,
     IPC.openProjectStudio,
     IPC.closeProjectStudio,
   ]) {

@@ -15,6 +15,7 @@ import test from "node:test";
 
 import type { FlowProject } from "../../common/project";
 import { ProjectManager } from "./project-manager";
+import { runGit } from "./git";
 import { ProjectRegistry } from "./registry";
 import { TemplateStore } from "../templates/template-store";
 
@@ -67,6 +68,11 @@ test("both project kinds are created completely and initialized as local-only Gi
         "utf8",
       );
       assert.doesNotMatch(gitConfig, /\[remote\s+/i);
+      const head = await runGit(targetPath, ["rev-parse", "--verify", "HEAD"]);
+      assert.equal(head.exitCode, 0, head.stderr);
+      assert.match(head.stdout, /^[a-f0-9]{40}$/);
+      const status = await runGit(targetPath, ["status", "--porcelain"]);
+      assert.equal(status.stdout, "");
     }
 
     assert.equal((await manager.list()).length, 2);

@@ -12,6 +12,24 @@ import {
   type FlowProject,
   type ProjectListItem,
 } from "./project";
+import { ProjectRunSchema, type ProjectRun } from "./project-run";
+import {
+  ProjectFileContentSchema,
+  ProjectRunLogSchema,
+  ProjectRuntimeSnapshotSchema,
+  WorktreeRecordSchema,
+  type ProjectFileContent,
+  type ProjectFileReadRequest,
+  type ProjectRunControlRequest,
+  type ProjectRunLog,
+  type ProjectRunLogEvent,
+  type ProjectRunStartRequest,
+  type ProjectRuntimeRequest,
+  type ProjectRuntimeSnapshot,
+  type WorktreeControlRequest,
+  type WorktreeCreateRequest,
+  type WorktreeRecord,
+} from "./project-runtime";
 import type { ScreenSource } from "./screen";
 import type { SensitiveReport } from "./sensitive";
 import type {
@@ -82,7 +100,60 @@ export const ProjectActionResultSchema = z.discriminatedUnion("ok", [
 ]);
 export type ProjectActionResult = z.infer<typeof ProjectActionResultSchema>;
 
-export type { FlowProject, ProjectListItem };
+export const ProjectRuntimeResultSchema = z.discriminatedUnion("ok", [
+  z
+    .object({ ok: z.literal(true), snapshot: ProjectRuntimeSnapshotSchema })
+    .strict(),
+  z.object({ ok: z.literal(false), error: z.string() }).strict(),
+]);
+export type ProjectRuntimeResult = z.infer<typeof ProjectRuntimeResultSchema>;
+
+export const ProjectFileResultSchema = z.discriminatedUnion("ok", [
+  z.object({ ok: z.literal(true), file: ProjectFileContentSchema }).strict(),
+  z.object({ ok: z.literal(false), error: z.string() }).strict(),
+]);
+export type ProjectFileResult = z.infer<typeof ProjectFileResultSchema>;
+
+export const ProjectRunResultSchema = z.discriminatedUnion("ok", [
+  z.object({ ok: z.literal(true), run: ProjectRunSchema }).strict(),
+  z.object({ ok: z.literal(false), error: z.string() }).strict(),
+]);
+export type ProjectRunResult = z.infer<typeof ProjectRunResultSchema>;
+
+export const ProjectRunCancelResultSchema = z.discriminatedUnion("ok", [
+  z.object({ ok: z.literal(true), canceled: z.boolean() }).strict(),
+  z.object({ ok: z.literal(false), error: z.string() }).strict(),
+]);
+export type ProjectRunCancelResult = z.infer<typeof ProjectRunCancelResultSchema>;
+
+export const ProjectRunLogResultSchema = z.discriminatedUnion("ok", [
+  z.object({ ok: z.literal(true), log: ProjectRunLogSchema }).strict(),
+  z.object({ ok: z.literal(false), error: z.string() }).strict(),
+]);
+export type ProjectRunLogResult = z.infer<typeof ProjectRunLogResultSchema>;
+
+export const WorktreeActionResultSchema = z.discriminatedUnion("ok", [
+  z.object({ ok: z.literal(true), worktree: WorktreeRecordSchema }).strict(),
+  z.object({ ok: z.literal(false), error: z.string() }).strict(),
+]);
+export type WorktreeActionResult = z.infer<typeof WorktreeActionResultSchema>;
+
+export type {
+  FlowProject,
+  ProjectFileContent,
+  ProjectFileReadRequest,
+  ProjectListItem,
+  ProjectRun,
+  ProjectRunControlRequest,
+  ProjectRunLog,
+  ProjectRunLogEvent,
+  ProjectRunStartRequest,
+  ProjectRuntimeRequest,
+  ProjectRuntimeSnapshot,
+  WorktreeControlRequest,
+  WorktreeCreateRequest,
+  WorktreeRecord,
+};
 
 /** The last completed session — the one that can be analyzed. */
 export interface LastSession {
@@ -528,6 +599,16 @@ export const IPC = {
   selectProjectLocation: "project:select-location",
   createProject: "project:create",
   openProject: "project:open",
+  projectRuntime: "project:runtime",
+  readProjectFile: "project:file-read",
+  startProjectRun: "project:run-start",
+  cancelProjectRun: "project:run-cancel",
+  readProjectRunLog: "project:run-log-read",
+  projectRunLog: "project:run-log",
+  createProjectWorktree: "project:worktree-create",
+  acceptProjectWorktree: "project:worktree-accept",
+  rollbackProjectWorktree: "project:worktree-rollback",
+  cleanupProjectWorktree: "project:worktree-cleanup",
   buildSkill: "skill:build",
   createSkill: "skill:create",
   getSkill: "skill:get",
@@ -631,6 +712,19 @@ export interface SkillRecorderApi {
   createProject(input: ProjectCreateRequest): Promise<ProjectActionResult>;
   /** Load and validate one registered project by id; renderer paths are never accepted. */
   openProject(input: ProjectOpenRequest): Promise<ProjectActionResult>;
+  /** Load the read-only file tree, Git status, recent runs, and managed worktrees. */
+  projectRuntime(input: ProjectRuntimeRequest): Promise<ProjectRuntimeResult>;
+  /** Read one validated UTF-8 project file; saving is intentionally unavailable. */
+  readProjectFile(input: ProjectFileReadRequest): Promise<ProjectFileResult>;
+  /** Start one fixed template command; renderer-provided commands are not accepted. */
+  startProjectRun(input: ProjectRunStartRequest): Promise<ProjectRunResult>;
+  cancelProjectRun(input: ProjectRunControlRequest): Promise<ProjectRunCancelResult>;
+  readProjectRunLog(input: ProjectRunControlRequest): Promise<ProjectRunLogResult>;
+  onProjectRunLog(cb: (event: ProjectRunLogEvent) => void): () => void;
+  createProjectWorktree(input: WorktreeCreateRequest): Promise<WorktreeActionResult>;
+  acceptProjectWorktree(input: WorktreeControlRequest): Promise<WorktreeActionResult>;
+  rollbackProjectWorktree(input: WorktreeControlRequest): Promise<WorktreeActionResult>;
+  cleanupProjectWorktree(input: WorktreeControlRequest): Promise<WorktreeActionResult>;
   /**
    * Propose (or refine) a skill from a recording's analysis. Pass `feedback` to
    * revise the current plan in the same multi-turn conversation.

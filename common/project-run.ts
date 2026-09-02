@@ -3,7 +3,7 @@ import { z } from "zod";
 import { ProjectIdSchema, ProjectKindSchema } from "./project";
 
 const SAFE_ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
-const RunIdSchema = z.string().regex(SAFE_ID, "Invalid run id.");
+export const RunIdSchema = z.string().regex(SAFE_ID, "Invalid run id.");
 const TimestampSchema = z.number().int().nonnegative().finite();
 
 export const RunStatusSchema = z.enum([
@@ -12,8 +12,19 @@ export const RunStatusSchema = z.enum([
   "succeeded",
   "failed",
   "canceled",
+  "timed-out",
 ]);
 export type RunStatus = z.infer<typeof RunStatusSchema>;
+
+export const ProjectRunActionSchema = z.enum([
+  "test",
+  "typecheck",
+  "lint",
+  "report",
+  "workflow",
+  "smoke",
+]);
+export type ProjectRunAction = z.infer<typeof ProjectRunActionSchema>;
 
 export const CommandResultSchema = z
   .object({
@@ -23,6 +34,9 @@ export const CommandResultSchema = z
     completedAt: TimestampSchema.optional(),
     exitCode: z.number().int().nullable().optional(),
     logPath: z.string().optional(),
+    logBytes: z.number().int().nonnegative().optional(),
+    logTruncated: z.boolean().optional(),
+    error: z.string().optional(),
   })
   .strict()
   .superRefine((result, context) => {
@@ -112,10 +126,15 @@ export const ProjectRunSchema = z
       .regex(/^[a-f0-9]{40}$/)
       .optional(),
     kind: ProjectKindSchema,
+    action: ProjectRunActionSchema.optional(),
+    command: z.array(z.string()).min(1).optional(),
     status: RunStatusSchema,
     startedAt: TimestampSchema,
     completedAt: TimestampSchema.optional(),
     exitCode: z.number().int().nullable().optional(),
+    error: z.string().optional(),
+    logBytes: z.number().int().nonnegative().optional(),
+    logTruncated: z.boolean().optional(),
     browserVersion: z.string().optional(),
     artifacts: z.array(ProjectRunArtifactSchema),
   })

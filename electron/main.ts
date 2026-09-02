@@ -9,7 +9,10 @@ import { installCrashGuards } from "./crash-guards";
 import { Describer } from "./describer/describer";
 import { processSession } from "./pipeline";
 import { registerProjectIpc } from "./projects/ipc";
+import { GitWorktreeService } from "./projects/git";
+import { ProjectFileService } from "./projects/project-files";
 import { ProjectManager } from "./projects/project-manager";
+import { ProjectRunManager } from "./projects/project-runner";
 import { ProjectRegistry } from "./projects/registry";
 import { createProjectStudioWindow } from "./projects/window";
 import { registerIpc } from "./ipc";
@@ -50,6 +53,7 @@ let recorderWindow: BrowserWindow | null = null;
 let libraryWindow: BrowserWindow | null = null;
 let recordingControlsWindow: BrowserWindow | null = null;
 let projectStudioWindow: BrowserWindow | null = null;
+let projectRuns: ProjectRunManager | null = null;
 let recorderHome: Electron.Rectangle | null = null;
 let controlsExpanded = false;
 let quitReady = false;
@@ -144,7 +148,7 @@ function openLibrary(): void {
   });
 }
 
-/** Open the Stage 1 project list/new-project surface without changing recorder state. */
+/** Open Project Studio without changing recorder state. */
 function openProjectStudio(): void {
   if (recorder.state === "recording") return;
   if (projectStudioWindow && !projectStudioWindow.isDestroyed()) {
@@ -284,13 +288,39 @@ app.whenReady().then(async () => {
   const templateRoot = app.isPackaged
     ? path.join(process.resourcesPath, "templates")
     : path.join(app.getAppPath(), "templates");
+  const projects = new ProjectManager({
+    registry: new ProjectRegistry(),
+    templates: new TemplateStore(templateRoot),
+  });
+  const resolveProject = (projectId: string) => projects.open(projectId);
+  const worktrees = new GitWorktreeService({
+    resolveProject,
+    listProjects: async () =>
+      (await projects.list())
+        .filter((item) => item.availability === "available")
+        .map((item) => item.project),
+  });
+  projectRuns = new ProjectRunManager({
+    resolveProject,
+    onLog: (event) => broadcast(IPC.projectRunLog, event),
+  });
   registerProjectIpc(
-    new ProjectManager({
-      registry: new ProjectRegistry(),
-      templates: new TemplateStore(templateRoot),
-    }),
+    {
+      projects,
+      files: new ProjectFileService(resolveProject),
+      runs: projectRuns,
+      worktrees,
+    },
     path.join(app.getPath("documents"), "FlowCode Projects"),
   );
+  try {
+    await worktrees.recover();
+  } catch (error) {
+    log.warn(
+      "Worktree recovery scan failed:",
+      error instanceof Error ? error.message : error,
+    );
+  }
   sensitiveModels.initialize();
   ipcMain.handle(IPC.start, () => requestStartRecording());
   ipcMain.handle(IPC.startConfirmed, () => startRecording());
@@ -393,7 +423,7 @@ app.on("before-quit", (event) => {
   quitTask = (async () => {
     // stop() is serialized behind any start/mic/discard operation already in
     // flight, and is a harmless "Not recording" result when the app is idle.
-    await recorder.stop();
+    await Promise.all([recorder.stop(), projectRuns?.dispose()]);
     await recorder.whenProcessed();
   })()
     .catch((error) => {
