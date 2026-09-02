@@ -1,7 +1,7 @@
 name: Portable builds
 
 # On-demand, no-install "portable" preview builds.
-#   macOS   -> arm64 .zip        (unzip -> "Skill Recorder.app")
+#   macOS   -> arm64 .zip        (unzip -> "FlowCode.app")
 #   Windows -> x64 portable .exe (single self-contained executable)
 #
 # Runs ONLY when started by hand (workflow_dispatch) -- never on push or pull
@@ -53,6 +53,9 @@ jobs:
           node-version: 24.19.0
           cache: npm
 
+      - name: Use the reviewed npm version
+        run: npm install --global npm@11.17.0
+
       - name: Validate lockfile portability
         run: npm run check:lockfile
 
@@ -69,14 +72,14 @@ jobs:
       - name: Upload portable artifact
         uses: actions/upload-artifact@v4
         with:
-          name: skill-recorder-${{ matrix.name }}
+          name: flowcode-${{ matrix.name }}
           path: ${{ matrix.artifact_path }}
           if-no-files-found: error
 
       - name: Upload compliance companion
         uses: actions/upload-artifact@v4
         with:
-          name: skill-recorder-${{ matrix.name }}-compliance
+          name: flowcode-${{ matrix.name }}-compliance
           path: .compliance/**
           include-hidden-files: true
           if-no-files-found: error

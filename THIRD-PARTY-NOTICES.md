@@ -1,6 +1,9 @@
 # Third-Party Notices
 
-Skill Recorder is licensed under the MIT License (see [`LICENSE`](./LICENSE)).
+FlowCode is licensed under the MIT License (see [`LICENSE`](./LICENSE)). FlowCode
+is derived from [Microsoft Skill Recorder](https://github.com/microsoft/skill-recorder),
+whose copyright notice, MIT terms, third-party notices, and source history are
+retained.
 
 Packaged/distributed builds include third-party components that are covered by
 their own license terms. This file summarizes the notable ones. Every supported
@@ -20,7 +23,7 @@ Those components remain under their own terms; the generated
 ### OpenAI Whisper small — `Xenova/whisper-small`
 - The multilingual model is downloaded from
   [`Xenova/whisper-small`](https://huggingface.co/Xenova/whisper-small) only
-  after explicit user approval; its weights are not bundled with Skill Recorder.
+  after explicit user approval; its weights are not bundled with FlowCode.
 - The Transformers.js-compatible ONNX conversion is published by Xenova
   (Joshua Lochner) from OpenAI's
   [`openai/whisper-small`](https://huggingface.co/openai/whisper-small)
@@ -29,12 +32,12 @@ Those components remain under their own terms; the generated
   [Whisper repository](https://github.com/openai/whisper) also states that its
   code and model weights are released under the **MIT License**. The downloaded
   model remains subject to its publisher's applicable terms and does not change
-  Skill Recorder's MIT license.
+  FlowCode's MIT license.
 
 ### Tesseract English language data — `tessdata_fast/eng.traineddata`
 - Advanced protection downloads the English OCR data directly from
   [`tesseract-ocr/tessdata_fast`](https://github.com/tesseract-ocr/tessdata_fast)
-  only when OCR is enabled; it is not bundled with Skill Recorder.
+  only when OCR is enabled; it is not bundled with FlowCode.
 - The file is pinned to commit
   [`65727574dfcd264acbb0c3e07860e4e9e9b22185`](https://github.com/tesseract-ocr/tessdata_fast/tree/65727574dfcd264acbb0c3e07860e4e9e9b22185)
   and SHA-256
@@ -71,7 +74,7 @@ Those components remain under their own terms; the generated
   The Electron source archive and its applied FFmpeg patch queue accompany each
   release.
 - Chromium records the WebM media, captures screen snapshots, and decodes
-  narration audio. Skill Recorder does **not** distribute `ffmpeg-static` or a
+  narration audio. FlowCode does **not** distribute `ffmpeg-static` or a
   standalone FFmpeg executable.
 - A user-installed standalone FFmpeg may be invoked only to read a recording
   created before snapshot manifests were introduced. That executable is not part
@@ -90,7 +93,7 @@ Those components remain under their own terms; the generated
   native module remains replaceable in the packaged application.
 - Sharp also publishes a WebAssembly build, `@img/sharp-wasm32`, which npm
   installs on every platform because its FreeBSD and WebContainers wrappers
-  declare the platform constraints. Skill Recorder never loads it and excludes it
+  declare the platform constraints. FlowCode never loads it and excludes it
   and its WASM-only runtime dependency `@emnapi/runtime` from every packaged
   artifact, so neither is distributed.
 - The native payload also contains libraries under MPL-2.0, MIT, BSD, ISC,

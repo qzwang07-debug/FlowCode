@@ -79,8 +79,8 @@ async function download(url, target) {
         headers: {
           accept: "application/octet-stream, text/plain;q=0.9, */*;q=0.8",
           "user-agent":
-            "Mozilla/5.0 (compatible; SkillRecorderCompliance/1.0; " +
-            "+https://github.com/microsoft/skill-recorder)",
+            "Mozilla/5.0 (compatible; FlowCodeCompliance/1.0; " +
+            "+https://github.com/qzwang07-debug/FlowCode)",
         },
       });
       if (!response.ok || !response.body) {

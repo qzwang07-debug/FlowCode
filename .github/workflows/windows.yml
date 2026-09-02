@@ -10,6 +10,37 @@ permissions:
   contents: read
 
 jobs:
+  baseline:
+    name: Typecheck, test, and build
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.19.0
+          cache: npm
+
+      - name: Use the reviewed npm version
+        run: npm install --global npm@11.17.0
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts=false --dangerously-allow-all-scripts=false --strict-allow-scripts
+
+      - name: Typecheck application
+        run: npm run typecheck
+
+      - name: Typecheck evals
+        run: npm run typecheck:evals
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
   native:
     name: Windows ${{ matrix.arch }}
     runs-on: ${{ matrix.runner }}
@@ -57,7 +88,7 @@ jobs:
         shell: powershell
         env:
           SKILL_RECORDER_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
-          SKILL_RECORDER_INSTALL_ROOT: ${{ runner.temp }}\skill-recorder-source
+          SKILL_RECORDER_INSTALL_ROOT: ${{ runner.temp }}\flowcode-source
           SKILL_RECORDER_NO_LAUNCH: "1"
         run: .\install.ps1
 
@@ -66,6 +97,9 @@ jobs:
           node-version: 24.19.0
           architecture: ${{ matrix.arch }}
           cache: npm
+
+      - name: Use the reviewed npm version
+        run: npm install --global npm@11.17.0
 
       - name: Validate lockfile portability
         run: npm run check:lockfile

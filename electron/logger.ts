@@ -1,6 +1,6 @@
 /** Minimal tagged logger. Replaced/extended when telemetry lands. */
 export function createLogger(tag: string) {
-  const prefix = `[${tag}]`;
+  const prefix = `[FlowCode:${tag}]`;
   return {
     info: (...args: unknown[]) => console.log(prefix, ...args),
     warn: (...args: unknown[]) => console.warn(prefix, ...args),

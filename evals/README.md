@@ -1,4 +1,4 @@
-# Skill Recorder — Evals
+# FlowCode — Evals
 
 Repeatable evals for the part of the system with real variance: the multi-turn
 **Copilot describer** that turns captured signals into an *overall intent* + an
@@ -60,7 +60,8 @@ For each scenario the harness:
 - **ordered actions** — key actions appear as an ordered subsequence across steps
   (validates the reconstructed order, e.g. *open page → copy → into spreadsheet*).
 - **must-mention** — specific copied values/entities are surfaced.
-- **forbidden noise** — recorder bracketing (the Skill Recorder app), permission
+- **forbidden noise** — recorder bracketing (FlowCode; the frozen 0.5.0 fixtures
+  still identify it as Skill Recorder), permission
   dialogs, and tracking-param hops must **not** appear as steps. Scoped to step
   titles/apps + intent, so the agent isn't penalized for *explaining* that it
   correctly ignored noise.
@@ -117,7 +118,7 @@ export const myScenario: Scenario = {
   title: "…",
   truth: "What the user actually did, in plain language.",
   build: () => [ recorder(0), ...visit(1500, "Google Chrome", url, title), clipboard(4000, "…"), recorder(8000) ],
-  rubric: { intentKeywordsAny: [["…"]], expectedApps: ["chrome"], orderedActions: [["…"]], forbidden: ["skill recorder"] },
+  rubric: { intentKeywordsAny: [["…"]], expectedApps: ["chrome"], orderedActions: [["…"]], forbidden: ["flowcode", "skill recorder"] },
 };
 ```
 

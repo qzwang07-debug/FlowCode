@@ -366,7 +366,7 @@ export function registerIpc(
         defaultPath: path.join(
           os.homedir(),
           "Downloads",
-          `skill-recorder-debug-${sessionId}.zip`,
+          `flowcode-debug-${sessionId}.zip`,
         ),
         filters: [{ name: "Zip archive", extensions: ["zip"] }],
       };

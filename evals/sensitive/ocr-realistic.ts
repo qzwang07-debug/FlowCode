@@ -125,7 +125,7 @@ const pct = (n: number, d: number): string => (d ? `${(100 * (n / d)).toFixed(0)
 
 async function main(): Promise<void> {
   const flags = parseFlags(process.argv.slice(2));
-  console.error(`\nSkill Recorder — realistic degraded-frame OCR redaction eval (opt-in, non-hermetic)`);
+  console.error(`\nFlowCode — realistic degraded-frame OCR redaction eval (opt-in, non-hermetic)`);
 
   const sharp = loadSharp();
   if (!sharp) {

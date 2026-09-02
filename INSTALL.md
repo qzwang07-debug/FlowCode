@@ -1,7 +1,11 @@
-# Installing Skill Recorder from source
+# Installing FlowCode from source
 
-Skill Recorder can run directly from an exact source revision on Windows, macOS,
-or Ubuntu. These methods do not download a prebuilt Skill Recorder application.
+FlowCode can run directly from an exact source revision on Windows, macOS, or
+Ubuntu. These methods do not download a prebuilt FlowCode application.
+
+The `SKILL_RECORDER_*` environment-variable names are retained during the Stage 0
+rebrand so existing pinned-source automation keeps working. They are compatibility
+aliases, not the current product name.
 Node.js, Electron, native dependencies, and the GitHub Copilot CLI are obtained
 from canonical upstreams or compatible configured registries and assembled
 locally.
@@ -19,19 +23,19 @@ published for the release.
 ### Windows 11 x64 or ARM64
 
 ```powershell
-$commit="<40-character-release-commit>"; $env:SKILL_RECORDER_COMMIT=$commit; irm "https://raw.githubusercontent.com/microsoft/skill-recorder/$commit/install.ps1" | iex
+$commit="<40-character-release-commit>"; $env:SKILL_RECORDER_COMMIT=$commit; irm "https://raw.githubusercontent.com/qzwang07-debug/FlowCode/$commit/install.ps1" | iex
 ```
 
 ### macOS or Ubuntu
 
 ```sh
-commit="<40-character-release-commit>"; curl -fsSL "https://raw.githubusercontent.com/microsoft/skill-recorder/$commit/install.sh" | SKILL_RECORDER_COMMIT="$commit" bash
+commit="<40-character-release-commit>"; curl -fsSL "https://raw.githubusercontent.com/qzwang07-debug/FlowCode/$commit/install.sh" | SKILL_RECORDER_COMMIT="$commit" bash
 ```
 
 To launch in the background and retain rolling logs on macOS or Ubuntu:
 
 ```sh
-commit="<40-character-release-commit>"; curl -fsSL "https://raw.githubusercontent.com/microsoft/skill-recorder/$commit/install.sh" | SKILL_RECORDER_COMMIT="$commit" SKILL_RECORDER_DETACHED=1 bash
+commit="<40-character-release-commit>"; curl -fsSL "https://raw.githubusercontent.com/qzwang07-debug/FlowCode/$commit/install.sh" | SKILL_RECORDER_COMMIT="$commit" SKILL_RECORDER_DETACHED=1 bash
 ```
 
 The commit appears twice deliberately: it pins both the script being executed
@@ -56,7 +60,7 @@ The source installers:
 7. Build locally, retain repository/dependency licenses, and record hashes for
    the installed Electron and Copilot executables.
 8. Create Start Menu **and** desktop shortcuts on Windows; a launcher plus a
-   `Skill Recorder (Source)` app in `~/Applications` (reachable from Spotlight,
+   `FlowCode (Source)` app in `~/Applications` (reachable from Spotlight,
    Launchpad, and the Dock) on macOS; and a launcher plus desktop entry on Ubuntu.
 9. Print a final confirmation listing the shortcuts that were created.
 
@@ -81,8 +85,8 @@ corresponding GitHub Release before executing it.
 
 ```powershell
 $commit = "<40-character-release-commit>"
-$script = Join-Path $env:TEMP "skill-recorder-install-$commit.ps1"
-Invoke-WebRequest "https://raw.githubusercontent.com/microsoft/skill-recorder/$commit/install.ps1" -OutFile $script -UseBasicParsing
+$script = Join-Path $env:TEMP "flowcode-install-$commit.ps1"
+Invoke-WebRequest "https://raw.githubusercontent.com/qzwang07-debug/FlowCode/$commit/install.ps1" -OutFile $script -UseBasicParsing
 Get-FileHash $script -Algorithm SHA256
 Get-Content $script
 $env:SKILL_RECORDER_COMMIT = $commit
@@ -93,8 +97,8 @@ $env:SKILL_RECORDER_COMMIT = $commit
 
 ```sh
 commit="<40-character-release-commit>"
-script="$(mktemp -t skill-recorder-install.XXXXXX)"
-curl -fsSL "https://raw.githubusercontent.com/microsoft/skill-recorder/$commit/install.sh" -o "$script"
+script="$(mktemp -t flowcode-install.XXXXXX)"
+curl -fsSL "https://raw.githubusercontent.com/qzwang07-debug/FlowCode/$commit/install.sh" -o "$script"
 shasum -a 256 "$script"
 cat "$script"
 SKILL_RECORDER_COMMIT="$commit" bash "$script"
@@ -106,7 +110,7 @@ rm -f "$script"
 ```sh
 commit="<40-character-release-commit>"
 script="$(mktemp --suffix=.sh)"
-curl -fsSL "https://raw.githubusercontent.com/microsoft/skill-recorder/$commit/install.sh" -o "$script"
+curl -fsSL "https://raw.githubusercontent.com/qzwang07-debug/FlowCode/$commit/install.sh" -o "$script"
 sha256sum "$script"
 cat "$script"
 SKILL_RECORDER_COMMIT="$commit" bash "$script"
@@ -126,9 +130,9 @@ rm -f "$script"
 
 Default installation roots:
 
-- Windows: `%LOCALAPPDATA%\SkillRecorder`
-- macOS: `~/Library/Application Support/SkillRecorder`
-- Ubuntu: `${XDG_DATA_HOME:-~/.local/share}/SkillRecorder`
+- Windows: `%LOCALAPPDATA%\FlowCode`
+- macOS: `~/Library/Application Support/FlowCode`
+- Ubuntu: `${XDG_DATA_HOME:-~/.local/share}/FlowCode`
 
 Every revision is installed under `versions/<commit>`. The current launcher is
 updated only after the selected revision passes dependency, license, integrity,
@@ -149,14 +153,14 @@ always safe.
 
 ## Relaunching after it closes
 
-After a successful install you can reopen Skill Recorder without re-running the
+After a successful install you can reopen FlowCode without re-running the
 installer:
 
-- Windows: the **Skill Recorder (Source)** desktop shortcut, or the matching
+- Windows: the **FlowCode (Source)** desktop shortcut, or the matching
   Start Menu entry.
-- macOS: **Skill Recorder (Source)** in `~/Applications`, searchable from
+- macOS: **FlowCode (Source)** in `~/Applications`, searchable from
   Spotlight and Launchpad and pinnable to the Dock.
-- Ubuntu: the **Skill Recorder (Source)** desktop entry, or run the launcher
+- Ubuntu: the **FlowCode (Source)** desktop entry, or run the launcher
   script directly.
 
 Each entry runs the current launcher, so it always starts the most recently
@@ -173,11 +177,11 @@ commit archive rather than repository history.
 
 ```powershell
 $commit = "<40-character-release-commit>"
-$archive = Join-Path $env:TEMP "skill-recorder-$commit.zip"
-$parent = Join-Path $PWD "skill-recorder-source"
-Invoke-WebRequest "https://codeload.github.com/microsoft/skill-recorder/zip/$commit" -OutFile $archive -UseBasicParsing
+$archive = Join-Path $env:TEMP "flowcode-$commit.zip"
+$parent = Join-Path $PWD "flowcode-source"
+Invoke-WebRequest "https://codeload.github.com/qzwang07-debug/FlowCode/zip/$commit" -OutFile $archive -UseBasicParsing
 Expand-Archive $archive $parent
-Set-Location (Join-Path $parent "skill-recorder-$commit")
+Set-Location (Join-Path $parent "FlowCode-$commit")
 npm run check:lockfile
 npm ci --ignore-scripts=false --dangerously-allow-all-scripts=false --strict-allow-scripts
 npm run electron:install-reviewed
@@ -190,9 +194,9 @@ npm start
 
 ```sh
 commit="<40-character-release-commit>"
-archive="skill-recorder-$commit.tar.gz"
-source_dir="skill-recorder-$commit"
-curl -fsSL "https://codeload.github.com/microsoft/skill-recorder/tar.gz/$commit" -o "$archive"
+archive="flowcode-$commit.tar.gz"
+source_dir="FlowCode-$commit"
+curl -fsSL "https://codeload.github.com/qzwang07-debug/FlowCode/tar.gz/$commit" -o "$archive"
 mkdir "$source_dir"
 tar -xzf "$archive" --strip-components=1 -C "$source_dir"
 cd "$source_dir"
@@ -218,9 +222,9 @@ Then use the same pinned source process:
 
 ```sh
 commit="<40-character-release-commit>"
-archive="skill-recorder-$commit.tar.gz"
-source_dir="skill-recorder-$commit"
-curl -fsSL "https://codeload.github.com/microsoft/skill-recorder/tar.gz/$commit" -o "$archive"
+archive="flowcode-$commit.tar.gz"
+source_dir="FlowCode-$commit"
+curl -fsSL "https://codeload.github.com/qzwang07-debug/FlowCode/tar.gz/$commit" -o "$archive"
 mkdir "$source_dir"
 tar -xzf "$archive" --strip-components=1 -C "$source_dir"
 cd "$source_dir"
@@ -296,24 +300,24 @@ Test the new revision before deleting an older revision.
 ### Windows uninstall
 
 ```powershell
-Remove-Item "$([Environment]::GetFolderPath('Programs'))\Skill Recorder (Source).lnk" -Force
-Remove-Item "$([Environment]::GetFolderPath('DesktopDirectory'))\Skill Recorder (Source).lnk" -Force
-Remove-Item "$env:LOCALAPPDATA\SkillRecorder" -Recurse -Force
+Remove-Item "$([Environment]::GetFolderPath('Programs'))\FlowCode (Source).lnk" -Force
+Remove-Item "$([Environment]::GetFolderPath('DesktopDirectory'))\FlowCode (Source).lnk" -Force
+Remove-Item "$env:LOCALAPPDATA\FlowCode" -Recurse -Force
 ```
 
 ### macOS uninstall
 
 ```sh
-rm -rf "$HOME/Applications/Skill Recorder (Source).app"
-rm -rf "$HOME/Library/Application Support/SkillRecorder"
+rm -rf "$HOME/Applications/FlowCode (Source).app"
+rm -rf "$HOME/Library/Application Support/FlowCode"
 ```
 
 ### Ubuntu uninstall
 
 ```sh
 data_home="${XDG_DATA_HOME:-$HOME/.local/share}"
-rm -f "$data_home/applications/skill-recorder-source.desktop"
-rm -rf "$data_home/SkillRecorder"
+rm -f "$data_home/applications/flowcode-source.desktop"
+rm -rf "$data_home/FlowCode"
 ```
 
 These commands leave recorded-session/application data outside the source

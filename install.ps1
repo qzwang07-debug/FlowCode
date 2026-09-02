@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2026 Skill Recorder contributors
+# Copyright (c) 2026 FlowCode contributors
 
 <#
 .SYNOPSIS
-Builds and installs Skill Recorder from an exact source commit.
+Builds and installs FlowCode from an exact source commit.
 
 .DESCRIPTION
-This script does not download a prebuilt Skill Recorder application. It obtains
+This script does not download a prebuilt FlowCode application. It obtains
 an official portable Node.js 24 runtime, downloads the exact requested source
 commit from GitHub, installs lockfile-pinned dependencies from their publishers,
 validates license materials, builds locally, and creates Start Menu and desktop
@@ -28,7 +28,7 @@ $createDesktopShortcut = $env:SKILL_RECORDER_NO_DESKTOP_SHORTCUT -ne "1"
 
 function Write-Step {
   param([Parameter(Mandatory)][string]$Message)
-  Write-Host "[Skill Recorder] $Message"
+  Write-Host "[FlowCode] $Message"
 }
 
 function Invoke-Download {
@@ -45,7 +45,7 @@ function Invoke-Download {
   $parameters = @{
     Uri = $Uri
     OutFile = $Destination
-    Headers = @{ "User-Agent" = "Skill-Recorder-Source-Installer" }
+    Headers = @{ "User-Agent" = "FlowCode-Source-Installer" }
   }
   if ($PSVersionTable.PSVersion.Major -lt 6) {
     $parameters.UseBasicParsing = $true
@@ -365,7 +365,7 @@ function Get-WindowsArchitecture {
     "AMD64" { return "x64" }
     "ARM64" { return "arm64" }
     default {
-      throw "Skill Recorder supports Windows x64 and ARM64, not $architecture."
+      throw "FlowCode supports Windows x64 and ARM64, not $architecture."
     }
   }
 }
@@ -570,14 +570,14 @@ function New-SourceShortcut {
     [Parameter(Mandatory)][string]$ElectronExecutable
   )
 
-  $shortcutPath = Join-Path $Folder "Skill Recorder (Source).lnk"
+  $shortcutPath = Join-Path $Folder "FlowCode (Source).lnk"
   $shell = New-Object -ComObject WScript.Shell
   $shortcut = $shell.CreateShortcut($shortcutPath)
   $shortcut.TargetPath = $ElectronExecutable
   $shortcut.Arguments = '"' + $SourceDirectory + '"'
   $shortcut.WorkingDirectory = $SourceDirectory
   $shortcut.IconLocation = "$ElectronExecutable,0"
-  $shortcut.Description = "Skill Recorder built locally from pinned source"
+  $shortcut.Description = "FlowCode built locally from pinned source"
   $shortcut.Save()
   if (-not (Test-Path -LiteralPath $shortcutPath -PathType Leaf)) {
     throw "Windows did not create the shortcut at $shortcutPath."
@@ -602,7 +602,7 @@ if ([string]::IsNullOrWhiteSpace($InstallRoot)) {
   if ([string]::IsNullOrWhiteSpace($env:LOCALAPPDATA)) {
     throw "LOCALAPPDATA is unavailable. Set SKILL_RECORDER_INSTALL_ROOT explicitly."
   }
-  $InstallRoot = Join-Path $env:LOCALAPPDATA "SkillRecorder"
+  $InstallRoot = Join-Path $env:LOCALAPPDATA "FlowCode"
 }
 $InstallRoot = [IO.Path]::GetFullPath($InstallRoot)
 
@@ -641,9 +641,9 @@ if (Test-Path -LiteralPath $sourceDirectory -PathType Container) {
       -CacheRoot $cacheRoot
 
     Write-Step "Obtaining the exact source commit from GitHub."
-    $sourceArchive = Join-Path $cacheRoot "skill-recorder-$Commit.zip"
+    $sourceArchive = Join-Path $cacheRoot "flowcode-$Commit.zip"
     $sourceArchiveHash = Get-CachedDownload `
-      -Uri "https://codeload.github.com/microsoft/skill-recorder/zip/$Commit" `
+      -Uri "https://codeload.github.com/qzwang07-debug/FlowCode/zip/$Commit" `
       -CachePath $sourceArchive
     Assert-ZipArchive -Path $sourceArchive
 
@@ -654,9 +654,9 @@ if (Test-Path -LiteralPath $sourceDirectory -PathType Container) {
         Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName "package.json") -PathType Leaf }
     )
     if ($sourceCandidates.Count -ne 1) {
-      throw "Expected one Skill Recorder source directory, found $($sourceCandidates.Count)."
+      throw "Expected one FlowCode source directory, found $($sourceCandidates.Count)."
     }
-    $expectedSourceDirectoryName = "skill-recorder-$Commit"
+    $expectedSourceDirectoryName = "FlowCode-$Commit"
     if ($sourceCandidates[0].Name -ne $expectedSourceDirectoryName) {
       throw "GitHub source directory does not match commit $Commit."
     }
@@ -786,7 +786,7 @@ if (Test-Path -LiteralPath $sourceDirectory -PathType Container) {
         -Arguments @("run", "compliance:licenses") `
         -Description "license validation"
 
-      Write-Step "Building Skill Recorder locally."
+      Write-Step "Building FlowCode locally."
       Invoke-CheckedCommand `
         -FilePath $runtime.Npm `
         -Arguments @("run", "build") `
@@ -825,7 +825,7 @@ if (Test-Path -LiteralPath $sourceDirectory -PathType Container) {
       schemaVersion = 1
       distributionMode = "source-local-build"
       commit = $Commit
-      sourceUrl = "https://github.com/microsoft/skill-recorder/tree/$Commit"
+      sourceUrl = "https://github.com/qzwang07-debug/FlowCode/tree/$Commit"
       sourceArchiveSha256 = $sourceArchiveHash
       packageLockSha256 = (Get-FileHash -LiteralPath (Join-Path $buildDirectory "package-lock.json") -Algorithm SHA256).Hash.ToLowerInvariant()
       electronExecutableSha256 = (Get-FileHash -LiteralPath $buildElectron -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -902,7 +902,7 @@ Write-Step "License materials remain in the source tree, dependency packages, an
 Write-Warning "This locally generated build is for local execution only. Do not redistribute it."
 
 Write-Host ""
-Write-Host "Skill Recorder is ready. Open it any time from these shortcuts:"
+Write-Host "FlowCode is ready. Open it any time from these shortcuts:"
 if ($null -ne $startMenuShortcut) {
   Write-Host "  Start Menu : $startMenuShortcut"
 } else {
@@ -915,11 +915,11 @@ if (-not $createDesktopShortcut) {
 } else {
   Write-Host "  Desktop    : not created (see the warning above)"
 }
-Write-Host "Each entry is named 'Skill Recorder (Source)' and starts this installed revision."
+Write-Host "Each entry is named 'FlowCode (Source)' and starts this installed revision."
 Write-Host ""
 
 if (-not $skipLaunch) {
-  Write-Step "Launching Skill Recorder."
+  Write-Step "Launching FlowCode."
   Start-Process `
     -FilePath $electronExecutable `
     -ArgumentList ('"{0}"' -f $sourceDirectory) `

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2026 Skill Recorder contributors
+# Copyright (c) 2026 FlowCode contributors
 #
-# Builds Skill Recorder locally from an exact source commit on macOS or Ubuntu.
-# The script downloads no prebuilt Skill Recorder application.
+# Builds FlowCode locally from an exact source commit on macOS or Ubuntu.
+# The script downloads no prebuilt FlowCode application.
 
 set -euo pipefail
 umask 077
@@ -14,10 +14,10 @@ NO_LAUNCH="${SKILL_RECORDER_NO_LAUNCH:-}"
 DETACHED="${SKILL_RECORDER_DETACHED:-}"
 LOG_KEEP="${SKILL_RECORDER_LOG_KEEP:-5}"
 
-info() { printf '[Skill Recorder] %s\n' "$*"; }
-warn() { printf '[Skill Recorder] WARNING: %s\n' "$*" >&2; }
+info() { printf '[FlowCode] %s\n' "$*"; }
+warn() { printf '[FlowCode] WARNING: %s\n' "$*" >&2; }
 die() {
-  printf '[Skill Recorder] ERROR: %s\n' "$*" >&2
+  printf '[FlowCode] ERROR: %s\n' "$*" >&2
   exit 1
 }
 have() { command -v "$1" >/dev/null 2>&1; }
@@ -32,14 +32,14 @@ MACHINE="$(uname -m)"
 case "$SYSTEM" in
   Darwin)
     PLATFORM="darwin"
-    DEFAULT_INSTALL_ROOT="$HOME/Library/Application Support/SkillRecorder"
+    DEFAULT_INSTALL_ROOT="$HOME/Library/Application Support/FlowCode"
     ;;
   Linux)
     [ -r /etc/os-release ] || die "Ubuntu could not be identified from /etc/os-release."
     OS_ID="$(sed -n 's/^ID=//p' /etc/os-release | head -n 1 | tr -d '"')"
     [ "$OS_ID" = "ubuntu" ] || die "install.sh supports Ubuntu only; found ${OS_ID:-unknown}."
     PLATFORM="linux"
-    DEFAULT_INSTALL_ROOT="${XDG_DATA_HOME:-$HOME/.local/share}/SkillRecorder"
+    DEFAULT_INSTALL_ROOT="${XDG_DATA_HOME:-$HOME/.local/share}/FlowCode"
     ;;
   *)
     die "install.sh supports macOS and Ubuntu only; found $SYSTEM."
@@ -70,7 +70,7 @@ RUNTIME_ROOT="$INSTALL_ROOT/runtime"
 VERSIONS_ROOT="$INSTALL_ROOT/versions"
 mkdir -p "$RUNTIME_ROOT" "$VERSIONS_ROOT"
 
-WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/skill-recorder-install.XXXXXX")"
+WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/flowcode-install.XXXXXX")"
 STAGING_DIR=""
 cleanup() {
   if [ -n "$STAGING_DIR" ] && [ -d "$STAGING_DIR" ]; then
@@ -264,13 +264,13 @@ validate_existing_install() {
 
 build_source_install() {
   local source_directory="$1"
-  local archive="$WORK_DIR/skill-recorder-$COMMIT.tar.gz"
-  info "Downloading Skill Recorder source commit $COMMIT."
-  download "https://codeload.github.com/microsoft/skill-recorder/tar.gz/$COMMIT" "$archive"
+  local archive="$WORK_DIR/flowcode-$COMMIT.tar.gz"
+  info "Downloading FlowCode source commit $COMMIT."
+  download "https://codeload.github.com/qzwang07-debug/FlowCode/tar.gz/$COMMIT" "$archive"
 
   local top_directory
   top_directory="$(tar -tzf "$archive" | awk -F/ 'NR == 1 { first = $1 } END { print first }')"
-  [ "$top_directory" = "skill-recorder-$COMMIT" ] ||
+  [ "$top_directory" = "FlowCode-$COMMIT" ] ||
     die "GitHub source archive did not contain the expected commit directory."
 
   STAGING_DIR="$VERSIONS_ROOT/.staging-$COMMIT-$$"
@@ -392,7 +392,7 @@ build_source_install() {
   [ -f .compliance/licenses/LGPL-3.0.txt ] ||
     die "The canonical LGPL-3.0 text was not generated."
 
-  info "Building Skill Recorder locally."
+  info "Building FlowCode locally."
   "$NPM" run build
 
   printf '%s\n' "$COMMIT" > .skill-recorder-commit
@@ -409,10 +409,10 @@ build_source_install() {
 write_macos_app() {
   local launcher="$1"
   local applications="$HOME/Applications"
-  local bundle="$applications/Skill Recorder (Source).app"
+  local bundle="$applications/FlowCode (Source).app"
   local contents="$bundle/Contents"
   local macos_dir="$contents/MacOS"
-  local executable_name="skill-recorder-source"
+  local executable_name="flowcode-source"
   local stub="$macos_dir/$executable_name"
   local plist="$contents/Info.plist"
   local stub_temporary plist_temporary
@@ -421,7 +421,7 @@ write_macos_app() {
   rm -rf -- "$bundle"
   mkdir -p "$macos_dir"
 
-  stub_temporary="$macos_dir/.skill-recorder-source.$$"
+  stub_temporary="$macos_dir/.flowcode-source.$$"
   {
     printf '%s\n' '#!/bin/bash'
     printf 'exec %q "$@"\n' "$launcher"
@@ -437,11 +437,11 @@ write_macos_app() {
       '<plist version="1.0">' \
       '<dict>' \
       '  <key>CFBundleName</key>' \
-      '  <string>Skill Recorder (Source)</string>' \
+      '  <string>FlowCode (Source)</string>' \
       '  <key>CFBundleDisplayName</key>' \
-      '  <string>Skill Recorder (Source)</string>' \
+      '  <string>FlowCode (Source)</string>' \
       '  <key>CFBundleIdentifier</key>' \
-      '  <string>com.skillrecorder.source</string>' \
+      '  <string>com.flowcode.source</string>' \
       '  <key>CFBundleExecutable</key>' \
       "  <string>$executable_name</string>" \
       '  <key>CFBundlePackageType</key>' \
@@ -466,8 +466,8 @@ write_macos_app() {
 write_launcher() {
   local source_directory="$1"
   local electron="$2"
-  local launcher="$INSTALL_ROOT/skill-recorder-source"
-  local temporary="$INSTALL_ROOT/.skill-recorder-source.$$"
+  local launcher="$INSTALL_ROOT/flowcode-source"
+  local temporary="$INSTALL_ROOT/.flowcode-source.$$"
   {
     printf '%s\n' '#!/usr/bin/env bash' 'set -euo pipefail'
     printf 'SOURCE_DIRECTORY=%q\n' "$source_directory"
@@ -480,15 +480,15 @@ write_launcher() {
 
   if [ "$PLATFORM" = "linux" ]; then
     local applications="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
-    local desktop="$applications/skill-recorder-source.desktop"
-    local desktop_temporary="$applications/.skill-recorder-source.desktop.$$"
+    local desktop="$applications/flowcode-source.desktop"
+    local desktop_temporary="$applications/.flowcode-source.desktop.$$"
     mkdir -p "$applications"
     {
       printf '%s\n' \
         '[Desktop Entry]' \
         'Type=Application' \
-        'Name=Skill Recorder (Source)' \
-        'Comment=Skill Recorder built locally from pinned source'
+        'Name=FlowCode (Source)' \
+        'Comment=FlowCode built locally from pinned source'
       printf 'Exec="%s"\n' "$launcher"
       printf '%s\n' \
         'Icon=applications-development' \
@@ -547,15 +547,15 @@ if [ -n "$DETACHED" ]; then
   LOG_DIR="$INSTALL_ROOT/logs"
   mkdir -p "$LOG_DIR"
   {
-    ls -1t "$LOG_DIR"/skill-recorder-*.log 2>/dev/null || true
+    ls -1t "$LOG_DIR"/flowcode-*.log 2>/dev/null || true
   } | tail -n +"$LOG_KEEP" | while IFS= read -r old_log; do
     rm -f -- "$old_log"
   done
-  LOG_FILE="$LOG_DIR/skill-recorder-$(date +%Y%m%d-%H%M%S).log"
+  LOG_FILE="$LOG_DIR/flowcode-$(date +%Y%m%d-%H%M%S).log"
   nohup "$LAUNCHER" </dev/null >"$LOG_FILE" 2>&1 &
   info "Running in the background as process $!. Logs: $LOG_FILE"
   exit 0
 fi
 
-info "Launching Skill Recorder."
+info "Launching FlowCode."
 exec "$LAUNCHER"
