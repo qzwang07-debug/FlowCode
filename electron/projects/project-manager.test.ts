@@ -4,6 +4,7 @@ import {
   mkdir,
   mkdtemp,
   readFile,
+  realpath,
   readdir,
   rm,
   writeFile,
@@ -48,7 +49,7 @@ test("both project kinds are created completely and initialized as local-only Gi
       const targetPath = path.join(root, id);
       const project = await manager.create({ id, name: id, kind, targetPath });
 
-      assert.equal(project.rootPath, targetPath);
+      assert.equal(project.rootPath, await realpath(targetPath));
       assert.equal(project.kind, kind);
       assert.equal(
         JSON.parse(
