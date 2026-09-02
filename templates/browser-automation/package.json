@@ -1,0 +1,41 @@
+{
+  "name": "flowcode-browser-automation",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.19.0 <25",
+    "npm": ">=11.17.0"
+  },
+  "packageManager": "npm@11.17.0",
+  "scripts": {
+    "start": "tsx src/cli/index.ts",
+    "workflow": "tsx src/cli/index.ts run",
+    "smoke": "playwright test tests/smoke",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@babel/core": "8.0.1",
+    "@babel/eslint-parser": "8.0.1",
+    "@babel/plugin-syntax-typescript": "8.0.3",
+    "@playwright/test": "1.62.1",
+    "@types/node": "24.13.3",
+    "eslint": "10.9.1",
+    "prettier": "3.9.6",
+    "tsx": "4.23.13",
+    "typescript": "7.0.2"
+  },
+  "overrides": {
+    "esbuild": "0.28.2"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "fsevents@2.3.2": false,
+    "fsevents@2.3.3": false
+  }
+}

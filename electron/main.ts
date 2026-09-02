@@ -1,3 +1,5 @@
+import path from "node:path";
+
 import { app, BrowserWindow, globalShortcut, ipcMain, Menu, screen } from "electron";
 
 import { FULL_CAPTURE } from "../common/config";
@@ -6,6 +8,10 @@ import { createCollectors } from "./collectors";
 import { installCrashGuards } from "./crash-guards";
 import { Describer } from "./describer/describer";
 import { processSession } from "./pipeline";
+import { registerProjectIpc } from "./projects/ipc";
+import { ProjectManager } from "./projects/project-manager";
+import { ProjectRegistry } from "./projects/registry";
+import { createProjectStudioWindow } from "./projects/window";
 import { registerIpc } from "./ipc";
 import { createLogger } from "./logger";
 import { NarrationManager } from "./narration/manager";
@@ -20,6 +26,7 @@ import { dockIcon } from "./icons";
 import { AudioRecorder } from "./audio/recorder";
 import { VideoRecorder } from "./video/recorder";
 import { ScreenSourceService } from "./video/sources";
+import { TemplateStore } from "./templates/template-store";
 import {
   clampRecordingControlsWindow,
   createLibraryWindow,
@@ -42,6 +49,7 @@ const dock = dockIcon();
 let recorderWindow: BrowserWindow | null = null;
 let libraryWindow: BrowserWindow | null = null;
 let recordingControlsWindow: BrowserWindow | null = null;
+let projectStudioWindow: BrowserWindow | null = null;
 let recorderHome: Electron.Rectangle | null = null;
 let controlsExpanded = false;
 let quitReady = false;
@@ -133,6 +141,20 @@ function openLibrary(): void {
     void describer.evictIdle();
     void builder.evictIdle();
     void automationBuilder.evictIdle();
+  });
+}
+
+/** Open the Stage 1 project list/new-project surface without changing recorder state. */
+function openProjectStudio(): void {
+  if (recorder.state === "recording") return;
+  if (projectStudioWindow && !projectStudioWindow.isDestroyed()) {
+    projectStudioWindow.show();
+    projectStudioWindow.focus();
+    return;
+  }
+  projectStudioWindow = createProjectStudioWindow();
+  projectStudioWindow.on("closed", () => {
+    projectStudioWindow = null;
   });
 }
 
@@ -259,6 +281,16 @@ app.whenReady().then(async () => {
     sensitiveModels,
     () => recordingStartPending,
   );
+  const templateRoot = app.isPackaged
+    ? path.join(process.resourcesPath, "templates")
+    : path.join(app.getAppPath(), "templates");
+  registerProjectIpc(
+    new ProjectManager({
+      registry: new ProjectRegistry(),
+      templates: new TemplateStore(templateRoot),
+    }),
+    path.join(app.getPath("documents"), "FlowCode Projects"),
+  );
   sensitiveModels.initialize();
   ipcMain.handle(IPC.start, () => requestStartRecording());
   ipcMain.handle(IPC.startConfirmed, () => startRecording());
@@ -268,6 +300,16 @@ app.whenReady().then(async () => {
   ipcMain.handle(IPC.openLibrary, () => openLibrary());
   ipcMain.handle(IPC.closeLibrary, () => {
     if (libraryWindow && !libraryWindow.isDestroyed()) libraryWindow.close();
+  });
+  ipcMain.handle(IPC.openProjectStudio, () => openProjectStudio());
+  ipcMain.handle(IPC.closeProjectStudio, (event) => {
+    if (
+      projectStudioWindow &&
+      !projectStudioWindow.isDestroyed() &&
+      event.sender === projectStudioWindow.webContents
+    ) {
+      projectStudioWindow.close();
+    }
   });
   ipcMain.handle(IPC.recordingControlsExpanded, (event, expanded: boolean) => {
     const win = recordingControlsWindow;

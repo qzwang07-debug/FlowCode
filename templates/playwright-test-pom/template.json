@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "id": "playwright-test-pom",
+  "version": "1.0.0",
+  "kind": "web-test",
+  "name": "Playwright Test POM",
+  "description": "A TypeScript Playwright Test project organized around page objects and fixtures.",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "sha256": "d60f352d0db1404c70afb4bb8b2ca3fd1c610572aa40720e8a0b7baa7885418c",
+      "required": true
+    },
+    {
+      "path": ".env.example",
+      "sha256": "4f98adfc69858315265034867b0d2d3b4652c65353f2f51a43bc43554ea153ac",
+      "required": true
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "80597adfbd694b9dcf446b9d6009f62c7fe90e3e4470e75a943c52918bc611d0",
+      "required": true
+    },
+    {
+      "path": ".prettierignore",
+      "sha256": "0acdb89191a5e43541a958f5b81b53ebf867753c48304eb8b9b1ff0d8b24c412",
+      "required": true
+    },
+    {
+      "path": ".prettierrc.json",
+      "sha256": "1ed88d3b99eced8dc3b6f58f26645466dd1ceaca6c5a9b818531c941ac28e55b",
+      "required": true
+    },
+    {
+      "path": "assertions/README.md",
+      "sha256": "1059f1cdd9d3d03cbc40ba07b6cbb8f0015216ae9e25859e0dc98b296da0ae44",
+      "required": true
+    },
+    {
+      "path": "data/.gitkeep",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "required": true
+    },
+    {
+      "path": "eslint.config.js",
+      "sha256": "532f94e6ff262bb538f5cbd4b51425b8c7077f73ab05d3df78d68728eab11e2b",
+      "required": true
+    },
+    {
+      "path": "fixtures/test.ts",
+      "sha256": "dd818240a5d9c1c8ff9c0ed7d592c6ff9371559eaa26f75efc5a06fab569dda2",
+      "required": true
+    },
+    {
+      "path": "package.json",
+      "sha256": "bc6514a63490d8170cf7907908ec78a3b334698cbfed162a7bf4962dd4fe36f2",
+      "required": true
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "a3bfd552c238249430c1d39f04f7b0746914e26aa6e4653ce3155426f482b24f",
+      "required": true
+    },
+    {
+      "path": "pages/example.page.ts",
+      "sha256": "9d3e3c51588740b5180d6c578ef4b33cae9eea871f56c98f6fcb6ff9a5521302",
+      "required": true
+    },
+    {
+      "path": "playwright.config.ts",
+      "sha256": "5ecb6c8927c843d6cc7c7d1f02312281991cb6e19ea1b70152700e17c6cfa5d5",
+      "required": true
+    },
+    {
+      "path": "README.md",
+      "sha256": "73b010e02e6fa42756df2e5231f28be789b6d4de878f4bba24e357b86ca8a0db",
+      "required": true
+    },
+    {
+      "path": "reports/.gitkeep",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "required": true
+    },
+    {
+      "path": "tests/example.spec.ts",
+      "sha256": "594e32a33c5759846343476d956ddb7b43ab5f6f5b76c40096d643273b721b07",
+      "required": true
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "83570b39e9a8865e389bf56f8ca8a4a33376464cbab8c04411844e4e4c62cc3a",
+      "required": true
+    },
+    {
+      "path": "utils/.gitkeep",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "required": true
+    }
+  ],
+  "integrity": {
+    "algorithm": "sha256",
+    "value": "94378e5e4435dfcfec34a93ff0d95cf6f0c97486e2f5635215a1d0f0fc377fa1"
+  }
+}

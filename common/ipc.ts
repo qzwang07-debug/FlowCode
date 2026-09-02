@@ -1,7 +1,17 @@
+import { z } from "zod";
+
 import type { Analysis, AnalysisFeedback, AnalysisStep, Confidence } from "./analysis";
 import type { AutomationPlan, BuiltAutomation } from "./automation";
 import type { MicrophoneDevice } from "./microphone";
 import type { NarrationLanguage } from "./narration";
+import {
+  FlowProjectSchema,
+  ProjectIdSchema,
+  ProjectKindSchema,
+  ProjectListItemSchema,
+  type FlowProject,
+  type ProjectListItem,
+} from "./project";
 import type { ScreenSource } from "./screen";
 import type { SensitiveReport } from "./sensitive";
 import type {
@@ -19,6 +29,60 @@ export type {
   SensitiveSeverity,
   SensitiveSource,
 } from "./sensitive";
+
+/* --- Project Studio ------------------------------------------------------ */
+
+export const ProjectLocationRequestSchema = z
+  .object({
+    name: FlowProjectSchema.shape.name,
+  })
+  .strict();
+export type ProjectLocationRequest = z.infer<typeof ProjectLocationRequestSchema>;
+
+export const ProjectLocationSelectionSchema = z
+  .object({
+    token: z.uuid(),
+    targetPath: z.string().min(1),
+  })
+  .strict();
+export type ProjectLocationSelection = z.infer<typeof ProjectLocationSelectionSchema>;
+
+export const ProjectCreateRequestSchema = z
+  .object({
+    name: FlowProjectSchema.shape.name,
+    kind: ProjectKindSchema,
+    locationToken: z.uuid(),
+  })
+  .strict();
+export type ProjectCreateRequest = z.infer<typeof ProjectCreateRequestSchema>;
+
+export const ProjectOpenRequestSchema = z
+  .object({
+    projectId: ProjectIdSchema,
+  })
+  .strict();
+export type ProjectOpenRequest = z.infer<typeof ProjectOpenRequestSchema>;
+
+export const ProjectListResultSchema = z.discriminatedUnion("ok", [
+  z.object({ ok: z.literal(true), projects: z.array(ProjectListItemSchema) }).strict(),
+  z.object({ ok: z.literal(false), error: z.string() }).strict(),
+]);
+export type ProjectListResult = z.infer<typeof ProjectListResultSchema>;
+
+export const ProjectLocationResultSchema = z.union([
+  z.object({ ok: z.literal(true), canceled: z.literal(true) }).strict(),
+  z.object({ ok: z.literal(true), selection: ProjectLocationSelectionSchema }).strict(),
+  z.object({ ok: z.literal(false), error: z.string() }).strict(),
+]);
+export type ProjectLocationResult = z.infer<typeof ProjectLocationResultSchema>;
+
+export const ProjectActionResultSchema = z.discriminatedUnion("ok", [
+  z.object({ ok: z.literal(true), project: FlowProjectSchema }).strict(),
+  z.object({ ok: z.literal(false), error: z.string() }).strict(),
+]);
+export type ProjectActionResult = z.infer<typeof ProjectActionResultSchema>;
+
+export type { FlowProject, ProjectListItem };
 
 /** The last completed session — the one that can be analyzed. */
 export interface LastSession {
@@ -460,6 +524,10 @@ export const IPC = {
   listSessions: "sessions:list",
   deleteSession: "sessions:delete",
   exportDebugBundle: "sessions:export-debug",
+  listProjects: "project:list",
+  selectProjectLocation: "project:select-location",
+  createProject: "project:create",
+  openProject: "project:open",
   buildSkill: "skill:build",
   createSkill: "skill:create",
   getSkill: "skill:get",
@@ -474,6 +542,8 @@ export const IPC = {
   automationProgress: "automation:progress",
   openLibrary: "ui:open-library",
   closeLibrary: "ui:close-library",
+  openProjectStudio: "ui:open-project-studio",
+  closeProjectStudio: "ui:close-project-studio",
   recordingControlsExpanded: "ui:recording-controls-expanded",
   fitRecorderHeight: "ui:fit-recorder-height",
 } as const;
@@ -553,6 +623,14 @@ export interface SkillRecorderApi {
    * contains private capture data; the renderer warns before calling this.
    */
   exportDebugBundle(sessionId: string): Promise<DebugBundleResult>;
+  /** List registered FlowCode projects, including unavailable entries. */
+  listProjects(): Promise<ProjectListResult>;
+  /** Ask the native directory picker for a parent and receive a short-lived capability. */
+  selectProjectLocation(input: ProjectLocationRequest): Promise<ProjectLocationResult>;
+  /** Create a project at the location represented by a native-picker capability. */
+  createProject(input: ProjectCreateRequest): Promise<ProjectActionResult>;
+  /** Load and validate one registered project by id; renderer paths are never accepted. */
+  openProject(input: ProjectOpenRequest): Promise<ProjectActionResult>;
   /**
    * Propose (or refine) a skill from a recording's analysis. Pass `feedback` to
    * revise the current plan in the same multi-turn conversation.
@@ -593,6 +671,10 @@ export interface SkillRecorderApi {
   openLibrary(): Promise<void>;
   /** Close the Sessions library window from within it. */
   closeLibrary(): Promise<void>;
+  /** Open (and focus) the Project Studio window. */
+  openProjectStudio(): Promise<void>;
+  /** Close Project Studio from within its own renderer. */
+  closeProjectStudio(): Promise<void>;
   /** Resize the recording-controls window while an overlay panel is visible. */
   setRecordingControlsExpanded(expanded: boolean): Promise<void>;
   /** Fit the compact recorder window to its rendered content height (fire-and-forget)

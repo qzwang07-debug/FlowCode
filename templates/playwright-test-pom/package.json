@@ -1,0 +1,33 @@
+{
+  "name": "flowcode-playwright-test-pom",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.19.0 <25",
+    "npm": ">=11.17.0"
+  },
+  "packageManager": "npm@11.17.0",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "report": "playwright show-report reports/html",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@babel/core": "8.0.1",
+    "@babel/eslint-parser": "8.0.1",
+    "@babel/plugin-syntax-typescript": "8.0.3",
+    "@playwright/test": "1.62.1",
+    "@types/node": "24.13.3",
+    "eslint": "10.9.1",
+    "prettier": "3.9.6",
+    "typescript": "7.0.2"
+  },
+  "allowScripts": {
+    "fsevents@2.3.2": false
+  }
+}
