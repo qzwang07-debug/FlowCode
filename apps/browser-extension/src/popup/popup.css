@@ -1,0 +1,100 @@
+:root {
+  color: #18231f;
+  background: #f5f7f2;
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+body {
+  width: 320px;
+  margin: 0;
+}
+
+main {
+  padding: 18px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.mark {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 10px;
+  color: white;
+  background: #126447;
+  font-weight: 700;
+}
+
+h1,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 17px;
+}
+
+header p,
+.description,
+.message {
+  color: #52625b;
+  font-size: 12px;
+}
+
+.status {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0;
+  padding: 12px;
+  border: 1px solid #d5ddd7;
+  border-radius: 10px;
+  background: white;
+}
+
+.status div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.status strong {
+  color: #275844;
+  text-align: right;
+}
+
+.description {
+  line-height: 1.45;
+}
+
+button {
+  width: 100%;
+  margin-top: 14px;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 8px;
+  color: white;
+  background: #126447;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.message {
+  min-height: 17px;
+  margin-top: 9px;
+}
+
+.message.error {
+  color: #9d2525;
+}

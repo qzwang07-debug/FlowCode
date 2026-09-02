@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FlowCode browser capture</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <span class="mark" aria-hidden="true">F</span>
+        <div>
+          <h1>FlowCode</h1>
+          <p id="browser-name">Browser capture</p>
+        </div>
+      </header>
+      <section class="status" aria-live="polite">
+        <div>
+          <span>Desktop</span><strong id="desktop-status">Checking…</strong>
+        </div>
+        <div><span>Capture</span><strong id="capture-status">Idle</strong></div>
+        <div>
+          <span>This site</span><strong id="site-status">Checking…</strong>
+        </div>
+      </section>
+      <p id="site-description" class="description">
+        FlowCode only reads pages that you approve. Password and payment fields
+        are never saved.
+      </p>
+      <button id="allow-site" type="button" disabled>Allow this site</button>
+      <p id="message" class="message" role="status"></p>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>
