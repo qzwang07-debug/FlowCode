@@ -1,0 +1,5 @@
+node_modules/
+runs/
+test-results/
+playwright-report/
+.flowcode/runs/

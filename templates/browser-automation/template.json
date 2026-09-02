@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "id": "browser-automation",
+  "version": "1.0.0",
+  "kind": "browser-automation",
+  "name": "Browser automation",
+  "description": "A parameterized TypeScript Playwright workflow with a CLI and smoke test.",
+  "files": [
+    {
+      "path": ".env.example",
+      "sha256": "7329338a5834a770ebc8815da964b932ecc920aa7b1f9e8a6b20928e8972a028",
+      "required": true
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "89668efefb157187e7430a14bdc3efb2209015e19a0e305b35be0ff0c21bdf6a",
+      "required": true
+    },
+    {
+      "path": ".prettierignore",
+      "sha256": "c56f7fd63adacbd5d8056945245120a24d86e58c53f7b4c3481b6e5a333c4cf8",
+      "required": true
+    },
+    {
+      "path": ".prettierrc.json",
+      "sha256": "1ed88d3b99eced8dc3b6f58f26645466dd1ceaca6c5a9b818531c941ac28e55b",
+      "required": true
+    },
+    {
+      "path": "eslint.config.js",
+      "sha256": "c7b695c255b284f2f74f5347d09924b88b3d3e054b7dfebb74c83ae20bb9e34f",
+      "required": true
+    },
+    {
+      "path": "package.json",
+      "sha256": "66290e5a2623658af0b4c55b874ad6fca931bb4eda4b5c707373aea6f6d0c9ff",
+      "required": true
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "a4d14d029479fab0121350ce1777c963dd5471e41c56fd7877b609182b290d86",
+      "required": true
+    },
+    {
+      "path": "playwright.config.ts",
+      "sha256": "276683e2744676b14d406a02e601ca4a5bd6cf33ff8db31cc09c3e12c14c22e2",
+      "required": true
+    },
+    {
+      "path": "README.md",
+      "sha256": "444c076623041974e3762ea61ab2ee154364654b284e1e8d82fc5a9083e5501f",
+      "required": true
+    },
+    {
+      "path": "runs/.gitkeep",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "required": true
+    },
+    {
+      "path": "src/cli/index.ts",
+      "sha256": "151136f36ae1ac2a9dd26feb3d298aa6ed1d58c429fb393f7343ad9fa5ebb934",
+      "required": true
+    },
+    {
+      "path": "src/config/env.ts",
+      "sha256": "60d067e003af2a24cef6192b3604fa54ca6080fe15a2efa4b49ef0ac119606d5",
+      "required": true
+    },
+    {
+      "path": "src/fixtures/.gitkeep",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "required": true
+    },
+    {
+      "path": "src/pages/example.page.ts",
+      "sha256": "6e9a7c7d7c80688692753b714b6860ba705a3a1e46ffcd31fab1178dbf654da0",
+      "required": true
+    },
+    {
+      "path": "src/utils/log.ts",
+      "sha256": "ed33e9d5153b588645718ff117a7397a8a598299796568c804bb3ce731ad794b",
+      "required": true
+    },
+    {
+      "path": "src/workflows/example.workflow.ts",
+      "sha256": "74fcab8797bf18b6f70d506ba858ca802343a9f06ee9c95aa8b3ffa163c18368",
+      "required": true
+    },
+    {
+      "path": "tests/smoke/example.spec.ts",
+      "sha256": "a9dda760226b558a81144b78b7294d2952de03b5d66f7038203a07508da216e7",
+      "required": true
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "69627646870ef14c5da985d240ccd6d06629995a1f86c79d8dbd80b990131578",
+      "required": true
+    }
+  ],
+  "integrity": {
+    "algorithm": "sha256",
+    "value": "141189b5280a5bbd03e586e152a186335aab5bc8478506282e63490e1c32ca0c"
+  }
+}

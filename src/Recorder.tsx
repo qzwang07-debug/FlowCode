@@ -311,6 +311,10 @@ export function Recorder() {
     void window.skillRecorder.openLibrary();
   }, []);
 
+  const openProjectStudio = useCallback(() => {
+    void window.skillRecorder.openProjectStudio();
+  }, []);
+
   const downloadNarrationModel = useCallback(async () => {
     const res = await window.skillRecorder.downloadNarrationModel();
     if (!res.ok) window.alert(res.error ?? "Could not download the voice transcription model.");
@@ -612,6 +616,40 @@ export function Recorder() {
           <span className="privacy-note-badge is-off">Protection off</span>
         ) : null}
         <span className="privacy-note-chevron" aria-hidden>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M6 4l4 4-4 4"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+      </button>
+
+      <button
+        className="sessions-open"
+        onClick={openProjectStudio}
+        disabled={recording || transitioning}
+        aria-label="Open Project Studio"
+      >
+        <span className="sessions-open-icon" aria-hidden>
+          <svg width="19" height="19" viewBox="0 0 20 20" fill="none">
+            <path
+              d="M3 5.5h5l1.5 1.7H17v8.3H3v-10Z"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinejoin="round"
+            />
+            <path d="M3 8h14" stroke="currentColor" strokeWidth="1.4" />
+          </svg>
+        </span>
+        <span className="sessions-open-text">
+          <span className="sessions-open-label">Project Studio</span>
+          <span className="sessions-open-sub">Create or open a Playwright project</span>
+        </span>
+        <span className="sessions-open-chevron" aria-hidden>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path
               d="M6 4l4 4-4 4"

@@ -1,0 +1,358 @@
+body[data-route="projects"],
+body[data-route="projects"] #root {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.project-studio-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  background: var(--deck);
+}
+
+.project-studio-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 20px 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.project-studio-header h1,
+.project-studio-content h2 {
+  margin: 2px 0 0;
+  letter-spacing: -0.025em;
+}
+
+.project-studio-header h1 {
+  font-size: 24px;
+}
+
+.project-studio-kicker {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brand-ink);
+}
+
+.project-studio-header-actions,
+.project-studio-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.project-studio-primary,
+.project-studio-quiet {
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.project-studio-primary {
+  color: var(--brand-fg);
+  background: var(--brand);
+}
+
+.project-studio-primary:not(:disabled):hover {
+  background: var(--brand-hover);
+}
+
+.project-studio-quiet {
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+
+.project-studio-quiet:not(:disabled):hover {
+  border-color: var(--line-strong);
+}
+
+.project-studio-workspace {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+
+.project-studio-sidebar {
+  overflow: auto;
+  padding: 18px 14px;
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+}
+
+.project-studio-sidebar-heading {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 8px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.project-studio-projects {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.project-studio-project {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  width: 100%;
+  padding: 11px 12px;
+  text-align: left;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+.project-studio-project:hover,
+.project-studio-project.selected {
+  background: var(--surface-2);
+  border-color: var(--line);
+}
+
+.project-studio-project-name {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-studio-project-meta,
+.project-studio-project-warning {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.project-studio-project-warning {
+  color: var(--brand-ink);
+}
+
+.project-studio-empty {
+  margin: 8px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.project-studio-content {
+  min-width: 0;
+  overflow: auto;
+  padding: 42px clamp(28px, 6vw, 76px);
+}
+
+.project-studio-welcome,
+.project-studio-overview,
+.project-studio-wizard {
+  max-width: 760px;
+}
+
+.project-studio-content h2 {
+  margin-top: 8px;
+  font-size: 30px;
+}
+
+.project-studio-welcome p {
+  max-width: 620px;
+  margin: 14px 0 24px;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+.project-studio-path {
+  display: block;
+  overflow-wrap: anywhere;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--muted);
+  user-select: text;
+}
+
+.project-studio-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 28px 0;
+}
+
+.project-studio-facts div {
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.project-studio-facts dt,
+.project-studio-location-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.project-studio-facts dd {
+  margin: 5px 0 0;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.project-studio-boundary {
+  padding: 13px 15px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--muted);
+  background: rgba(var(--brand-rgb), 0.06);
+  border: 1px solid rgba(var(--brand-rgb), 0.2);
+  border-radius: 10px;
+}
+
+.project-studio-wizard {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.project-studio-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.project-studio-field input {
+  width: 100%;
+  padding: 12px 13px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  outline: none;
+}
+
+.project-studio-field input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.1);
+}
+
+.project-studio-kind-fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.project-studio-kind-fieldset legend {
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.project-studio-kind-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.project-studio-kind {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 5px 9px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.project-studio-kind.selected {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px rgba(var(--brand-rgb), 0.08);
+}
+
+.project-studio-kind input {
+  margin: 2px 0 0;
+  accent-color: var(--brand);
+}
+
+.project-studio-kind strong {
+  font-size: 13px;
+}
+
+.project-studio-kind span {
+  grid-column: 2;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.project-studio-location {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.project-studio-location > div {
+  min-width: 0;
+}
+
+.project-studio-location-label {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.project-studio-error {
+  margin-bottom: 18px;
+  padding: 11px 13px;
+  font-size: 12px;
+  color: var(--brand-ink);
+  background: rgba(var(--brand-rgb), 0.07);
+  border: 1px solid rgba(var(--brand-rgb), 0.28);
+  border-radius: 9px;
+}
+
+.project-studio-wizard .project-studio-error {
+  margin: -8px 0 0;
+}
+
+.project-studio-form-actions {
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+@media (max-width: 920px) {
+  .project-studio-workspace {
+    grid-template-columns: 240px minmax(0, 1fr);
+  }
+
+  .project-studio-kind-grid,
+  .project-studio-facts {
+    grid-template-columns: 1fr;
+  }
+}
