@@ -59,6 +59,18 @@
   box-sizing: border-box;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 body {
   margin: 0;
   font-family: var(--sans);
@@ -517,7 +529,7 @@ button:focus-visible,
 
 .narrate-sub {
   font-size: 11px;
-  color: var(--muted);
+  color: hsl(0, 0%, 39%);
   line-height: 1.25;
 }
 
@@ -1371,7 +1383,7 @@ button:focus-visible,
 
 .sessions-open-sub {
   font-size: 11.5px;
-  color: var(--muted);
+  color: hsl(0, 0%, 39%);
   line-height: 1.25;
 }
 
@@ -1425,7 +1437,7 @@ button:focus-visible,
 }
 
 .sessions-open-sub.is-new {
-  color: var(--rec);
+  color: var(--brand-ink);
   font-weight: 600;
 }
 
@@ -1451,7 +1463,7 @@ button:focus-visible,
 .row-note {
   font-family: var(--mono);
   font-size: 11px;
-  color: var(--faint);
+  color: hsl(0, 0%, 39%);
 }
 
 .badge {
@@ -1500,7 +1512,7 @@ button:focus-visible,
 .hint {
   margin: 0;
   font-size: 11px;
-  color: var(--faint);
+  color: hsl(0, 0%, 39%);
   text-align: center;
   font-family: var(--mono);
   letter-spacing: 0.03em;

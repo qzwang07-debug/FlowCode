@@ -8,6 +8,10 @@ import type {
   ScreenSettingsStatus,
   SensitiveModelStatus,
 } from "../common/ipc";
+import type {
+  BrowserCaptureStatus,
+  BrowserPlatformStatus,
+} from "../common/browser";
 import {
   DEFAULT_NARRATION_LANGUAGE,
   isNarrationLanguage,
@@ -48,6 +52,8 @@ function measureHudHeight(hud: HTMLElement): number {
 export function Recorder() {
   const [status, setStatus] = useState<RecorderStatus | null>(null);
   const [doctor, setDoctor] = useState<DoctorReport | null>(null);
+  const [browserCapture, setBrowserCapture] =
+    useState<BrowserCaptureStatus | null>(null);
   const [narrationStatus, setNarrationStatus] = useState<NarrationStatus | null>(null);
   const [microphoneSettings, setMicrophoneSettings] =
     useState<MicrophoneSettingsStatus | null>(null);
@@ -86,12 +92,15 @@ export function Recorder() {
   useEffect(() => {
     void window.skillRecorder.status().then(applyRecorderStatus);
     void window.skillRecorder.doctor().then(setDoctor);
+    void window.skillRecorder.browserCaptureStatus().then(setBrowserCapture);
     void window.skillRecorder.narrationStatus().then(setNarrationStatus);
     void window.skillRecorder.microphoneSettings().then(setMicrophoneSettings);
     void window.skillRecorder.screenSettings().then(setScreenSettings);
     void window.skillRecorder.sensitiveModelStatus().then(setSensitive);
     void refreshCount();
     const offRecorder = window.skillRecorder.onStatusChanged(applyRecorderStatus);
+    const offBrowser =
+      window.skillRecorder.onBrowserCaptureStatusChanged(setBrowserCapture);
     const offNarration = window.skillRecorder.onNarrationStatusChanged(setNarrationStatus);
     const offMicrophones =
       window.skillRecorder.onMicrophoneSettingsChanged(setMicrophoneSettings);
@@ -100,6 +109,7 @@ export function Recorder() {
     const offSensitive = window.skillRecorder.onSensitiveModelStatusChanged(setSensitive);
     return () => {
       offRecorder();
+      offBrowser();
       offNarration();
       offMicrophones();
       offScreens();
@@ -339,7 +349,8 @@ export function Recorder() {
   }, []);
 
   return (
-    <div className="hud" ref={hudRef}>
+    <main className="hud" ref={hudRef}>
+      <h1 className="sr-only">FlowCode recorder</h1>
       <div className="transport">
         <button
           className={`record ${recording ? "on" : ""}`}
@@ -724,12 +735,18 @@ export function Recorder() {
       </button>
 
       {doctor && (
-        <div className="doctor">
+        <section className="doctor" aria-label="Environment status">
           <Row
             label="GitHub Copilot"
             status={doctor.copilotCli.ok ? "good" : "bad"}
             note={doctor.copilotCli.ok ? "found" : "missing"}
           />
+          {browserCapture && (
+            <>
+              <BrowserCaptureRow label="Chrome capture" status={browserCapture.chrome} />
+              <BrowserCaptureRow label="Edge capture" status={browserCapture.edge} />
+            </>
+          )}
           {narrate && narrationStatus && (
             <VoiceModelRow
               status={narrationStatus}
@@ -744,7 +761,7 @@ export function Recorder() {
               onDownload={downloadSensitiveModels}
             />
           )}
-        </div>
+        </section>
       )}
 
       <p className="hint">{TOGGLE_SHORTCUT} toggles from anywhere</p>
@@ -767,11 +784,45 @@ export function Recorder() {
           onDownload={downloadSensitiveModels}
         />
       )}
-    </div>
+    </main>
   );
 }
 
 type RowStatus = "good" | "warn" | "bad";
+
+function BrowserCaptureRow({
+  label,
+  status,
+}: {
+  label: string;
+  status: BrowserPlatformStatus;
+}) {
+  if (!status.hostRegistered) {
+    return <Row label={label} status="bad" note="native host not registered" />;
+  }
+  if (status.connectedSources === 0) {
+    return <Row label={label} status="warn" note="extension not connected" />;
+  }
+  if (status.droppedEvents > 0) {
+    return (
+      <Row
+        label={label}
+        status="warn"
+        note={`${status.droppedEvents} dropped · ${status.grantedOriginCount} sites allowed`}
+      />
+    );
+  }
+  if (status.grantedOriginCount === 0) {
+    return <Row label={label} status="warn" note="connected · no sites allowed" />;
+  }
+  return (
+    <Row
+      label={label}
+      status="good"
+      note={`${status.connectedSources} connected · ${status.grantedOriginCount} sites allowed`}
+    />
+  );
+}
 
 function Row({
   label,
@@ -787,7 +838,7 @@ function Row({
   const symbol = status === "good" ? "✓" : status === "warn" ? "!" : "✕";
   return (
     <div className="row">
-      <span className={`badge ${status}`}>{symbol}</span>
+      <span className={`badge ${status}`} aria-hidden>{symbol}</span>
       <span className="row-label">{label}</span>
       <span className="row-note">{note}</span>
       {action && (

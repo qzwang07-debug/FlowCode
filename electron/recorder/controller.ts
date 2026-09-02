@@ -66,6 +66,16 @@ export interface AudioCaptureEnded {
   error: string | null;
 }
 
+/** Standard browser capture sidecar. It owns browser-specific files and Flush. */
+export interface SessionBrowserCapture {
+  startSession(
+    sessionId: string,
+    sessionDir: string,
+    startedAt: number,
+  ): Promise<void>;
+  stopSession(sessionId: string): Promise<unknown>;
+}
+
 export interface RecorderDeps {
   /** Resolves the capture config in effect for the next session. */
   resolveConfig: () => CaptureConfig;
@@ -77,6 +87,8 @@ export interface RecorderDeps {
   createAudioRecorder?: (
     onCaptureEnded: (event: AudioCaptureEnded) => void,
   ) => SessionAudioRecorder;
+  /** Optional Chrome/Edge semantic recorder; failures never stop desktop capture. */
+  browserCapture?: SessionBrowserCapture;
   /** Permanently removes a finalized session when the user discards it. */
   deleteSession?: (sessionId: string) => Promise<void>;
   /** Optional best-effort post-processing (frames + correlation) after save. */
@@ -98,6 +110,7 @@ export class RecorderController {
   private activeCollectors: readonly Collector[] = [];
   private video: SessionVideoRecorder | null = null;
   private audio: SessionAudioRecorder | null = null;
+  private browserSessionId: string | null = null;
   private transition: RecorderStatus["transition"] = "none";
   private narrationLanguage = DEFAULT_NARRATION_LANGUAGE;
   private microphone: RecorderStatus["microphone"] = {
@@ -326,6 +339,21 @@ export class RecorderController {
       source: "recorder",
       payload: { platform: store.meta.platform },
     });
+    if (this.deps.browserCapture) {
+      try {
+        await this.deps.browserCapture.startSession(
+          store.meta.id,
+          store.dir,
+          store.meta.startedAt,
+        );
+        this.browserSessionId = store.meta.id;
+      } catch (error) {
+        log.warn(
+          "browser capture start failed:",
+          error instanceof Error ? error.message : error,
+        );
+      }
+    }
     log.info("Recording started:", store.meta.id, "->", store.dir);
     this.emit();
 
@@ -394,6 +422,7 @@ export class RecorderController {
     } catch (error) {
       log.warn("collector rollback failed:", error instanceof Error ? error.message : error);
     }
+    await this.stopBrowserCapture(store.meta.id);
     if (this.video) {
       try {
         await this.video.stop();
@@ -506,6 +535,9 @@ export class RecorderController {
     } catch (error) {
       log.warn("collector stop failed:", error instanceof Error ? error.message : error);
     }
+    // Ask browser sources to stop immediately, then overlap their bounded Flush
+    // wait with audio/video finalization below.
+    const browserStop = this.stopBrowserCapture(store.meta.id);
     if (this.audio) {
       try {
         await this.audio.disable();
@@ -533,6 +565,8 @@ export class RecorderController {
       }
       this.audio = null;
     }
+
+    await browserStop;
 
     this.bus.publish({ type: EventType.SessionStop, source: "recorder", payload: {} });
     this.bus.detach();
@@ -633,6 +667,21 @@ export class RecorderController {
     const error = event.error ?? "The microphone stopped unexpectedly.";
     this.microphone = { state: "error", error, activeDevice: null };
     this.emit();
+  }
+
+  private async stopBrowserCapture(sessionId: string): Promise<void> {
+    if (!this.deps.browserCapture || this.browserSessionId !== sessionId) {
+      return;
+    }
+    this.browserSessionId = null;
+    try {
+      await this.deps.browserCapture.stopSession(sessionId);
+    } catch (error) {
+      log.warn(
+        "browser capture stop failed:",
+        error instanceof Error ? error.message : error,
+      );
+    }
   }
 
   private enqueue<T>(work: () => Promise<T>): Promise<T> {

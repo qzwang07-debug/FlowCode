@@ -25,6 +25,7 @@ import type {
   SkillPlacement,
   SkillPlanResult,
 } from "../common/ipc";
+import type { BrowserCaptureStatus } from "../common/browser";
 import { IPC } from "../common/ipc";
 import type { AutomationPlan } from "../common/automation";
 import type { NarrationLanguage } from "../common/narration";
@@ -65,6 +66,7 @@ export function registerIpc(
   screens: ScreenSourceService,
   sensitiveModels: SensitiveModelManager,
   isRecordingStartPending: () => boolean,
+  browserCaptureStatus: () => BrowserCaptureStatus,
 ): void {
   ipcMain.handle(IPC.stop, () => recorder.stop());
   ipcMain.handle(IPC.discard, () => recorder.discard());
@@ -150,7 +152,8 @@ export function registerIpc(
   );
   ipcMain.handle(IPC.status, () => recorder.status());
   ipcMain.handle(IPC.marker, (_event, note: string) => recorder.marker(note));
-  ipcMain.handle(IPC.doctor, () => runDoctor());
+  ipcMain.handle(IPC.doctor, () => runDoctor(browserCaptureStatus()));
+  ipcMain.handle(IPC.browserCaptureStatus, () => browserCaptureStatus());
   ipcMain.handle(IPC.copilotSignIn, () => openCopilotSignIn());
   ipcMain.handle(IPC.narrationStatus, () => narration.status());
   ipcMain.handle(IPC.narrationDownload, () => narration.downloadModel());
