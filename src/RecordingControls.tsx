@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import type {
   MicrophoneSettingsStatus,
@@ -17,6 +17,10 @@ export function RecordingControls() {
   const [elapsed, setElapsed] = useState(0);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [showMicrophoneMenu, setShowMicrophoneMenu] = useState(false);
+  const [showAssertionMarker, setShowAssertionMarker] = useState(false);
+  const [assertionNote, setAssertionNote] = useState("");
+  const [markerPending, setMarkerPending] = useState(false);
+  const [markerNotice, setMarkerNotice] = useState<string | null>(null);
   const [microphonePending, setMicrophonePending] = useState(false);
   const [devicePending, setDevicePending] = useState(false);
   const [finishPending, setFinishPending] = useState<"done" | "discard" | null>(null);
@@ -24,6 +28,8 @@ export function RecordingControls() {
   const keepRecordingRef = useRef<HTMLButtonElement>(null);
   const microphoneControlRef = useRef<HTMLDivElement>(null);
   const microphoneMenuRef = useRef<HTMLElement>(null);
+  const assertionMarkerRef = useRef<HTMLElement>(null);
+  const assertionInputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     void window.skillRecorder.status().then(setStatus);
@@ -54,16 +60,17 @@ export function RecordingControls() {
     if (recording) return;
     if (confirmDiscard) setConfirmDiscard(false);
     if (showMicrophoneMenu) setShowMicrophoneMenu(false);
+    if (showAssertionMarker) setShowAssertionMarker(false);
     setMicrophonePending(false);
     setDevicePending(false);
     setFinishPending(null);
-  }, [confirmDiscard, recording, showMicrophoneMenu]);
+  }, [confirmDiscard, recording, showAssertionMarker, showMicrophoneMenu]);
 
   useEffect(() => {
     void window.skillRecorder.setRecordingControlsExpanded(
-      confirmDiscard || showMicrophoneMenu,
+      confirmDiscard || showMicrophoneMenu || showAssertionMarker,
     );
-  }, [confirmDiscard, showMicrophoneMenu]);
+  }, [confirmDiscard, showMicrophoneMenu, showAssertionMarker]);
 
   useEffect(() => {
     if (!confirmDiscard) return;
@@ -101,6 +108,25 @@ export function RecordingControls() {
       window.removeEventListener("mousedown", onMouseDown);
     };
   }, [showMicrophoneMenu]);
+
+  useEffect(() => {
+    if (!showAssertionMarker) return;
+    assertionInputRef.current?.focus({ preventScroll: true });
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setShowAssertionMarker(false);
+    };
+    const onMouseDown = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node) || assertionMarkerRef.current?.contains(target)) return;
+      setShowAssertionMarker(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("mousedown", onMouseDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("mousedown", onMouseDown);
+    };
+  }, [showAssertionMarker]);
 
   useEffect(() => {
     if (
@@ -162,6 +188,27 @@ export function RecordingControls() {
     }
   }, []);
 
+  const addAssertionMarker = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const note = assertionNote.trim();
+      if (!note) return;
+      setMarkerPending(true);
+      setActionError(null);
+      const result = await window.skillRecorder.marker(note);
+      if (!result.ok) {
+        setActionError(result.error ?? "Could not add the assertion marker.");
+      } else {
+        setAssertionNote("");
+        setShowAssertionMarker(false);
+        setMarkerNotice("Assertion marker added");
+        setTimeout(() => setMarkerNotice(null), 2_500);
+      }
+      setMarkerPending(false);
+    },
+    [assertionNote],
+  );
+
   const transitionBusy = status?.transition !== "none";
   const microphoneBusy =
     microphonePending ||
@@ -205,7 +252,7 @@ export function RecordingControls() {
 
   return (
     <div
-      className={`recording-controls ${confirmDiscard ? "expanded" : ""}`}
+      className={`recording-controls ${confirmDiscard || showMicrophoneMenu || showAssertionMarker ? "expanded" : ""}`}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && confirmDiscard) setConfirmDiscard(false);
       }}
@@ -309,6 +356,40 @@ export function RecordingControls() {
         </section>
       )}
 
+      {showAssertionMarker && (
+        <section
+          ref={assertionMarkerRef}
+          className="recording-assertion-marker"
+          role="dialog"
+          aria-labelledby="recording-assertion-title"
+        >
+          <header>
+            <div>
+              <strong id="recording-assertion-title">Add expected result</strong>
+              <span>Describe what should be true at this moment.</span>
+            </div>
+          </header>
+          <form onSubmit={(event) => void addAssertionMarker(event)}>
+            <textarea
+              ref={assertionInputRef}
+              maxLength={2_000}
+              value={assertionNote}
+              placeholder="Example: The success banner should be visible"
+              aria-label="Expected result"
+              onChange={(event) => setAssertionNote(event.target.value)}
+            />
+            <div>
+              <button type="button" className="recording-keep" disabled={markerPending} onClick={() => setShowAssertionMarker(false)}>
+                Cancel
+              </button>
+              <button type="submit" className="recording-marker-save" disabled={markerPending || !assertionNote.trim()}>
+                {markerPending ? "Adding…" : "Add marker"}
+              </button>
+            </div>
+          </form>
+        </section>
+      )}
+
       <div className="recording-bar-wrap">
         <div className="recording-bar">
           <div className="recording-live" role="status" aria-label={`${captureLabel} ${formatMs(elapsed)}`}>
@@ -358,6 +439,7 @@ export function RecordingControls() {
               onClick={() => {
                 setActionError(null);
                 setConfirmDiscard(false);
+                setShowAssertionMarker(false);
                 setShowMicrophoneMenu((open) => !open);
               }}
             >
@@ -366,11 +448,26 @@ export function RecordingControls() {
           </div>
 
           <button
+            className="recording-assertion"
+            disabled={lifecycleBusy}
+            aria-expanded={showAssertionMarker}
+            onClick={() => {
+              setActionError(null);
+              setConfirmDiscard(false);
+              setShowMicrophoneMenu(false);
+              setShowAssertionMarker((open) => !open);
+            }}
+          >
+            Assert
+          </button>
+
+          <button
             className="recording-discard"
             disabled={lifecycleBusy}
             onClick={() => {
               setActionError(null);
               setShowMicrophoneMenu(false);
+              setShowAssertionMarker(false);
               setConfirmDiscard(true);
             }}
           >
@@ -384,7 +481,7 @@ export function RecordingControls() {
       </div>
 
       <span className="recording-controls-live" aria-live="polite">
-        {error ?? ""}
+        {error ?? markerNotice ?? ""}
       </span>
     </div>
   );
