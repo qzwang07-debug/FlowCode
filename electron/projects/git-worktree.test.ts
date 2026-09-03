@@ -5,6 +5,7 @@ import {
   mkdtemp,
   readFile,
   rm,
+  symlink,
   writeFile,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -205,6 +206,31 @@ test("accept refuses a project whose base HEAD advanced", async () => {
     assert.equal(
       await readFile(path.join(project.rootPath, "main-change.txt"), "utf8"),
       "main advanced\n",
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("managed worktrees accept a project root reached through an ancestor alias", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "flowcode-worktree-alias-"));
+  try {
+    const actualRoot = path.join(root, "actual");
+    const aliasRoot = path.join(root, "alias");
+    await mkdir(actualRoot);
+    await symlink(
+      actualRoot,
+      aliasRoot,
+      process.platform === "win32" ? "junction" : "dir",
+    );
+    const project = await repositoryProject(aliasRoot);
+    const service = serviceFor(root, project, ["worktree-aliased-root"]);
+
+    const worktree = await service.create(project.id, "Canonical root alias");
+    assert.notEqual(worktree.repositoryRoot, project.rootPath);
+    assert.equal(
+      (await service.rollback(project.id, worktree.id)).state,
+      "reverted",
     );
   } finally {
     await rm(root, { recursive: true, force: true });

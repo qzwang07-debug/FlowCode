@@ -474,7 +474,7 @@ export class GitWorktreeService {
   ): Promise<WorktreeRecord> {
     const project = await this.resolveProject(projectId);
     const record = await this.getRecord(project.id, worktreeId);
-    this.assertActiveAndManaged(project, record);
+    await this.assertActiveAndManaged(project, record);
     const main = await readGitRepositoryStatus(project.id, project.rootPath);
     if (main.dirty) {
       throw new Error(
@@ -535,7 +535,7 @@ export class GitWorktreeService {
   ): Promise<WorktreeRecord> {
     const project = await this.resolveProject(projectId);
     const record = await this.getRecord(project.id, worktreeId);
-    this.assertActiveAndManaged(project, record);
+    await this.assertActiveAndManaged(project, record);
     const rollingBack = await this.updateRecord({
       ...record,
       state: "rolling-back",
@@ -550,7 +550,7 @@ export class GitWorktreeService {
     record: WorktreeRecord,
     finalState: "reverted" | "cleaned" = "reverted",
   ): Promise<WorktreeRecord> {
-    this.assertManaged(project, record);
+    await this.assertManaged(project, record);
     try {
       await this.removeGitWorktree(project.rootPath, record, true);
       const completedAt = this.now();
@@ -767,20 +767,27 @@ export class GitWorktreeService {
     return target;
   }
 
-  private assertActiveAndManaged(
+  private async assertActiveAndManaged(
     project: FlowProject,
     record: WorktreeRecord,
-  ): void {
+  ): Promise<void> {
     if (record.state !== "active") {
       throw new Error(`Worktree "${record.id}" is not active.`);
     }
-    this.assertManaged(project, record);
+    await this.assertManaged(project, record);
   }
 
-  private assertManaged(project: FlowProject, record: WorktreeRecord): void {
+  private async assertManaged(
+    project: FlowProject,
+    record: WorktreeRecord,
+  ): Promise<void> {
+    const repositoryMatches = await samePath(
+      record.repositoryRoot,
+      project.rootPath,
+    );
     if (
       record.projectId !== project.id ||
-      pathKey(record.repositoryRoot) !== pathKey(project.rootPath) ||
+      !repositoryMatches ||
       pathKey(record.rootPath) !== pathKey(this.managedPath(record.id)) ||
       record.branch !== `flowcode/run/${record.id}`
     ) {
