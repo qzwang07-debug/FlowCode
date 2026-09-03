@@ -40,7 +40,23 @@ export const BlueprintVariableSchema = z
     defaultValue: JsonValueSchema.optional(),
     description: z.string().optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((variable, context) => {
+    if (variable.type === "secret" && !variable.sensitive) {
+      context.addIssue({
+        code: "custom",
+        path: ["sensitive"],
+        message: "Secret variables must remain sensitive.",
+      });
+    }
+    if (variable.sensitive && variable.defaultValue !== undefined) {
+      context.addIssue({
+        code: "custom",
+        path: ["defaultValue"],
+        message: "Sensitive variables cannot contain a default value.",
+      });
+    }
+  });
 export type BlueprintVariable = z.infer<typeof BlueprintVariableSchema>;
 
 export const BlueprintLocatorSchema = z

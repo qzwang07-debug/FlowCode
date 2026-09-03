@@ -9,11 +9,16 @@ export interface SessionMeta {
 }
 
 /**
- * A single captured event on the session timeline, as persisted to
- * `events.jsonl`. The typed `type` -> `payload` contract lives in events.ts;
- * this is the storage shape (payload widened to a record).
+ * Compatibility view used by the original bundle, correlation, sensitive scan,
+ * and describer code. New `events.jsonl` lines use FlowEvent; the reader migrates
+ * both generations into this shape without rewriting legacy source evidence.
  */
 export interface RecEvent {
+  /** Canonical Stage 4 identity when this record was normalized from a FlowEvent. */
+  eventId?: string;
+  sessionId?: string;
+  sourceId?: string;
+  sourceCategory?: "desktop" | "browser" | "cdp" | "user" | "system";
   seq: number; // monotonic per-session index (stable id for correlation)
   t: number; // ms since session start (monotonic-derived)
   epoch: number; // wall-clock epoch ms

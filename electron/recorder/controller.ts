@@ -19,7 +19,9 @@ import {
   isNarrationLanguage,
   type NarrationLanguage,
 } from "../../common/narration";
-import type { RecorderState, SessionMeta } from "../../common/types";
+import type { RecorderState } from "../../common/types";
+import { AssertionMarkerRequestSchema } from "../../common/evidence";
+import { createSessionMeta } from "../../common/session";
 import {
   SYSTEM_DEFAULT_MICROPHONE_ID,
   type MicrophoneDevice,
@@ -276,14 +278,22 @@ export class RecorderController {
     });
   }
 
-  // Marker capture is intentionally retained even though the "Add marker" HUD
-  // button was removed in favor of voice narration (see docs/future-features.md).
+  /** Persist a user-authored assertion marker in the canonical event stream. */
   marker(note: string): MarkerResult {
     if (!this.store || this.transition !== "none") {
       return { ok: false, error: "Not recording" };
     }
-    this.bus.publish({ type: EventType.Marker, source: "user", payload: { note } });
-    return { ok: true };
+    const parsed = AssertionMarkerRequestSchema.safeParse({ note });
+    if (!parsed.success) {
+      return { ok: false, error: "Enter an assertion between 1 and 2,000 characters." };
+    }
+    const markerId = `marker-${randomUUID()}`;
+    this.bus.publish({
+      type: EventType.AssertionMarker,
+      source: "user",
+      payload: { markerId, note: parsed.data.note },
+    });
+    return { ok: true, markerId };
   }
 
   /** Resolves when every saved session still being post-processed has finished. */
@@ -315,13 +325,14 @@ export class RecorderController {
 
     let store: SessionStore;
     try {
-      const meta: SessionMeta = {
+      const meta = createSessionMeta({
         id: makeSessionId(),
         startedAt: Date.now(),
         stoppedAt: null,
         platform: process.platform,
         appVersion: app.getVersion(),
-      };
+        ...(options?.sessionLink ? { link: options.sessionLink } : {}),
+      });
       store = new SessionStore(meta);
     } catch (error) {
       this.transition = "none";

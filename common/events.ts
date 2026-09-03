@@ -1,13 +1,13 @@
-// The formal event schema shared by producers (collectors) and consumers
-// (session store, timeline, describer). On disk each event is a `RecEvent`
-// (see types.ts); this module adds the typed `type` -> `payload` contract that
-// makes collectors and the correlation engine type-safe.
+// The typed producer contract shared by desktop collectors. Stage 4 sessions
+// persist the canonical FlowEvent envelope from evidence.ts; RecEvent remains an
+// in-memory compatibility view for the original bundle/describer pipeline.
 
 /** Canonical event type identifiers, grouped by domain. */
 export const EventType = {
   SessionStart: "session.start",
   SessionStop: "session.stop",
   Marker: "marker",
+  AssertionMarker: "assertion.marker",
   AppActivate: "app.activate",
   AppTitleChange: "app.title-change",
   ClipboardChange: "clipboard.change",
@@ -29,6 +29,7 @@ export type EventType = (typeof EventType)[keyof typeof EventType];
 export type SessionStartPayload = { platform: NodeJS.Platform };
 export type SessionStopPayload = Record<string, never>;
 export type MarkerPayload = { note: string };
+export type AssertionMarkerPayload = { markerId: string; note: string };
 
 export type WindowBounds = { x: number; y: number; width: number; height: number };
 
@@ -76,6 +77,7 @@ export interface EventPayloads {
   "session.start": SessionStartPayload;
   "session.stop": SessionStopPayload;
   marker: MarkerPayload;
+  "assertion.marker": AssertionMarkerPayload;
   "app.activate": AppActivatePayload;
   "app.title-change": AppTitleChangePayload;
   "clipboard.change": ClipboardChangePayload;
@@ -87,8 +89,8 @@ export interface EventPayloads {
 }
 
 /**
- * A not-yet-persisted event as produced by a collector. The session store
- * stamps it with `seq`, `t`, and `epoch` on append.
+ * A not-yet-persisted event as produced by a collector. The session store adds
+ * FlowEvent identity, source, sequence, wall-clock, and monotonic timestamps.
  */
 export type EventInput = {
   [K in EventType]: { type: K; source: string; payload: EventPayloads[K] };

@@ -66,6 +66,7 @@ const KNOWN_FIELD_SOURCES: Record<string, Record<string, SensitiveSource>> = {
   "terminal.command": { command: "command" },
   "clipboard.change": { textPreview: "clipboard" },
   marker: { note: "note" },
+  "assertion.marker": { note: "note" },
 };
 
 /** Pull every scannable string field from one event's payload, tagged with
@@ -77,12 +78,63 @@ function fieldsFromEvent(ev: RecEvent, startedAt: number | null): ScanField[] {
   const atMs = startedAt != null ? ev.epoch - startedAt : null;
   const known = KNOWN_FIELD_SOURCES[ev.type];
   const fields: ScanField[] = [];
-  for (const [key, value] of Object.entries(ev.payload)) {
+  const visit = (
+    value: unknown,
+    source: SensitiveSource,
+    seen: Set<object>,
+  ): void => {
     const text = str(value);
-    if (!text) continue;
-    fields.push({ text, source: known?.[key] ?? "other", atMs });
+    if (text) {
+      fields.push({ text, source, atMs });
+      return;
+    }
+    if (typeof value !== "object" || value === null || seen.has(value)) return;
+    seen.add(value);
+    if (Array.isArray(value)) {
+      for (const item of value) visit(item, source, seen);
+      return;
+    }
+    for (const nested of Object.values(value as Record<string, unknown>)) {
+      visit(nested, source, seen);
+    }
+  };
+  for (const [key, value] of Object.entries(ev.payload)) {
+    visit(value, known?.[key] ?? "other", new Set());
   }
   return fields;
+}
+
+function readBrowserEvents(dir: string): RecEvent[] {
+  const file = path.join(dir, "browser-events.jsonl");
+  if (!existsSync(file)) return [];
+  const events: RecEvent[] = [];
+  for (const line of readFileSync(file, "utf8").split(/\r?\n/)) {
+    if (!line.trim()) continue;
+    try {
+      const raw = JSON.parse(line) as Record<string, unknown>;
+      if (
+        typeof raw.seq !== "number" ||
+        typeof raw.epochMs !== "number" ||
+        typeof raw.type !== "string" ||
+        typeof raw.sourceId !== "string" ||
+        typeof raw.payload !== "object" ||
+        raw.payload === null
+      ) {
+        continue;
+      }
+      events.push({
+        seq: raw.seq,
+        t: 0,
+        epoch: raw.epochMs,
+        type: raw.type,
+        source: raw.sourceId,
+        payload: raw.payload as Record<string, unknown>,
+      });
+    } catch {
+      // Ignore a malformed or partial append-only line.
+    }
+  }
+  return events;
 }
 
 /** Every scannable text field of a recording, in timeline order. */
@@ -99,6 +151,9 @@ function collectFields(dir: string): ScanField[] {
     log.warn("could not read events for scan:", err instanceof Error ? err.message : err);
   }
   for (const ev of events) fields.push(...fieldsFromEvent(ev, startedAt));
+  for (const ev of readBrowserEvents(dir)) {
+    fields.push(...fieldsFromEvent(ev, startedAt));
+  }
 
   const narration = readJson<NarrationTranscript>(path.join(dir, NARRATION_FILE));
   if (narration && Array.isArray(narration.segments)) {
@@ -146,8 +201,10 @@ function findingKey(source: SensitiveSource, match: SensitiveMatch): string {
  * Note: this inspects text only. Secrets merely *visible* in screen frames are
  * handled separately by the frame OCR + blur seam in the describer's get_frames.
  */
-export async function scanSession(sessionId: string): Promise<ScanResult> {
-  const dir = sessionDir(sessionId); // throws on an unsafe id (traversal guard)
+export async function scanSessionDirectory(
+  dir: string,
+  sessionId: string,
+): Promise<ScanResult> {
   const fields = collectFields(dir);
 
   const byKey = new Map<string, SensitiveFinding>();
@@ -211,6 +268,26 @@ export async function scanSession(sessionId: string): Promise<ScanResult> {
     findings,
   };
   return { report, values: [...values] };
+}
+
+export async function scanSession(sessionId: string): Promise<ScanResult> {
+  const dir = sessionDir(sessionId); // throws on an unsafe id (traversal guard)
+  return scanSessionDirectory(dir, sessionId);
+}
+
+/** Scan user-authored review strings before they are persisted. */
+export async function scanSensitiveTexts(
+  texts: readonly string[],
+): Promise<{ values: string[]; counts: SensitiveReport["counts"] }> {
+  const values = new Set<string>();
+  const counts: SensitiveReport["counts"] = {};
+  for (const text of new Set(texts.filter((value) => value.trim()))) {
+    for (const match of await matchesFor(text)) {
+      if (match.value.length >= MIN_REDACT_LEN) values.add(match.value);
+      counts[match.category] = (counts[match.category] ?? 0) + 1;
+    }
+  }
+  return { values: [...values], counts };
 }
 
 /**

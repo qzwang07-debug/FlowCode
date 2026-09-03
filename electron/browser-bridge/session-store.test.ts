@@ -81,3 +81,26 @@ test("a session with no connected browser is finalized as degraded", async () =>
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("browser clock samples are append-only session evidence", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "flowcode-browser-clock-"));
+  try {
+    const store = await BrowserSessionStore.create("session-clock", 1_000, root);
+    await store.appendClockSample({
+      schemaVersion: 1,
+      sampleId: "clock-one",
+      sessionId: "session-clock",
+      browser: "chrome",
+      sourceId: "chrome-source",
+      nonce: "ping-one",
+      desktopSentEpochMs: 1_100,
+      desktopReceivedEpochMs: 1_120,
+      sourceEpochMs: 1_010,
+      sourceMonotonicMs: 510,
+    });
+    await store.finalize(2_000);
+    assert.match(await readFile(store.clockPath, "utf8"), /clock-one/);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

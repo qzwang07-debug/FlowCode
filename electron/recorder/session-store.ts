@@ -1,8 +1,11 @@
+import { randomUUID } from "node:crypto";
 import { createWriteStream, mkdirSync, writeFileSync, type WriteStream } from "node:fs";
 import path from "node:path";
 
 import { app } from "electron";
 
+import { FlowEventSchema, type FlowEventSource } from "../../common/evidence";
+import { createSessionMeta, type SessionMetaV2 } from "../../common/session";
 import type { RecEvent, SessionMeta } from "../../common/types";
 import { createLogger } from "../logger";
 
@@ -43,11 +46,11 @@ export function sessionDir(id: string): string {
 /**
  * Owns the on-disk artifacts for a single recording session:
  *   <sessionsRoot>/<id>/session.json      session metadata
- *   <sessionsRoot>/<id>/events.jsonl      append-only event stream
+ *   <sessionsRoot>/<id>/events.jsonl      append-only FlowEvent stream
  *   <sessionsRoot>/<id>/frames/           extracted keyframes (later milestones)
  */
 export class SessionStore {
-  readonly meta: SessionMeta;
+  readonly meta: SessionMetaV2;
   readonly dir: string;
   private readonly eventsStream: WriteStream;
   private readonly startMonotonic: number;
@@ -55,8 +58,11 @@ export class SessionStore {
   private count = 0;
   private streamError: Error | null = null;
 
-  constructor(meta: SessionMeta) {
-    this.meta = meta;
+  constructor(meta: SessionMeta | SessionMetaV2) {
+    this.meta =
+      "schemaVersion" in meta && meta.schemaVersion === 2
+        ? meta
+        : createSessionMeta(meta);
     this.dir = path.join(sessionsRoot(), meta.id);
     mkdirSync(path.join(this.dir, "frames"), { recursive: true });
     this.eventsStream = createWriteStream(path.join(this.dir, "events.jsonl"), { flags: "a" });
@@ -93,15 +99,44 @@ export class SessionStore {
   }
 
   append(type: string, source: string, payload: Record<string, unknown> = {}): RecEvent {
-    const ev: RecEvent = {
+    const nowMonotonic = performance.now();
+    const epochMs = Date.now();
+    const sourceCategory: FlowEventSource =
+      source === "user" || source === "ui"
+        ? "user"
+        : source === "recorder" || source === "system"
+          ? "system"
+          : "desktop";
+    const stored = FlowEventSchema.parse({
+      schemaVersion: 1,
+      eventId: `event-${randomUUID()}`,
+      sessionId: this.meta.id,
+      sourceId: source,
+      source: sourceCategory,
       seq: this.count,
-      t: performance.now() - this.startMonotonic,
-      epoch: Date.now(),
+      epochMs,
+      monotonicMs: performance.timeOrigin + nowMonotonic,
+      type,
+      payload,
+      ...(type === "clipboard.change" && typeof payload.textPreview === "string"
+        ? { privacyTags: ["clipboard-preview"] }
+        : type === "assertion.marker"
+          ? { privacyTags: ["user-authored"] }
+          : {}),
+    });
+    const ev: RecEvent = {
+      eventId: stored.eventId,
+      sessionId: stored.sessionId,
+      sourceId: stored.sourceId,
+      sourceCategory: stored.source,
+      seq: this.count,
+      t: nowMonotonic - this.startMonotonic,
+      epoch: epochMs,
       type,
       source,
       payload,
     };
-    this.eventsStream.write(JSON.stringify(ev) + "\n");
+    this.eventsStream.write(JSON.stringify(stored) + "\n");
     this.count++;
     return ev;
   }

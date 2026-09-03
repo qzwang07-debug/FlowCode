@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { AutomationBlueprintSchema } from "./blueprint";
+import { AutomationBlueprintSchema, BlueprintVariableSchema } from "./blueprint";
 
 test("AutomationBlueprint survives a JSON round-trip", () => {
   const blueprint = {
@@ -121,6 +121,26 @@ test("AutomationBlueprint rejects duplicate ids and unconfirmed AI assertions", 
         },
       ],
     }).success,
+    false,
+  );
+});
+
+test("secret Blueprint variables cannot be downgraded or contain defaults", () => {
+  const base = {
+    id: "password",
+    name: "Password",
+    type: "secret",
+    source: "environment",
+    required: true,
+    sensitive: true,
+  };
+  assert.equal(BlueprintVariableSchema.safeParse(base).success, true);
+  assert.equal(
+    BlueprintVariableSchema.safeParse({ ...base, sensitive: false }).success,
+    false,
+  );
+  assert.equal(
+    BlueprintVariableSchema.safeParse({ ...base, defaultValue: "secret" }).success,
     false,
   );
 });

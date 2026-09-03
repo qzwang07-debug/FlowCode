@@ -530,6 +530,7 @@ async function handleDesktopMessage(
         protocolVersion: BROWSER_BRIDGE_PROTOCOL_VERSION,
         nonce: message.nonce,
         epochMs: Date.now(),
+        monotonicMs: performance.timeOrigin + performance.now(),
       });
       break;
     case "bridge.error":
@@ -547,6 +548,20 @@ function createSemanticEvent(
   monotonicMs = performance.timeOrigin + performance.now(),
 ): BrowserSemanticEvent | null {
   if (captureState !== "recording" || !sessionId) return null;
+  const payloadRecord =
+    typeof payload === "object" && payload !== null
+      ? (payload as Record<string, unknown>)
+      : null;
+  const capturedValue =
+    typeof payloadRecord?.value === "object" && payloadRecord.value !== null
+      ? (payloadRecord.value as Record<string, unknown>)
+      : null;
+  const privacyTags =
+    type === "browser.fill" &&
+    capturedValue?.kind === "redacted" &&
+    typeof capturedValue.reason === "string"
+      ? [`redacted:${capturedValue.reason}`]
+      : undefined;
   const parsed = BrowserSemanticEventSchema.safeParse({
     schemaVersion: 1,
     eventId: `evt-${crypto.randomUUID()}`,
@@ -558,6 +573,7 @@ function createSemanticEvent(
     monotonicMs,
     type,
     payload,
+    ...(privacyTags ? { privacyTags } : {}),
   });
   if (!parsed.success) return null;
   nextSequence += 1;
