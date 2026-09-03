@@ -3,6 +3,11 @@ import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
 
 import { CAPTURE_SOURCES, FULL_CAPTURE } from "../common/config";
+import {
+  BROWSER_BRIDGE_PROTOCOL_VERSION,
+  BrowserCaptureStatusSchema,
+  type BrowserCaptureStatus,
+} from "../common/browser";
 import type {
   ActiveWindowInfo,
   BrowserUrlInfo,
@@ -67,8 +72,31 @@ function sourceSupport(key: string, browserUrl: BrowserUrlInfo): { supported: bo
   return { supported: true };
 }
 
+function unavailableBrowserCapture(): BrowserCaptureStatus {
+  const platform = (browser: "chrome" | "edge") => ({
+    browser,
+    hostRegistered: false,
+    connectedSources: 0,
+    grantedOriginCount: 0,
+    droppedEvents: 0,
+    lastSeenAt: null,
+    state: "idle" as const,
+    error: null,
+  });
+  return BrowserCaptureStatusSchema.parse({
+    protocolVersion: BROWSER_BRIDGE_PROTOCOL_VERSION,
+    activeSessionId: null,
+    receivedEvents: 0,
+    gaps: 0,
+    chrome: platform("chrome"),
+    edge: platform("edge"),
+  });
+}
+
 /** Environment readiness check surfaced in the UI and (later) a CLI `doctor` command. */
-export function runDoctor(): DoctorReport {
+export function runDoctor(
+  browserCapture: BrowserCaptureStatus = unavailableBrowserCapture(),
+): DoctorReport {
   const config = FULL_CAPTURE;
   const browserUrl = checkBrowserUrl();
 
@@ -82,6 +110,7 @@ export function runDoctor(): DoctorReport {
     copilotCli: checkCopilot(),
     activeWindow: checkActiveWindow(),
     browserUrl,
+    browserCapture: BrowserCaptureStatusSchema.parse(browserCapture),
     sessionsDir: sessionsRoot(),
     activeSources,
   };

@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "FlowCode Semantic Recorder for Edge",
+  "short_name": "FlowCode",
+  "version": "0.5.0",
+  "description": "Captures user-approved browser actions for a local FlowCode recording.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAm4sWIVpxFL+rRSA7ecZAbp6lIylAmtbhetZJgdZrDsB/w4tz8K5eF6p+If/WeJMWmVAIgVa5xf0kXTeXik1NyLJcu4NWuSLUh+T236+eJu7qUkWqkZCNBtHOwIVeuQtAFqppYUYGGGGU26pYbNSKVT8ow1DQGTnqCvnpvm91dhI11nlOvg520kb7P1ZNrGlxV0JmhOocAjMLg52O3ujqT5YwsBk0VxbK+r9JxG/VkajQUl/rtBmHFAeAjITVNlgeKeFjehDjO8WR030A8+L47GcheE0HjNeI6Fk7Y7Sgz+ZK8agcKrAI4vGqrXJsen8XKfwM73V3XnQ66yTKnWojzwIDAQAB",
+  "minimum_chrome_version": "114",
+  "incognito": "not_allowed",
+  "permissions": [
+    "downloads",
+    "nativeMessaging",
+    "scripting",
+    "storage",
+    "tabs",
+    "webNavigation"
+  ],
+  "optional_host_permissions": ["http://*/*", "https://*/*"],
+  "background": {
+    "service_worker": "service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "FlowCode browser capture",
+    "default_popup": "popup.html"
+  }
+}

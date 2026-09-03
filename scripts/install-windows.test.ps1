@@ -177,7 +177,8 @@ try {
     }
   } finally {
     if (-not $locker.HasExited) {
-      Stop-Process -Id $locker.Id -Force
+      # The helper may exit between HasExited and Stop-Process; cleanup is idempotent.
+      Stop-Process -Id $locker.Id -Force -ErrorAction SilentlyContinue
       $locker.WaitForExit()
     }
     $locker.Dispose()

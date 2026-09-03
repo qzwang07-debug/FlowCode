@@ -4,6 +4,7 @@ import { app, BrowserWindow, globalShortcut, ipcMain, Menu, screen } from "elect
 
 import { FULL_CAPTURE } from "../common/config";
 import { IPC, type RecorderStatus, type StartResult } from "../common/ipc";
+import { BrowserCaptureService } from "./browser-bridge/browser-capture";
 import { createCollectors } from "./collectors";
 import { installCrashGuards } from "./crash-guards";
 import { Describer } from "./describer/describer";
@@ -72,12 +73,22 @@ const microphones = new AudioRecorder((status) =>
 const screens = new ScreenSourceService((status) =>
   broadcast(IPC.screenSettingsChanged, status),
 );
+const browserBridgeRoot = process.env.FLOWCODE_BROWSER_BRIDGE_DIR
+  ? path.resolve(process.env.FLOWCODE_BROWSER_BRIDGE_DIR)
+  : process.platform === "win32" && process.env.LOCALAPPDATA
+    ? path.join(process.env.LOCALAPPDATA, "FlowCode", "browser-bridge")
+    : path.join(app.getPath("userData"), "browser-bridge");
+const browserCapture = new BrowserCaptureService({
+  dataDir: browserBridgeRoot,
+  onStatus: (status) => broadcast(IPC.browserCaptureStatusChanged, status),
+});
 const recorder = new RecorderController({
   resolveConfig: () => ({ ...FULL_CAPTURE }),
   buildCollectors: createCollectors,
   createVideoRecorder: () => new VideoRecorder(),
   createAudioRecorder: (onCaptureEnded) =>
     microphones.createSession(onCaptureEnded),
+  browserCapture,
   deleteSession,
   postProcess: async (dir) => {
     await processSession(dir);
@@ -274,6 +285,14 @@ app.whenReady().then(async () => {
       error instanceof Error ? error.message : error,
     );
   }
+  try {
+    await browserCapture.initialize();
+  } catch (error) {
+    log.warn(
+      "Browser bridge initialization failed:",
+      error instanceof Error ? error.message : error,
+    );
+  }
   registerIpc(
     recorder,
     describer,
@@ -284,6 +303,7 @@ app.whenReady().then(async () => {
     screens,
     sensitiveModels,
     () => recordingStartPending,
+    () => browserCapture.status(),
   );
   const templateRoot = app.isPackaged
     ? path.join(process.resourcesPath, "templates")
@@ -424,6 +444,7 @@ app.on("before-quit", (event) => {
     // stop() is serialized behind any start/mic/discard operation already in
     // flight, and is a harmless "Not recording" result when the app is idle.
     await Promise.all([recorder.stop(), projectRuns?.dispose()]);
+    await browserCapture.dispose();
     await recorder.whenProcessed();
   })()
     .catch((error) => {

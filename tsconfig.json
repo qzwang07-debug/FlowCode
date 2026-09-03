@@ -19,5 +19,5 @@
     "jsx": "react-jsx",
     "types": ["node"]
   },
-  "include": ["src", "common", "electron", "vite.config.ts"]
+  "include": ["src", "common", "electron", "apps/browser-extension", "vite.config.ts"]
 }

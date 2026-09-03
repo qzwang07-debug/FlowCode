@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import type { Analysis, AnalysisFeedback, AnalysisStep, Confidence } from "./analysis";
 import type { AutomationPlan, BuiltAutomation } from "./automation";
+import type { BrowserCaptureStatus } from "./browser";
 import type { MicrophoneDevice } from "./microphone";
 import type { NarrationLanguage } from "./narration";
 import {
@@ -551,6 +552,7 @@ export interface DoctorReport {
   copilotCli: CopilotInfo;
   activeWindow: ActiveWindowInfo;
   browserUrl: BrowserUrlInfo;
+  browserCapture: BrowserCaptureStatus;
   sessionsDir: string;
   activeSources: DoctorSource[];
 }
@@ -573,6 +575,8 @@ export const IPC = {
   status: "recorder:status",
   marker: "recorder:marker",
   doctor: "doctor:check",
+  browserCaptureStatus: "browser-capture:status",
+  browserCaptureStatusChanged: "browser-capture:status-changed",
   copilotSignIn: "copilot:sign-in",
   statusChanged: "recorder:status-changed",
   recordingPrivacyReviewed: "recorder:privacy-reviewed",
@@ -655,6 +659,11 @@ export interface SkillRecorderApi {
   status(): Promise<RecorderStatus>;
   marker(note: string): Promise<MarkerResult>;
   doctor(): Promise<DoctorReport>;
+  /** Current Chrome/Edge native bridge, site permission, and drop status. */
+  browserCaptureStatus(): Promise<BrowserCaptureStatus>;
+  onBrowserCaptureStatusChanged(
+    cb: (status: BrowserCaptureStatus) => void,
+  ): () => void;
   /**
    * Open a terminal window running the bundled Copilot CLI's `login` command, so the
    * user can sign in without a globally installed `copilot`.

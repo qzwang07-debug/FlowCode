@@ -458,6 +458,41 @@ test("start recovers to idle when collector setup throws", async () => {
   });
 });
 
+test("browser semantic capture follows the desktop Start and bounded Stop lifecycle", async () => {
+  await withSessionsRoot(async () => {
+    const calls: Array<{ kind: string; sessionId: string; sessionDir?: string }> = [];
+    const controller = new RecorderController({
+      resolveConfig: () => ({ ...FULL_CAPTURE, video: false }),
+      buildCollectors: () => [],
+      browserCapture: {
+        startSession: async (sessionId, sessionDir, startedAt) => {
+          assert.ok(startedAt > 0);
+          calls.push({ kind: "start", sessionId, sessionDir });
+        },
+        stopSession: async (sessionId) => {
+          calls.push({ kind: "stop", sessionId });
+        },
+      },
+      deleteSession: async () => undefined,
+    });
+
+    const started = await controller.start();
+    assert.equal(started.ok, true);
+    assert.ok(started.sessionId);
+    assert.equal(calls[0]?.kind, "start");
+    assert.equal(calls[0]?.sessionId, started.sessionId);
+    assert.match(calls[0]?.sessionDir ?? "", new RegExp(started.sessionId));
+    assert.equal((await controller.stop()).ok, true);
+    assert.deepEqual(
+      calls.map(({ kind, sessionId }) => ({ kind, sessionId })),
+      [
+        { kind: "start", sessionId: started.sessionId },
+        { kind: "stop", sessionId: started.sessionId },
+      ],
+    );
+  });
+});
+
 async function withSessionsRoot(
   run: (root: string) => Promise<void>,
 ): Promise<void> {
