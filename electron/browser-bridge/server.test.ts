@@ -65,6 +65,7 @@ test("native bridge authenticates the runtime token and exact extension origin",
   const connected: NativeBrowserConnection[] = [];
   const messages: BrowserToDesktopMessage[] = [];
   const rejected: string[] = [];
+  let endpoint: string | null = null;
   const server = new NativeBridgeServer({ dataDir: root, registration });
   server.setListener({
     connected: (connection) => connected.push(connection),
@@ -76,6 +77,7 @@ test("native bridge authenticates the runtime token and exact extension origin",
   });
   try {
     const runtime = await server.start();
+    endpoint = runtime.endpoint;
     if (process.platform !== "win32") {
       assert.ok(Buffer.byteLength(runtime.endpoint, "utf8") <= 96);
       assert.equal((await stat(runtime.endpoint)).mode & 0o777, 0o600);
@@ -127,6 +129,9 @@ test("native bridge authenticates the runtime token and exact extension origin",
     socket.destroy();
   } finally {
     await server.dispose();
+    if (endpoint && process.platform !== "win32") {
+      await assert.rejects(stat(endpoint), { code: "ENOENT" });
+    }
     await rm(root, { recursive: true, force: true });
   }
 });
