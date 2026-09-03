@@ -58,11 +58,11 @@ body[data-route="projects"] #root {
 
 .project-studio-primary {
   color: var(--brand-fg);
-  background: var(--brand);
+  background: #cf2f1b;
 }
 
 .project-studio-primary:not(:disabled):hover {
-  background: var(--brand-hover);
+  background: #b92717;
 }
 
 .project-studio-quiet {
@@ -137,7 +137,7 @@ body[data-route="projects"] #root {
 .project-studio-project-meta,
 .project-studio-project-warning {
   font-size: 11px;
-  color: var(--muted);
+  color: #666;
 }
 
 .project-studio-project-warning {
@@ -161,6 +161,342 @@ body[data-route="projects"] #root {
 .project-studio-overview,
 .project-studio-wizard {
   max-width: 760px;
+}
+
+.project-studio-runtime {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+}
+
+.project-studio-project-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.project-studio-project-heading h2 {
+  margin-bottom: 5px;
+}
+
+.project-studio-git {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 12px;
+  min-width: 190px;
+  padding: 10px 12px;
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.project-studio-git span {
+  grid-column: 1 / -1;
+  font-weight: 700;
+  color: #246c4b;
+}
+
+.project-studio-git[data-dirty="true"] span {
+  color: var(--brand-ink);
+}
+
+.project-studio-git code {
+  overflow: hidden;
+  font-family: var(--mono);
+  text-overflow: ellipsis;
+}
+
+.project-studio-toolbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 9px;
+  padding: 11px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 11px;
+}
+
+.project-studio-toolbar label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.project-studio-toolbar label > span {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.project-studio-toolbar select {
+  min-width: 180px;
+  height: 34px;
+  padding: 0 30px 0 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.project-studio-run-state {
+  align-self: center;
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.project-studio-code-grid,
+.project-studio-bottom-grid {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.34fr) minmax(0, 1fr);
+  gap: 14px;
+  min-width: 0;
+}
+
+.project-studio-bottom-grid {
+  grid-template-columns: minmax(0, 1fr) 280px;
+}
+
+.project-studio-panel {
+  min-width: 0;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 11px;
+}
+
+.project-studio-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 39px;
+  padding: 7px 11px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #666;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+}
+
+.project-studio-panel-heading > span:first-child {
+  overflow: hidden;
+  color: var(--text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-studio-files,
+.project-studio-viewer {
+  height: clamp(300px, 42vh, 480px);
+}
+
+.project-studio-file-tree {
+  height: calc(100% - 39px);
+  overflow: auto;
+  padding: 7px 0;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.project-studio-file-tree button,
+.project-studio-tree-directory {
+  display: block;
+  width: 100%;
+  min-height: 26px;
+  padding-top: 5px;
+  padding-right: 8px;
+  padding-bottom: 5px;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+.project-studio-tree-directory {
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.project-studio-tree-directory::before {
+  margin-right: 5px;
+  content: "▾";
+}
+
+.project-studio-file-tree button:hover,
+.project-studio-file-tree button.selected {
+  color: var(--brand-ink);
+  background: rgba(var(--brand-rgb), 0.08);
+}
+
+.project-studio-viewer pre,
+.project-studio-log-panel pre {
+  height: calc(100% - 39px);
+  margin: 0;
+  overflow: auto;
+  padding: 14px 16px;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--text);
+  background: #fbfbfa;
+  outline: none;
+  tab-size: 2;
+}
+
+.project-studio-viewer code {
+  font: inherit;
+  white-space: pre;
+}
+
+.project-studio-panel-empty {
+  padding: 16px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.project-studio-log-panel,
+.project-studio-history {
+  height: 210px;
+}
+
+.project-studio-log-panel pre {
+  color: #d6e2dc;
+  background: #17211d;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.project-studio-run-list {
+  height: calc(100% - 39px);
+  overflow: auto;
+  padding: 6px;
+}
+
+.project-studio-run-list button {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
+  width: 100%;
+  padding: 8px;
+  text-align: left;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+.project-studio-run-list button:hover,
+.project-studio-run-list button.selected {
+  background: var(--surface-2);
+  border-color: var(--line);
+}
+
+.project-studio-run-list button > span:first-child {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.project-studio-run-list button > span:nth-child(2),
+.project-studio-run-list time {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.project-studio-run-list time {
+  grid-column: 1 / -1;
+}
+
+.project-studio-run-list [data-status="succeeded"] {
+  color: #246c4b;
+}
+
+.project-studio-run-list [data-status="failed"],
+.project-studio-run-list [data-status="timed-out"] {
+  color: #9a3f32;
+}
+
+.project-studio-worktrees .project-studio-panel-heading {
+  min-height: 49px;
+}
+
+.project-studio-worktree-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.project-studio-worktree-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 11px 12px;
+  border-top: 1px solid var(--line);
+}
+
+.project-studio-worktree-list > div:first-child {
+  border-top: 0;
+}
+
+.project-studio-worktree-list > div > div:first-child {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.project-studio-worktree-list strong,
+.project-studio-worktree-list span,
+.project-studio-worktree-list small {
+  overflow-wrap: anywhere;
+}
+
+.project-studio-worktree-list strong {
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.project-studio-worktree-list span,
+.project-studio-worktree-list small {
+  margin-top: 3px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.project-studio-worktree-list small {
+  color: var(--brand-ink);
+}
+
+.project-studio-worktree-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 7px;
+}
+
+.project-studio-danger {
+  padding: 9px 12px;
+  font-size: 12px;
+  font-weight: 650;
+  color: #8d3028;
+  background: #fff7f5;
+  border: 1px solid #e8c1bb;
+}
+
+.project-studio-danger:not(:disabled):hover {
+  background: #ffefec;
+  border-color: #d7978e;
 }
 
 .project-studio-content h2 {
@@ -354,5 +690,19 @@ body[data-route="projects"] #root {
   .project-studio-kind-grid,
   .project-studio-facts {
     grid-template-columns: 1fr;
+  }
+
+  .project-studio-code-grid,
+  .project-studio-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .project-studio-files,
+  .project-studio-viewer {
+    height: 330px;
+  }
+
+  .project-studio-project-heading {
+    flex-direction: column;
   }
 }
