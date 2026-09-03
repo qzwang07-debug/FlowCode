@@ -51,11 +51,13 @@ test("Windows registration builds separate exact-origin native hosts in a tempor
     ];
     await execFileAsync("powershell.exe", arguments_, {
       windowsHide: true,
-      timeout: 30_000,
+      // Hosted Windows runners compile the C# host concurrently with the native
+      // packaging jobs. A cold compiler can exceed 30 seconds without hanging.
+      timeout: 90_000,
     });
     await execFileAsync("powershell.exe", arguments_, {
       windowsHide: true,
-      timeout: 30_000,
+      timeout: 90_000,
     });
     assert.ok(
       (await stat(path.join(root, "flowcode-browser-host.exe"))).size > 0,
