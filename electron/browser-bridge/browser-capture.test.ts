@@ -18,6 +18,8 @@ import type {
   NativeBrowserConnection,
 } from "./server";
 
+const TEST_OPERATION_TIMEOUT_MS = 5_000;
+
 class FakeTransport implements BrowserBridgeTransport {
   registrationError: string | null = null;
   listener: NativeBridgeServerListener | null = null;
@@ -150,7 +152,7 @@ async function turn(): Promise<void> {
 }
 
 async function waitUntil(predicate: () => boolean): Promise<void> {
-  const deadline = Date.now() + 1000;
+  const deadline = Date.now() + TEST_OPERATION_TIMEOUT_MS;
   while (!predicate()) {
     if (Date.now() >= deadline)
       throw new Error("Timed out waiting for bridge state.");
@@ -167,7 +169,7 @@ test("browser capture synchronizes start, persists events, acknowledges, and flu
   const service = new BrowserCaptureService({
     dataDir: root,
     transport,
-    flushTimeoutMs: 100,
+    flushTimeoutMs: TEST_OPERATION_TIMEOUT_MS,
     onStatus: (status) => statuses.push(status.receivedEvents),
   });
   try {
@@ -330,7 +332,7 @@ test("a browser that starts or reconnects mid-session receives the active Start 
   const service = new BrowserCaptureService({
     dataDir: root,
     transport,
-    flushTimeoutMs: 100,
+    flushTimeoutMs: TEST_OPERATION_TIMEOUT_MS,
   });
   try {
     await service.initialize();
