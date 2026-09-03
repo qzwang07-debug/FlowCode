@@ -57,6 +57,10 @@ const IPC = {
   acceptProjectWorktree: "project:worktree-accept",
   rollbackProjectWorktree: "project:worktree-rollback",
   cleanupProjectWorktree: "project:worktree-cleanup",
+  listEvidenceRecordings: "evidence:recordings-list",
+  getEvidenceReview: "evidence:review-get",
+  updateEvidenceReview: "evidence:review-update",
+  exportBlueprint: "evidence:blueprint-export",
   buildSkill: "skill:build",
   createSkill: "skill:create",
   getSkill: "skill:get",
@@ -88,8 +92,8 @@ ipcRenderer.on(IPC.recordingPrivacyWarningRequested, () => {
 });
 
 contextBridge.exposeInMainWorld("skillRecorder", {
-  start: () => ipcRenderer.invoke(IPC.start),
-  confirmStart: () => ipcRenderer.invoke(IPC.startConfirmed),
+  start: (link) => ipcRenderer.invoke(IPC.start, link),
+  confirmStart: (link) => ipcRenderer.invoke(IPC.startConfirmed, link),
   markRecordingPrivacyReviewed: () => ipcRenderer.invoke(IPC.recordingPrivacyReviewed),
   onRecordingPrivacyWarningRequested: (cb) => {
     recordingPrivacyWarningCallback = cb;
@@ -183,6 +187,10 @@ contextBridge.exposeInMainWorld("skillRecorder", {
   acceptProjectWorktree: (input) => ipcRenderer.invoke(IPC.acceptProjectWorktree, input),
   rollbackProjectWorktree: (input) => ipcRenderer.invoke(IPC.rollbackProjectWorktree, input),
   cleanupProjectWorktree: (input) => ipcRenderer.invoke(IPC.cleanupProjectWorktree, input),
+  listEvidenceRecordings: () => ipcRenderer.invoke(IPC.listEvidenceRecordings),
+  getEvidenceReview: (input) => ipcRenderer.invoke(IPC.getEvidenceReview, input),
+  updateEvidenceReview: (input) => ipcRenderer.invoke(IPC.updateEvidenceReview, input),
+  exportBlueprint: (input) => ipcRenderer.invoke(IPC.exportBlueprint, input),
   buildSkill: (input) => ipcRenderer.invoke(IPC.buildSkill, input),
   createSkill: (sessionId, plan, placement) => ipcRenderer.invoke(IPC.createSkill, sessionId, plan, placement),
   getSkill: (sessionId) => ipcRenderer.invoke(IPC.getSkill, sessionId),

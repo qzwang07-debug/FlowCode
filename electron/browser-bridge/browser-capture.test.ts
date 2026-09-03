@@ -184,6 +184,24 @@ test("browser capture synchronizes start, persists events, acknowledges, and flu
           message.kind === "record.start" && message.sessionId === "session-ok",
       ),
     );
+    const clockPing = transport.sent.findLast(
+      ({ message }) => message.kind === "browser.ping",
+    )?.message;
+    assert.ok(
+      transport.sent.filter(({ message }) => message.kind === "browser.ping")
+        .length >= 3,
+      "session start should take multiple clock samples",
+    );
+    assert.equal(clockPing?.kind, "browser.ping");
+    if (clockPing?.kind !== "browser.ping") throw new Error("Expected clock ping.");
+    transport.deliver(connection, {
+      kind: "browser.pong",
+      protocolVersion: 1,
+      nonce: clockPing.nonce,
+      epochMs: 1_010,
+      monotonicMs: 510,
+    });
+    await turn();
     const startCount = transport.sent.filter(
       ({ message }) => message.kind === "record.start",
     ).length;
@@ -255,6 +273,10 @@ test("browser capture synchronizes start, persists events, acknowledges, and flu
         "utf8",
       ),
       /browser\.click/,
+    );
+    assert.match(
+      await readFile(path.join(sessionDirectory, "browser-clock.jsonl"), "utf8"),
+      /clock-/,
     );
   } finally {
     await service.dispose();

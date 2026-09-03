@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 
 import type { SessionMeta } from "../../common/types";
+import { readEvents } from "../frames/correlate";
 import { SessionStore } from "./session-store";
 
 function makeMeta(id: string): SessionMeta {
@@ -45,6 +46,37 @@ test("dispose releases the events stream without hanging", async () => {
     store.dispose();
     await store.whenClosed();
     assert.equal(store.writeError, null);
+  });
+});
+
+test("new sessions persist the Stage 4 metadata and FlowEvent envelope", async () => {
+  await withSessionsRoot(async () => {
+    const store = new SessionStore(makeMeta("20250101-000000-eeeeffff"));
+    store.append("marker", "user", { note: "legacy-compatible note" });
+    store.finalize(store.meta.startedAt + 500);
+    await store.whenClosed();
+
+    const metadata = JSON.parse(
+      await readFile(path.join(store.dir, "session.json"), "utf8"),
+    ) as Record<string, unknown>;
+    assert.equal(metadata.schemaVersion, 2);
+    assert.equal(metadata.eventSchemaVersion, 1);
+    assert.equal(typeof metadata.startedAtMonotonicMs, "number");
+
+    const event = JSON.parse(
+      (await readFile(path.join(store.dir, "events.jsonl"), "utf8")).trim(),
+    ) as Record<string, unknown>;
+    assert.equal(event.schemaVersion, 1);
+    assert.equal(event.sessionId, store.meta.id);
+    assert.equal(event.sourceId, "user");
+    assert.equal(event.source, "user");
+    assert.equal(typeof event.eventId, "string");
+    assert.equal("epoch" in event, false);
+    assert.equal("t" in event, false);
+    const [compatibilityEvent] = readEvents(path.join(store.dir, "events.jsonl"));
+    assert.equal(compatibilityEvent?.type, "marker");
+    assert.equal(compatibilityEvent?.source, "user");
+    assert.equal(compatibilityEvent?.epoch, event.epochMs);
   });
 });
 

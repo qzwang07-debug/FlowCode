@@ -13,6 +13,7 @@ import type {
   ProjectListItem,
 } from "../../common/project";
 import type { ProjectRun, ProjectRunAction } from "../../common/project-run";
+import type { EvidenceRecordingSummary } from "../../common/evidence";
 import type {
   ProjectFileContent,
   ProjectRunLogEvent,
@@ -21,6 +22,7 @@ import type {
 } from "../../common/project-runtime";
 
 import "./project-studio.css";
+import { EvidenceReview } from "./EvidenceReview";
 
 const PROJECT_KINDS: readonly {
   id: ProjectKind;
@@ -43,22 +45,33 @@ const PROJECT_KINDS: readonly {
 
 export function ProjectStudio() {
   const [projects, setProjects] = useState<ProjectListItem[]>([]);
+  const [recordings, setRecordings] = useState<EvidenceRecordingSummary[]>([]);
   const [selected, setSelected] = useState<FlowProject | null>(null);
+  const [selectedRecording, setSelectedRecording] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    const result = await window.skillRecorder.listProjects();
-    if (result.ok) {
-      setProjects(result.projects ?? []);
-      setError(null);
-    } else {
-      setError(result.error ?? "Could not read the project registry.");
-    }
+    const [projectResult, recordingResult] = await Promise.all([
+      window.skillRecorder.listProjects(),
+      window.skillRecorder.listEvidenceRecordings(),
+    ]);
+    if (projectResult.ok) setProjects(projectResult.projects ?? []);
+    if (recordingResult.ok) setRecordings(recordingResult.recordings);
+    setError(
+      !projectResult.ok
+        ? projectResult.error ?? "Could not read the project registry."
+        : !recordingResult.ok
+          ? recordingResult.error ?? "Could not read recording evidence."
+          : null,
+    );
     setLoading(false);
   }, []);
+  const refreshEvidence = useCallback(() => {
+    void refresh();
+  }, [refresh]);
 
   useEffect(() => {
     void refresh();
@@ -72,6 +85,7 @@ export function ProjectStudio() {
       return;
     }
     setSelected(result.project);
+    setSelectedRecording(null);
     setShowCreate(false);
   }, []);
 
@@ -92,6 +106,7 @@ export function ProjectStudio() {
             className="project-studio-primary"
             onClick={() => {
               setSelected(null);
+              setSelectedRecording(null);
               setShowCreate(true);
               setError(null);
             }}
@@ -153,6 +168,39 @@ export function ProjectStudio() {
               ))}
             </div>
           )}
+          <div className="project-studio-sidebar-heading project-studio-recording-heading">
+            <span>Recordings</span>
+            <span>{recordings.length}</span>
+          </div>
+          {loading ? (
+            <p className="project-studio-empty">Loading evidence…</p>
+          ) : recordings.length === 0 ? (
+            <p className="project-studio-empty">
+              Record once to create a deterministic Blueprint.
+            </p>
+          ) : (
+            <div className="project-studio-recordings">
+              {recordings.map((recording) => (
+                <button
+                  type="button"
+                  key={recording.sessionId}
+                  className={selectedRecording === recording.sessionId ? "selected" : ""}
+                  onClick={() => {
+                    setSelected(null);
+                    setShowCreate(false);
+                    setSelectedRecording(recording.sessionId);
+                    setError(null);
+                  }}
+                >
+                  <span>{recording.projectName ?? "Analyze-only recording"}</span>
+                  <small>
+                    {new Date(recording.startedAt).toLocaleString()} · {recording.browserEventCount} browser · {recording.assertionCount} assertions
+                  </small>
+                  <small>{recording.degraded ? "Evidence gaps" : recording.blueprintReady ? "Blueprint ready" : "Processing"}</small>
+                </button>
+              ))}
+            </div>
+          )}
         </aside>
 
         <section className="project-studio-content">
@@ -161,11 +209,14 @@ export function ProjectStudio() {
               {error}
             </div>
           )}
-          {showCreate ? (
+          {selectedRecording ? (
+            <EvidenceReview sessionId={selectedRecording} onChanged={refreshEvidence} />
+          ) : showCreate ? (
             <NewProjectWizard
               onCancel={() => setShowCreate(false)}
               onCreated={(project) => {
                 setSelected(project);
+                setSelectedRecording(null);
                 setShowCreate(false);
                 void refresh();
               }}
@@ -194,7 +245,7 @@ function Welcome({
   return (
     <div className="project-studio-welcome">
       <span className="project-studio-kicker">
-        Stage 2 · Safe project runtime
+        Stage 4 · Projects and evidence
       </span>
       <h2>
         {projectCount === 0
@@ -202,8 +253,8 @@ function Welcome({
           : "Choose a project"}
       </h2>
       <p>
-        FlowCode creates a versioned Playwright template, validates every file,
-        and initializes a local-only Git baseline ready for isolated worktrees.
+        FlowCode keeps projects isolated and now turns local desktop and browser
+        events into a deterministic, reviewable Automation Blueprint.
       </p>
       {projectCount === 0 && (
         <button
@@ -652,9 +703,9 @@ function ProjectOverview({ project }: { project: FlowProject }) {
       </section>
 
       <div className="project-studio-boundary">
-        Stage 2 boundary: files are read-only and commands are fixed template
-        scripts. Browser recording, Agent access, code editing, assertion
-        parsing, and report interpretation are not enabled.
+        Stage 4 boundary: files remain read-only and commands remain fixed
+        template scripts. Agent access, code editing, AST assertion parsing,
+        and report interpretation are not enabled.
       </div>
     </div>
   );

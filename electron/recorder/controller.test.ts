@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { access, mkdir, mkdtemp, rm } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -490,6 +490,41 @@ test("browser semantic capture follows the desktop Start and bounded Stop lifecy
         { kind: "stop", sessionId: started.sessionId },
       ],
     );
+  });
+});
+
+test("Stage 4 session links and assertion markers are persisted with the recording", async () => {
+  await withSessionsRoot(async (root) => {
+    const controller = new RecorderController({
+      resolveConfig: () => ({ ...FULL_CAPTURE, video: false }),
+      buildCollectors: () => [],
+      deleteSession: async () => undefined,
+    });
+    const started = await controller.start({
+      sessionLink: {
+        projectId: "project-one",
+        mode: "analyze-and-build",
+        browserEnhancement: "semantic",
+      },
+    });
+    assert.equal(started.ok, true);
+    const marker = controller.marker("The order is visible");
+    assert.equal(marker.ok, true);
+    assert.match(marker.markerId ?? "", /^marker-/);
+    assert.equal((await controller.stop()).ok, true);
+
+    const directory = path.join(root, started.sessionId!);
+    const metadata = JSON.parse(
+      await readFile(path.join(directory, "session.json"), "utf8"),
+    ) as { link: unknown };
+    assert.deepEqual(metadata.link, {
+      projectId: "project-one",
+      mode: "analyze-and-build",
+      browserEnhancement: "semantic",
+    });
+    const events = await readFile(path.join(directory, "events.jsonl"), "utf8");
+    assert.match(events, /"type":"assertion\.marker"/);
+    assert.match(events, /The order is visible/);
   });
 });
 

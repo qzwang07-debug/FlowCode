@@ -3,6 +3,13 @@ import { z } from "zod";
 import type { Analysis, AnalysisFeedback, AnalysisStep, Confidence } from "./analysis";
 import type { AutomationPlan, BuiltAutomation } from "./automation";
 import type { BrowserCaptureStatus } from "./browser";
+import type {
+  EvidenceExportRequest,
+  EvidenceRecordingSummary,
+  EvidenceReviewSnapshot,
+  EvidenceReviewUpdateRequest,
+  EvidenceSessionRequest,
+} from "./evidence";
 import type { MicrophoneDevice } from "./microphone";
 import type { NarrationLanguage } from "./narration";
 import {
@@ -33,6 +40,7 @@ import {
 } from "./project-runtime";
 import type { ScreenSource } from "./screen";
 import type { SensitiveReport } from "./sensitive";
+import type { RecordingSessionLink } from "./session";
 import type {
   BuiltSkill,
   SkillArchitecture,
@@ -138,6 +146,17 @@ export const WorktreeActionResultSchema = z.discriminatedUnion("ok", [
   z.object({ ok: z.literal(false), error: z.string() }).strict(),
 ]);
 export type WorktreeActionResult = z.infer<typeof WorktreeActionResultSchema>;
+
+export type EvidenceRecordingListResult =
+  | { ok: true; recordings: EvidenceRecordingSummary[] }
+  | { ok: false; error: string };
+export type EvidenceReviewResult =
+  | { ok: true; snapshot: EvidenceReviewSnapshot }
+  | { ok: false; error: string };
+export type BlueprintExportResult =
+  | { ok: true; canceled: true }
+  | { ok: true; path: string }
+  | { ok: false; error: string };
 
 export type {
   FlowProject,
@@ -393,6 +412,8 @@ export interface StartResult {
 
 /** Per-session capture choices the user makes in the HUD before recording. */
 export interface StartOptions {
+  /** Stage 4 project/mode binding persisted with this immutable recording. */
+  sessionLink?: RecordingSessionLink;
   /** Capture microphone narration for this session (opt-in, off by default). */
   narration?: boolean;
   /** Source language to preserve in the transcript. Defaults to English. */
@@ -476,6 +497,7 @@ export interface ScreenSettingsResult {
 
 export interface MarkerResult {
   ok: boolean;
+  markerId?: string;
   error?: string;
 }
 
@@ -613,6 +635,10 @@ export const IPC = {
   acceptProjectWorktree: "project:worktree-accept",
   rollbackProjectWorktree: "project:worktree-rollback",
   cleanupProjectWorktree: "project:worktree-cleanup",
+  listEvidenceRecordings: "evidence:recordings-list",
+  getEvidenceReview: "evidence:review-get",
+  updateEvidenceReview: "evidence:review-update",
+  exportBlueprint: "evidence:blueprint-export",
   buildSkill: "skill:build",
   createSkill: "skill:create",
   getSkill: "skill:get",
@@ -636,9 +662,9 @@ export const IPC = {
 /** Shape exposed on `window.skillRecorder` by the preload bridge. */
 export interface SkillRecorderApi {
   /** Request a start; may require the pre-recording privacy warning first. */
-  start(): Promise<StartResult>;
+  start(link?: RecordingSessionLink): Promise<StartResult>;
   /** Start once after the user explicitly proceeds through the privacy warning. */
-  confirmStart(): Promise<StartResult>;
+  confirmStart(link?: RecordingSessionLink): Promise<StartResult>;
   markRecordingPrivacyReviewed(): Promise<void>;
   onRecordingPrivacyWarningRequested(cb: () => void): () => void;
   stop(): Promise<StopResult>;
@@ -734,6 +760,11 @@ export interface SkillRecorderApi {
   acceptProjectWorktree(input: WorktreeControlRequest): Promise<WorktreeActionResult>;
   rollbackProjectWorktree(input: WorktreeControlRequest): Promise<WorktreeActionResult>;
   cleanupProjectWorktree(input: WorktreeControlRequest): Promise<WorktreeActionResult>;
+  /** List local recordings with deterministic Evidence/Blueprint state. */
+  listEvidenceRecordings(): Promise<EvidenceRecordingListResult>;
+  getEvidenceReview(input: EvidenceSessionRequest): Promise<EvidenceReviewResult>;
+  updateEvidenceReview(input: EvidenceReviewUpdateRequest): Promise<EvidenceReviewResult>;
+  exportBlueprint(input: EvidenceExportRequest): Promise<BlueprintExportResult>;
   /**
    * Propose (or refine) a skill from a recording's analysis. Pass `feedback` to
    * revise the current plan in the same multi-turn conversation.

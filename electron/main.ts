@@ -4,6 +4,11 @@ import { app, BrowserWindow, globalShortcut, ipcMain, Menu, screen } from "elect
 
 import { FULL_CAPTURE } from "../common/config";
 import { IPC, type RecorderStatus, type StartResult } from "../common/ipc";
+import {
+  DEFAULT_SESSION_LINK,
+  RecordingSessionLinkSchema,
+  type RecordingSessionLink,
+} from "../common/session";
 import { BrowserCaptureService } from "./browser-bridge/browser-capture";
 import { createCollectors } from "./collectors";
 import { installCrashGuards } from "./crash-guards";
@@ -18,6 +23,8 @@ import { ProjectRegistry } from "./projects/registry";
 import { createProjectStudioWindow } from "./projects/window";
 import { registerIpc } from "./ipc";
 import { createLogger } from "./logger";
+import { registerEvidenceIpc } from "./evidence/ipc";
+import { EvidenceService } from "./evidence/service";
 import { NarrationManager } from "./narration/manager";
 import { SensitiveModelManager } from "./sensitive/model-manager";
 import { RecorderController } from "./recorder/controller";
@@ -55,6 +62,7 @@ let libraryWindow: BrowserWindow | null = null;
 let recordingControlsWindow: BrowserWindow | null = null;
 let projectStudioWindow: BrowserWindow | null = null;
 let projectRuns: ProjectRunManager | null = null;
+let projectManager: ProjectManager | null = null;
 let recorderHome: Electron.Rectangle | null = null;
 let controlsExpanded = false;
 let quitReady = false;
@@ -91,7 +99,12 @@ const recorder = new RecorderController({
   browserCapture,
   deleteSession,
   postProcess: async (dir) => {
-    await processSession(dir);
+    await processSession(dir, {
+      resolveProjectKind: async (projectId) => {
+        if (!projectManager) throw new Error("Project registry is unavailable.");
+        return (await projectManager.open(projectId)).kind;
+      },
+    });
     try {
       await narration.transcribeIfCached(dir);
     } catch (err) {
@@ -100,7 +113,9 @@ const recorder = new RecorderController({
   },
 });
 
-async function startRecording(): Promise<StartResult> {
+async function startRecording(
+  sessionLink: RecordingSessionLink = DEFAULT_SESSION_LINK,
+): Promise<StartResult> {
   if (recordingStartPending) {
     return { ok: false, error: "Recording is already starting." };
   }
@@ -114,10 +129,45 @@ async function startRecording(): Promise<StartResult> {
     return await recorder.start({
       ...microphones.startOptions(),
       ...screenOptions,
+      sessionLink,
     });
   } finally {
     recordingStartPending = false;
   }
+}
+
+async function validateRecordingLink(
+  rawLink: unknown,
+): Promise<{ ok: true; link: RecordingSessionLink } | { ok: false; error: string }> {
+  const parsed = RecordingSessionLinkSchema.safeParse(
+    rawLink ?? DEFAULT_SESSION_LINK,
+  );
+  if (!parsed.success) {
+    return { ok: false, error: "Invalid recording mode or project." };
+  }
+  if (
+    parsed.data.browserEnhancement !== "none" &&
+    parsed.data.browserEnhancement !== "semantic"
+  ) {
+    return {
+      ok: false,
+      error: "Enhanced and Full Debug capture are not available in Stage 4.",
+    };
+  }
+  if (parsed.data.projectId) {
+    if (!projectManager) {
+      return { ok: false, error: "The project registry is unavailable." };
+    }
+    try {
+      await projectManager.open(parsed.data.projectId);
+    } catch (error) {
+      return {
+        ok: false,
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
+  return { ok: true, link: parsed.data };
 }
 
 /** Send an event to every live window (recorder HUD + library, if open). */
@@ -214,8 +264,10 @@ function showRecordingPrivacyWarning(): void {
   }
 }
 
-async function requestStartRecording(): Promise<StartResult> {
-  if (recordingPrivacy.startDecision() === "start") return startRecording();
+async function requestStartRecording(rawLink?: unknown): Promise<StartResult> {
+  const checked = await validateRecordingLink(rawLink);
+  if (!checked.ok) return checked;
+  if (recordingPrivacy.startDecision() === "start") return startRecording(checked.link);
   showRecordingPrivacyWarning();
   return { ok: false, privacyWarningRequired: true };
 }
@@ -312,6 +364,7 @@ app.whenReady().then(async () => {
     registry: new ProjectRegistry(),
     templates: new TemplateStore(templateRoot),
   });
+  projectManager = projects;
   const resolveProject = (projectId: string) => projects.open(projectId);
   const worktrees = new GitWorktreeService({
     resolveProject,
@@ -333,6 +386,7 @@ app.whenReady().then(async () => {
     },
     path.join(app.getPath("documents"), "FlowCode Projects"),
   );
+  registerEvidenceIpc(new EvidenceService({ projects }));
   try {
     await worktrees.recover();
   } catch (error) {
@@ -342,8 +396,11 @@ app.whenReady().then(async () => {
     );
   }
   sensitiveModels.initialize();
-  ipcMain.handle(IPC.start, () => requestStartRecording());
-  ipcMain.handle(IPC.startConfirmed, () => startRecording());
+  ipcMain.handle(IPC.start, (_event, link: unknown) => requestStartRecording(link));
+  ipcMain.handle(IPC.startConfirmed, async (_event, rawLink: unknown) => {
+    const checked = await validateRecordingLink(rawLink);
+    return checked.ok ? startRecording(checked.link) : checked;
+  });
   ipcMain.handle(IPC.recordingPrivacyReviewed, () => recordingPrivacy.markReviewed());
   log.info("Capture: recording all sources");
 

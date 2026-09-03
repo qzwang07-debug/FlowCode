@@ -11,6 +11,10 @@ import {
   type BrowserKind,
   type BrowserSemanticEvent,
 } from "../../common/browser";
+import {
+  BrowserClockSampleSchema,
+  type BrowserClockSample,
+} from "../../common/evidence";
 
 interface SourceCaptureState {
   browser: BrowserKind;
@@ -38,6 +42,7 @@ async function writeJsonAtomic(file: string, value: unknown): Promise<void> {
 export class BrowserSessionStore {
   readonly eventPath: string;
   readonly gapPath: string;
+  readonly clockPath: string;
   readonly summaryPath: string;
   private readonly sources = new Map<string, SourceCaptureState>();
   private queue: Promise<void> = Promise.resolve();
@@ -52,6 +57,7 @@ export class BrowserSessionStore {
   ) {
     this.eventPath = path.join(sessionDir, "browser-events.jsonl");
     this.gapPath = path.join(sessionDir, "browser-gaps.jsonl");
+    this.clockPath = path.join(sessionDir, "browser-clock.jsonl");
     this.summaryPath = path.join(sessionDir, "browser-capture.json");
   }
 
@@ -64,6 +70,7 @@ export class BrowserSessionStore {
     await Promise.all([
       writeFile(store.eventPath, "", { encoding: "utf8", flag: "wx" }),
       writeFile(store.gapPath, "", { encoding: "utf8", flag: "wx" }),
+      writeFile(store.clockPath, "", { encoding: "utf8", flag: "wx" }),
     ]);
     return store;
   }
@@ -135,6 +142,18 @@ export class BrowserSessionStore {
       );
     }
     return this.enqueue(() => this.appendGapDirect(gap));
+  }
+
+  appendClockSample(input: BrowserClockSample): Promise<void> {
+    const sample = BrowserClockSampleSchema.parse(input);
+    if (sample.sessionId !== this.sessionId) {
+      return Promise.reject(
+        new Error("Browser clock sample belongs to another session."),
+      );
+    }
+    return this.enqueue(() =>
+      appendFile(this.clockPath, `${JSON.stringify(sample)}\n`, "utf8"),
+    );
   }
 
   markFlushed(

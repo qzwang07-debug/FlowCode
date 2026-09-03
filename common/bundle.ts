@@ -198,7 +198,8 @@ export function buildBundle(input: BundleInput): SessionBundle {
       case "clipboard.change":
         step.clipboardCount++;
         break;
-      case "marker": {
+      case "marker":
+      case "assertion.marker": {
         const note = str(p.note);
         if (note) step.markers.push(note);
         break;

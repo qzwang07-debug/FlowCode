@@ -49,6 +49,7 @@ import {
   WITHHOLD_FRAME_REDACTOR,
 } from "./sensitive/frame-redact";
 import type { SensitiveModelManager } from "./sensitive/model-manager";
+import { AssertionMarkerRequestSchema } from "../common/evidence";
 import { buildRedactor, loadSensitiveReport, saveSensitiveReport, scanSession } from "./sensitive/scanner";
 import { deleteSession, listSessions } from "./sessions";
 import { loadPersistedSkill, SkillBuilder, type SkillTarget } from "./skillbuilder/builder";
@@ -151,7 +152,12 @@ export function registerIpc(
     recorder.setNarrationLanguage(language),
   );
   ipcMain.handle(IPC.status, () => recorder.status());
-  ipcMain.handle(IPC.marker, (_event, note: string) => recorder.marker(note));
+  ipcMain.handle(IPC.marker, (_event, rawNote: unknown) => {
+    const parsed = AssertionMarkerRequestSchema.safeParse({ note: rawNote });
+    return parsed.success
+      ? recorder.marker(parsed.data.note)
+      : { ok: false, error: "Invalid assertion marker." };
+  });
   ipcMain.handle(IPC.doctor, () => runDoctor(browserCaptureStatus()));
   ipcMain.handle(IPC.browserCaptureStatus, () => browserCaptureStatus());
   ipcMain.handle(IPC.copilotSignIn, () => openCopilotSignIn());

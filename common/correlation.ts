@@ -13,6 +13,7 @@ export const MEANINGFUL_EVENT_TYPES = new Set<string>([
   "terminal.command",
   "clipboard.change",
   "marker",
+  "assertion.marker",
 ]);
 
 /** The active application/URL context at a given instant. */

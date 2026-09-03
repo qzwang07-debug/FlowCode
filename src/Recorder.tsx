@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import type {
   DoctorReport,
@@ -12,6 +12,8 @@ import type {
   BrowserCaptureStatus,
   BrowserPlatformStatus,
 } from "../common/browser";
+import type { ProjectListItem } from "../common/project";
+import type { RecordingSessionLink } from "../common/session";
 import {
   DEFAULT_NARRATION_LANGUAGE,
   isNarrationLanguage,
@@ -75,6 +77,10 @@ export function Recorder() {
   const [elapsed, setElapsed] = useState(0);
   const [sessionCount, setSessionCount] = useState(0);
   const [pendingCount, setPendingCount] = useState(0);
+  const [projects, setProjects] = useState<ProjectListItem[]>([]);
+  const [recordingMode, setRecordingMode] =
+    useState<RecordingSessionLink["mode"]>("analyze-only");
+  const [recordingProjectId, setRecordingProjectId] = useState("");
   const narrationSettingsRef = useRef<HTMLElement>(null);
   const hudRef = useRef<HTMLDivElement>(null);
 
@@ -82,6 +88,15 @@ export function Recorder() {
     const list = await window.skillRecorder.listSessions();
     setSessionCount(list.length);
     setPendingCount(list.filter((s) => !s.analysis).length);
+  }, []);
+
+  const refreshProjects = useCallback(async () => {
+    const result = await window.skillRecorder.listProjects();
+    if (result.ok) {
+      setProjects(
+        result.projects.filter((project) => project.availability === "available"),
+      );
+    }
   }, []);
 
   const applyRecorderStatus = useCallback((next: RecorderStatus) => {
@@ -97,6 +112,7 @@ export function Recorder() {
     void window.skillRecorder.microphoneSettings().then(setMicrophoneSettings);
     void window.skillRecorder.screenSettings().then(setScreenSettings);
     void window.skillRecorder.sensitiveModelStatus().then(setSensitive);
+    void refreshProjects();
     void refreshCount();
     const offRecorder = window.skillRecorder.onStatusChanged(applyRecorderStatus);
     const offBrowser =
@@ -115,7 +131,7 @@ export function Recorder() {
       offScreens();
       offSensitive();
     };
-  }, [applyRecorderStatus, refreshCount]);
+  }, [applyRecorderStatus, refreshCount, refreshProjects]);
 
   useEffect(() => {
     return window.skillRecorder.onRecordingPrivacyWarningRequested(() => {
@@ -127,10 +143,13 @@ export function Recorder() {
   // The analyze step happens in the library window, so re-check how many
   // recordings still need analysis whenever the recorder regains focus.
   useEffect(() => {
-    const onFocus = () => void refreshCount();
+    const onFocus = () => {
+      void refreshCount();
+      void refreshProjects();
+    };
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
-  }, [refreshCount]);
+  }, [refreshCount, refreshProjects]);
 
   const recording = status?.state === "recording";
   const transitioning = status?.transition !== "none";
@@ -142,6 +161,14 @@ export function Recorder() {
   const advancedOn = sensitive?.enabled ?? true;
   const selectedScreenLabel =
     screenSettings?.selectedSourceLabel ?? "Loading screens...";
+  const sessionLink = useMemo<RecordingSessionLink>(
+    () => ({
+      mode: recordingMode,
+      browserEnhancement: "semantic",
+      ...(recordingProjectId ? { projectId: recordingProjectId } : {}),
+    }),
+    [recordingMode, recordingProjectId],
+  );
 
   useEffect(() => {
     if (recording) {
@@ -223,18 +250,29 @@ export function Recorder() {
       return;
     }
 
-    const res = await window.skillRecorder.start();
+    if (recordingMode === "analyze-and-build" && !recordingProjectId) {
+      setShowNarrationSettings(true);
+      window.alert("Choose a project for Analyze and build.");
+      return;
+    }
+    const res = await window.skillRecorder.start(sessionLink);
     if (res.privacyWarningRequired) {
       setShowRecordingWarning(true);
       return;
     }
     if (!res.ok) window.alert(res.error ?? "Action failed");
     applyRecorderStatus(await window.skillRecorder.status());
-  }, [applyRecorderStatus, recording]);
+  }, [
+    applyRecorderStatus,
+    recording,
+    recordingMode,
+    recordingProjectId,
+    sessionLink,
+  ]);
 
   const startAfterWarning = useCallback(async () => {
     setWarningStarting(true);
-    const res = await window.skillRecorder.confirmStart();
+    const res = await window.skillRecorder.confirmStart(sessionLink);
     if (!res.ok) {
       setWarningStarting(false);
       window.alert(res.error ?? "Could not start recording.");
@@ -243,7 +281,7 @@ export function Recorder() {
     setShowRecordingWarning(false);
     setWarningStarting(false);
     applyRecorderStatus(await window.skillRecorder.status());
-  }, [applyRecorderStatus]);
+  }, [applyRecorderStatus, sessionLink]);
 
   const openPrivacyReview = useCallback((origin: PrivacyReviewOrigin) => {
     setShowRecordingWarning(false);
@@ -556,6 +594,49 @@ export function Recorder() {
                 ▾
               </span>
             </div>
+            <label htmlFor="recording-mode">After recording</label>
+            <div className="narrate-select-wrap">
+              <select
+                id="recording-mode"
+                value={recordingMode}
+                disabled={recording || transitioning}
+                onChange={(event) =>
+                  setRecordingMode(
+                    event.target.value as RecordingSessionLink["mode"],
+                  )
+                }
+              >
+                <option value="analyze-only">Analyze only</option>
+                <option value="analyze-and-build">Analyze and build</option>
+              </select>
+              <span className="narrate-select-chevron" aria-hidden>▾</span>
+            </div>
+            <label htmlFor="recording-project">Project</label>
+            <div className="narrate-select-wrap">
+              <select
+                id="recording-project"
+                value={recordingProjectId}
+                disabled={recording || transitioning}
+                onChange={(event) => setRecordingProjectId(event.target.value)}
+              >
+                <option value="">
+                  {recordingMode === "analyze-and-build"
+                    ? "Choose a project"
+                    : "No project (standalone)"}
+                </option>
+                {projects.map(({ project }) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name} · {project.kind === "web-test" ? "Web test" : "Automation"}
+                  </option>
+                ))}
+              </select>
+              <span className="narrate-select-chevron" aria-hidden>▾</span>
+            </div>
+            {recordingMode === "analyze-and-build" && (
+              <p className="narrate-settings-note">
+                This session is linked now; Agent code writing remains disabled in Stage 4.
+              </p>
+            )}
             {(microphoneActionError ||
               microphoneSettings?.error ||
               microphoneSettings?.fallback) && (

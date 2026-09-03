@@ -251,6 +251,7 @@ const EventBaseFields = {
   seq: z.number().int().nonnegative(),
   epochMs: TimestampSchema,
   monotonicMs: z.number().nonnegative().optional(),
+  privacyTags: z.array(z.string().min(1).max(64)).max(32).optional(),
 };
 
 export const BrowserSemanticEventSchema = z.discriminatedUnion("type", [
@@ -562,6 +563,7 @@ export const BrowserToDesktopMessageSchema = z.discriminatedUnion("kind", [
       protocolVersion: z.literal(BROWSER_BRIDGE_PROTOCOL_VERSION),
       nonce: IdentifierSchema,
       epochMs: TimestampSchema,
+      monotonicMs: z.number().nonnegative(),
     })
     .strict(),
 ]);

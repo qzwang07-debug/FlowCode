@@ -7,6 +7,9 @@ import type { CorrelationResult } from "../common/correlation";
 import { renderDescription } from "../common/describe";
 import { CAPTURED_FRAME_MANIFEST_VERSION } from "../common/frames";
 import type { SessionMeta } from "../common/types";
+import type { ProjectKind } from "../common/project";
+import { migrateSessionMeta } from "../common/session";
+import { processEvidenceSession } from "./evidence/processor";
 import { CorrelationEngine, readEvents } from "./frames/correlate";
 import { FrameExtractor } from "./frames/extractor";
 import { createLogger } from "./logger";
@@ -88,7 +91,14 @@ async function runFrameStage(sessionDir: string): Promise<CorrelationResult | nu
  * event stream; enriches them with correlated frames when a video is present.
  * Strictly best-effort — never throws into the recorder.
  */
-export async function processSession(sessionDir: string): Promise<void> {
+export interface ProcessSessionOptions {
+  resolveProjectKind?: (projectId: string) => Promise<ProjectKind>;
+}
+
+export async function processSession(
+  sessionDir: string,
+  options: ProcessSessionOptions = {},
+): Promise<void> {
   const meta = readMeta(sessionDir);
   if (!meta) {
     log.warn("no session.json; skipping processing for", path.basename(sessionDir));
@@ -108,5 +118,21 @@ export async function processSession(sessionDir: string): Promise<void> {
     );
   } catch (err) {
     log.warn("bundle/describe failed:", err instanceof Error ? err.message : err);
+  }
+
+  try {
+    const currentMeta = migrateSessionMeta(meta);
+    let projectKind: ProjectKind = "web-test";
+    if (currentMeta.link.projectId && options.resolveProjectKind) {
+      projectKind = await options.resolveProjectKind(currentMeta.link.projectId);
+    }
+    const evidence = await processEvidenceSession(sessionDir, projectKind);
+    log.info(
+      `evidence: ${evidence.index.events.length} events, ` +
+        `${evidence.index.causalLinks.length} causal links, ` +
+        `${evidence.blueprint.steps.length} deterministic Blueprint steps`,
+    );
+  } catch (err) {
+    log.warn("evidence/blueprint failed:", err instanceof Error ? err.message : err);
   }
 }

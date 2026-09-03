@@ -91,6 +91,10 @@ export class BrowserCaptureService {
   private readonly now: () => number;
   private readonly onStatus: (status: BrowserCaptureStatus) => void;
   private readonly clients = new Map<string, BrowserClient>();
+  private readonly pendingClockPings = new Map<
+    string,
+    { connectionId: string; sentAt: number }
+  >();
   private active: ActiveBrowserSession | null = null;
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   private receivedEvents = 0;
@@ -172,6 +176,7 @@ export class BrowserCaptureService {
       if (!client.sourceId) continue;
       this.addExpectedSource(active, client);
       this.sendStart(client, active);
+      this.sendClockPings(client, 3);
     }
     this.emitStatus();
   }
@@ -272,6 +277,7 @@ export class BrowserCaptureService {
 
     const summary = await active.store.finalize(this.now());
     this.active = null;
+    this.pendingClockPings.clear();
     for (const client of this.clients.values()) {
       this.transport.send(client.connection.id, {
         kind: "record.state",
@@ -297,6 +303,7 @@ export class BrowserCaptureService {
     }
     await this.transport.dispose();
     this.clients.clear();
+    this.pendingClockPings.clear();
   }
 
   private connected(connection: NativeBrowserConnection): void {
@@ -318,6 +325,9 @@ export class BrowserCaptureService {
 
   private disconnected(connection: NativeBrowserConnection): void {
     this.clients.delete(connection.id);
+    for (const [nonce, pending] of this.pendingClockPings) {
+      if (pending.connectionId === connection.id) this.pendingClockPings.delete(nonce);
+    }
     this.emitStatus();
   }
 
@@ -351,6 +361,27 @@ export class BrowserCaptureService {
       return;
     }
     if (message.kind === "browser.pong") {
+      const pending = this.pendingClockPings.get(message.nonce);
+      this.pendingClockPings.delete(message.nonce);
+      const active = this.active;
+      if (
+        pending?.connectionId === connection.id &&
+        active &&
+        client.sourceId
+      ) {
+        await active.store.appendClockSample({
+          schemaVersion: 1,
+          sampleId: `clock-${randomUUID()}`,
+          sessionId: active.id,
+          browser: connection.browser,
+          sourceId: client.sourceId,
+          nonce: message.nonce,
+          desktopSentEpochMs: pending.sentAt,
+          desktopReceivedEpochMs: this.now(),
+          sourceEpochMs: message.epochMs,
+          sourceMonotonicMs: message.monotonicMs,
+        });
+      }
       this.emitStatus();
       return;
     }
@@ -403,6 +434,7 @@ export class BrowserCaptureService {
         ) {
           this.sendStart(client, active);
         }
+        if (message.kind === "browser.hello") this.sendClockPings(client, 3);
       } else if (
         active?.phase === "flushing" &&
         active.expectedSources.has(message.sourceId) &&
@@ -523,6 +555,26 @@ export class BrowserCaptureService {
     });
   }
 
+  private sendClockPings(client: BrowserClient, count: number): void {
+    for (let index = 0; index < count; index += 1) {
+      const nonce = `ping-${randomUUID()}`;
+      const sentAt = this.now();
+      if (
+        this.transport.send(client.connection.id, {
+          kind: "browser.ping",
+          protocolVersion: BROWSER_BRIDGE_PROTOCOL_VERSION,
+          nonce,
+          epochMs: sentAt,
+        })
+      ) {
+        this.pendingClockPings.set(nonce, {
+          connectionId: client.connection.id,
+          sentAt,
+        });
+      }
+    }
+  }
+
   private addExpectedSource(
     active: ActiveBrowserSession,
     client: BrowserClient,
@@ -581,17 +633,17 @@ export class BrowserCaptureService {
 
   private heartbeatSweep(): void {
     const now = this.now();
+    for (const [nonce, pending] of this.pendingClockPings) {
+      if (now - pending.sentAt > this.staleConnectionMs) {
+        this.pendingClockPings.delete(nonce);
+      }
+    }
     for (const client of this.clients.values()) {
       if (now - client.lastSeenAt > this.staleConnectionMs) {
         this.transport.closeConnection(client.connection.id);
         continue;
       }
-      this.transport.send(client.connection.id, {
-        kind: "browser.ping",
-        protocolVersion: BROWSER_BRIDGE_PROTOCOL_VERSION,
-        nonce: `ping-${randomUUID()}`,
-        epochMs: now,
-      });
+      this.sendClockPings(client, 1);
     }
   }
 

@@ -2,6 +2,11 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 import {
+  flowEventToLegacyRecord,
+  normalizeStoredFlowEvent,
+} from "../../common/evidence";
+import { migrateSessionMeta } from "../../common/session";
+import {
   correlate,
   type CorrelationOptions,
   type CorrelationResult,
@@ -15,15 +20,44 @@ const log = createLogger("Correlate");
 
 export { correlate };
 
-/** Parse a `events.jsonl` file into RecEvent[] (skips malformed lines). */
+/** Parse legacy or FlowEvent `events.jsonl` into compatibility records. */
 export function readEvents(eventsPath: string): RecEvent[] {
   if (!existsSync(eventsPath)) return [];
+  let sessionId = path.basename(path.dirname(eventsPath));
+  let startedAt = 0;
+  try {
+    const meta = migrateSessionMeta(
+      JSON.parse(
+        readFileSync(path.join(path.dirname(eventsPath), "session.json"), "utf8"),
+      ) as unknown,
+    );
+    sessionId = meta.id;
+    startedAt = meta.startedAt;
+  } catch {
+    // Standalone/eval fixtures can still carry their own legacy timestamps.
+  }
   const out: RecEvent[] = [];
   for (const line of readFileSync(eventsPath, "utf8").split("\n")) {
     const s = line.trim();
     if (!s) continue;
     try {
-      out.push(JSON.parse(s) as RecEvent);
+      const raw = JSON.parse(s) as unknown;
+      try {
+        const event = normalizeStoredFlowEvent(raw, { sessionId, startedAt });
+        out.push(flowEventToLegacyRecord(event, startedAt));
+      } catch {
+        const legacy = raw as RecEvent;
+        if (
+          typeof legacy.seq === "number" &&
+          typeof legacy.epoch === "number" &&
+          typeof legacy.type === "string" &&
+          typeof legacy.source === "string" &&
+          typeof legacy.payload === "object" &&
+          legacy.payload !== null
+        ) {
+          out.push(legacy);
+        }
+      }
     } catch {
       // ignore partial/corrupt trailing line
     }
