@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile, spawn } from "node:child_process";
-import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
+import { mkdtemp, readFile, realpath, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -67,9 +67,13 @@ test("Windows registration builds separate exact-origin native hosts in a tempor
         ) as unknown,
       );
       assert.deepEqual(manifest.allowed_origins, [client.origin]);
+      const [manifestExecutable, expectedExecutable] = await Promise.all([
+        realpath(manifest.path),
+        realpath(path.join(root, "flowcode-browser-host.exe")),
+      ]);
       assert.equal(
-        path.resolve(manifest.path),
-        path.join(root, "flowcode-browser-host.exe"),
+        path.normalize(manifestExecutable).toLowerCase(),
+        path.normalize(expectedExecutable).toLowerCase(),
       );
     }
   } finally {

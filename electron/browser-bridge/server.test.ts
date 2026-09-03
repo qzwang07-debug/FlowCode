@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
 import net, { type Socket } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -76,6 +76,10 @@ test("native bridge authenticates the runtime token and exact extension origin",
   });
   try {
     const runtime = await server.start();
+    if (process.platform !== "win32") {
+      assert.ok(Buffer.byteLength(runtime.endpoint, "utf8") <= 96);
+      assert.equal((await stat(runtime.endpoint)).mode & 0o777, 0o600);
+    }
     assert.deepEqual(
       BrowserBridgeRuntimeSchema.parse(
         JSON.parse(

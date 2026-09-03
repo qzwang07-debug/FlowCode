@@ -1,6 +1,7 @@
 import { randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
-import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { chmod, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import net, { type Server, type Socket } from "node:net";
+import { tmpdir } from "node:os";
 import path from "node:path";
 
 import {
@@ -88,12 +89,17 @@ async function loadRegistration(dataDir: string): Promise<{
   }
 }
 
-function bridgeEndpoint(dataDir: string): string {
-  const suffix = `${process.pid}-${randomUUID()}`;
+const MAX_SAFE_UNIX_ENDPOINT_BYTES = 96;
+
+function bridgeEndpoint(): string {
   if (process.platform === "win32") {
-    return `\\\\.\\pipe\\flowcode-browser-${suffix}`;
+    return `\\\\.\\pipe\\flowcode-browser-${process.pid}-${randomUUID()}`;
   }
-  return path.join(dataDir, `.browser-${suffix}.sock`);
+  const fileName = `fc-${process.pid}-${randomBytes(12).toString("hex")}.sock`;
+  const preferred = path.join(tmpdir(), fileName);
+  return Buffer.byteLength(preferred, "utf8") <= MAX_SAFE_UNIX_ENDPOINT_BYTES
+    ? preferred
+    : path.join("/tmp", fileName);
 }
 
 function tokensMatch(expected: string, actual: string): boolean {
@@ -140,7 +146,7 @@ export class NativeBridgeServer {
     this.registrationError = loaded.error;
     const runtime = BrowserBridgeRuntimeSchema.parse({
       schemaVersion: 1,
-      endpoint: bridgeEndpoint(this.options.dataDir),
+      endpoint: bridgeEndpoint(),
       token: randomBytes(32).toString("hex"),
       maxMessageBytes: MAX_BROWSER_MESSAGE_BYTES,
     });
@@ -160,6 +166,9 @@ export class NativeBridgeServer {
       server.listen(runtime.endpoint);
     });
     this.runtime = runtime;
+    if (process.platform !== "win32") {
+      await chmod(runtime.endpoint, 0o600);
+    }
     await writeJsonAtomic(
       path.join(this.options.dataDir, BROWSER_BRIDGE_RUNTIME_FILE),
       runtime,
