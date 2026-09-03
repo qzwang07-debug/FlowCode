@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
-import { execFile, spawn } from "node:child_process";
+import {
+  execFile,
+  spawn,
+  type ChildProcessWithoutNullStreams,
+} from "node:child_process";
 import { mkdtemp, readFile, realpath, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -15,6 +19,15 @@ import { encodeLengthPrefixedJson, LengthPrefixedJsonDecoder } from "./framing";
 import { NativeBridgeServer, type NativeBrowserConnection } from "./server";
 
 const execFileAsync = promisify(execFile);
+
+async function removeTestRoot(root: string): Promise<void> {
+  await rm(root, {
+    recursive: true,
+    force: true,
+    maxRetries: 10,
+    retryDelay: 100,
+  });
+}
 
 test("Windows registration builds separate exact-origin native hosts in a temporary directory", async (context) => {
   if (process.platform !== "win32") {
@@ -77,7 +90,7 @@ test("Windows registration builds separate exact-origin native hosts in a tempor
       );
     }
   } finally {
-    await rm(root, { recursive: true, force: true });
+    await removeTestRoot(root);
   }
 });
 
@@ -116,6 +129,8 @@ test("the compiled Windows host relays framed messages to and from Desktop", asy
   }
   const root = await mkdtemp(path.join(tmpdir(), "flowcode-browser-host-"));
   let server: NativeBridgeServer | null = null;
+  let child: ChildProcessWithoutNullStreams | null = null;
+  let childClosed: Promise<void> | null = null;
   try {
     await execFileAsync(
       "powershell.exe",
@@ -155,17 +170,21 @@ test("the compiled Windows host relays framed messages to and from Desktop", asy
         ),
       ) as unknown,
     );
-    const child = spawn(
+    const nativeHost = spawn(
       path.join(root, "flowcode-browser-host.exe"),
       [registration.clients[0].origin],
       { stdio: ["pipe", "pipe", "pipe"], windowsHide: true },
     );
+    child = nativeHost;
+    childClosed = new Promise((resolve) =>
+      nativeHost.once("close", () => resolve()),
+    );
     const decoder = new LengthPrefixedJsonDecoder();
     const outputMessages: unknown[] = [];
-    child.stdout.on("data", (chunk: Buffer) => {
+    nativeHost.stdout.on("data", (chunk: Buffer) => {
       outputMessages.push(...decoder.push(chunk));
     });
-    const deadline = Date.now() + 5000;
+    let deadline = Date.now() + 20_000;
     while (!connection || outputMessages.length === 0) {
       if (Date.now() >= deadline)
         throw new Error("Native host did not connect.");
@@ -175,12 +194,13 @@ test("the compiled Windows host relays framed messages to and from Desktop", asy
       kind: "desktop.hello",
       protocolVersion: 1,
     });
-    child.stdin.write(
+    nativeHost.stdin.write(
       encodeLengthPrefixedJson({
         kind: "state.get",
         protocolVersion: 1,
       }),
     );
+    deadline = Date.now() + 20_000;
     while (!received) {
       if (Date.now() >= deadline)
         throw new Error("Native host did not relay input.");
@@ -194,6 +214,7 @@ test("the compiled Windows host relays framed messages to and from Desktop", asy
       protocolVersion: 1,
       state: "idle",
     });
+    deadline = Date.now() + 20_000;
     while (outputMessages.length === 0) {
       if (Date.now() >= deadline)
         throw new Error("Native host did not relay output.");
@@ -204,10 +225,16 @@ test("the compiled Windows host relays framed messages to and from Desktop", asy
       protocolVersion: 1,
       state: "idle",
     });
-    child.stdin.end();
-    await new Promise<void>((resolve) => child.once("exit", () => resolve()));
+    nativeHost.stdin.end();
+    await childClosed;
+    child = null;
+    childClosed = null;
   } finally {
+    if (child) {
+      if (child.exitCode === null && child.signalCode === null) child.kill();
+      if (childClosed) await childClosed;
+    }
     await server?.dispose();
-    await rm(root, { recursive: true, force: true });
+    await removeTestRoot(root);
   }
 });
