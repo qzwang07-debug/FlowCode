@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "environmentProfileId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "environmentHash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "chrome",
+        "edge",
+        "ziniao"
+      ]
+    },
+    "binding": {
+      "type": "object",
+      "properties": {
+        "accountRef": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "storeId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 192
+        },
+        "expectedName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "accountRef",
+        "storeId",
+        "expectedName"
+      ],
+      "additionalProperties": false
+    },
+    "owner": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "recording"
+            },
+            "sessionId": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+            },
+            "projectId": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+            }
+          },
+          "required": [
+            "kind",
+            "sessionId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "run"
+            },
+            "runId": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+            },
+            "projectId": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+            },
+            "targetId": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+            }
+          },
+          "required": [
+            "kind",
+            "runId",
+            "projectId",
+            "targetId"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+          },
+          "ownership": {
+            "type": "string",
+            "enum": [
+              "borrowed",
+              "created"
+            ]
+          },
+          "allowAssociatedPopups": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "ownership",
+          "allowAssociatedPopups"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "launchOwnership": {
+      "type": "string",
+      "enum": [
+        "borrowed",
+        "flowcode"
+      ]
+    },
+    "issuedAt": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "expiresAt": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "preparing",
+        "active",
+        "paused",
+        "released",
+        "expired",
+        "revoked"
+      ]
+    },
+    "releasedAt": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "environmentProfileId",
+    "environmentHash",
+    "provider",
+    "owner",
+    "pages",
+    "launchOwnership",
+    "issuedAt",
+    "expiresAt",
+    "state"
+  ],
+  "additionalProperties": false,
+  "$comment": "Structural interchange schema. Host MUST additionally run the corresponding Zod graph/refinement validator and Blueprint content-hash verifier; this JSON Schema alone does not establish execution readiness or privacy."
+}

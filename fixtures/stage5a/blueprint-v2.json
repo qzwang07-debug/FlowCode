@@ -1,0 +1,289 @@
+{
+  "schemaVersion": 2,
+  "id": "fixture-order",
+  "revision": 1,
+  "contentHash": "a68c4356073d2068c34d357e0c14b69bff88ffc80011af9cd08be53873b8b2e9",
+  "source": {
+    "sessionId": "fixture-session",
+    "sessionSchemaVersion": 2,
+    "eventSchemaVersion": 1,
+    "evidenceVersion": 1,
+    "evidenceHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "projectKind": "web-test",
+  "intent": "Submit, assert success before navigation, inspect a popup and pass an extracted identifier to a later input.",
+  "pages": [
+    {
+      "id": "main",
+      "kind": "existing"
+    },
+    {
+      "id": "popup",
+      "kind": "popup",
+      "openedByResultRef": "popup-opened",
+      "closedByStepId": "close-popup"
+    }
+  ],
+  "frames": [
+    {
+      "id": "order-frame",
+      "pageRef": "main",
+      "locatorChain": [
+        {
+          "kind": "test-id",
+          "value": "order-frame"
+        }
+      ]
+    }
+  ],
+  "preconditions": [
+    {
+      "id": "local-fixture",
+      "kind": "environment",
+      "description": "Use an authorized local test environment."
+    }
+  ],
+  "variables": [
+    {
+      "id": "customer",
+      "name": "Customer",
+      "type": "string",
+      "source": "runtime",
+      "required": true,
+      "sensitive": false
+    },
+    {
+      "id": "order-id",
+      "name": "Order ID",
+      "type": "string",
+      "source": "derived",
+      "required": true,
+      "sensitive": false,
+      "producer": {
+        "stepId": "extract-id",
+        "outputRef": "identifier"
+      }
+    },
+    {
+      "id": "upload-file",
+      "name": "Upload file",
+      "type": "file",
+      "source": "runtime",
+      "required": true,
+      "sensitive": false
+    }
+  ],
+  "steps": [
+    {
+      "id": "fill-name",
+      "action": "fill",
+      "description": "Fixture fill-name",
+      "handling": "automatic",
+      "contextStatus": "resolved",
+      "pageRef": "main",
+      "frameRef": "order-frame",
+      "target": {
+        "kind": "label",
+        "value": "Customer"
+      },
+      "input": {
+        "kind": "variable",
+        "variableRef": "customer"
+      },
+      "outputs": [],
+      "evidenceRefs": [
+        "event"
+      ]
+    },
+    {
+      "id": "submit",
+      "action": "submit",
+      "description": "Fixture submit",
+      "handling": "automatic",
+      "contextStatus": "resolved",
+      "pageRef": "main",
+      "target": {
+        "kind": "test-id",
+        "value": "fixture-form"
+      },
+      "outputs": [],
+      "evidenceRefs": [
+        "event"
+      ]
+    },
+    {
+      "id": "navigate-result",
+      "action": "navigate",
+      "description": "Fixture navigate-result",
+      "handling": "automatic",
+      "contextStatus": "resolved",
+      "pageRef": "main",
+      "urlPattern": "/fixture/result",
+      "outputs": [],
+      "evidenceRefs": [
+        "event"
+      ]
+    },
+    {
+      "id": "open-popup",
+      "action": "click",
+      "description": "Fixture open-popup",
+      "handling": "automatic",
+      "contextStatus": "resolved",
+      "pageRef": "main",
+      "target": {
+        "kind": "role",
+        "role": "button",
+        "name": "Details"
+      },
+      "outputs": [],
+      "evidenceRefs": [
+        "event"
+      ]
+    },
+    {
+      "id": "extract-id",
+      "action": "extract",
+      "description": "Fixture extract-id",
+      "handling": "automatic",
+      "contextStatus": "resolved",
+      "pageRef": "popup",
+      "outputs": [
+        {
+          "id": "identifier",
+          "variableRef": "order-id",
+          "kind": "text",
+          "target": {
+            "kind": "test-id",
+            "value": "order-id"
+          }
+        }
+      ],
+      "evidenceRefs": [
+        "event"
+      ]
+    },
+    {
+      "id": "fill-reference",
+      "action": "fill",
+      "description": "Fixture fill-reference",
+      "handling": "automatic",
+      "contextStatus": "resolved",
+      "pageRef": "main",
+      "target": {
+        "kind": "label",
+        "value": "Reference"
+      },
+      "input": {
+        "kind": "variable",
+        "variableRef": "order-id"
+      },
+      "outputs": [],
+      "evidenceRefs": [
+        "event"
+      ]
+    },
+    {
+      "id": "upload",
+      "action": "upload",
+      "description": "Fixture upload",
+      "handling": "automatic",
+      "contextStatus": "resolved",
+      "pageRef": "main",
+      "target": {
+        "kind": "label",
+        "value": "Attachment"
+      },
+      "input": {
+        "kind": "variable",
+        "variableRef": "upload-file"
+      },
+      "outputs": [],
+      "evidenceRefs": [
+        "event"
+      ]
+    },
+    {
+      "id": "inspect",
+      "action": "manual",
+      "description": "Ask the user to inspect the local fixture result.",
+      "handling": "manual",
+      "contextStatus": "resolved",
+      "pageRef": "main",
+      "outputs": [],
+      "evidenceRefs": [
+        "event"
+      ]
+    }
+  ],
+  "cleanup": [
+    {
+      "id": "close-popup",
+      "action": "close-page",
+      "description": "Fixture close-popup",
+      "handling": "automatic",
+      "contextStatus": "resolved",
+      "pageRef": "popup",
+      "outputs": [],
+      "evidenceRefs": [
+        "event"
+      ]
+    }
+  ],
+  "assertions": [
+    {
+      "id": "success",
+      "source": "user-marker",
+      "matcher": "toContainText",
+      "expected": {
+        "kind": "literal",
+        "value": "Success"
+      },
+      "target": {
+        "kind": "role",
+        "role": "status"
+      },
+      "confirmed": true,
+      "contextStatus": "resolved",
+      "beforeStepId": "navigate-result",
+      "afterStepId": "submit",
+      "pageRef": "main",
+      "wait": {
+        "kind": "locator",
+        "target": {
+          "kind": "role",
+          "role": "status"
+        },
+        "state": "visible",
+        "timeoutMs": 5000
+      },
+      "evidenceRefs": [
+        "event"
+      ]
+    }
+  ],
+  "results": [
+    {
+      "id": "popup-opened",
+      "kind": "popup",
+      "triggerStepId": "open-popup",
+      "pageRef": "popup",
+      "evidenceRef": "event"
+    }
+  ],
+  "evidenceRefs": [
+    {
+      "id": "event",
+      "kind": "event",
+      "reference": "fixture-event",
+      "sessionId": "fixture-session",
+      "evidenceVersion": 1
+    }
+  ],
+  "gaps": [],
+  "privacy": {
+    "containsSensitiveData": false,
+    "redactions": [],
+    "userReviewed": true
+  }
+}

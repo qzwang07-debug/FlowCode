@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "number",
+      "const": 2
+    },
+    "sourceId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,191}$"
+    },
+    "sessionId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "chrome",
+        "edge",
+        "ziniao"
+      ]
+    },
+    "environmentProfileId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "leaseId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "actor": {
+      "type": "string",
+      "enum": [
+        "human",
+        "automation",
+        "unknown"
+      ]
+    },
+    "transport": {
+      "type": "string",
+      "enum": [
+        "extension-native",
+        "cdp-adapter"
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "sourceId",
+    "sessionId",
+    "provider",
+    "environmentProfileId",
+    "leaseId",
+    "actor",
+    "transport"
+  ],
+  "additionalProperties": false,
+  "$comment": "Structural interchange schema. Host MUST additionally run the corresponding Zod graph/refinement validator and Blueprint content-hash verifier; this JSON Schema alone does not establish execution readiness or privacy."
+}

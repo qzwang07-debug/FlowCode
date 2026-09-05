@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "version": "1.18.29",
+  "binaryHash": "88d2fa691b2d9e32fde6d1039382a850ddf96fe49cd41683c6375fe1dc8ec2a5",
+  "os": "win32",
+  "auth": "pass",
+  "mcp": {
+    "probe": {
+      "status": "connected"
+    }
+  },
+  "structuredResult": {
+    "schemaVersion": 1,
+    "sessionRef": "fixture-session",
+    "observed": "restricted-mcp-called",
+    "count": 1
+  },
+  "restrictedTools": [
+    [
+      "probe_read_fixture",
+      "StructuredOutput"
+    ],
+    [
+      "probe_read_fixture",
+      "StructuredOutput"
+    ]
+  ],
+  "actualMcpCalls": [
+    "read_fixture"
+  ],
+  "agentPermissions": [
+    {
+      "permission": "*",
+      "pattern": "*",
+      "action": "allow"
+    },
+    {
+      "permission": "doom_loop",
+      "pattern": "*",
+      "action": "ask"
+    },
+    {
+      "permission": "external_directory",
+      "pattern": "*",
+      "action": "ask"
+    },
+    {
+      "permission": "external_directory",
+      "pattern": "<probe-root>\\data\\opencode\\tool-output\\*",
+      "action": "allow"
+    },
+    {
+      "permission": "external_directory",
+      "pattern": "<probe-root>\\temp\\opencode\\*",
+      "action": "allow"
+    },
+    {
+      "permission": "question",
+      "pattern": "*",
+      "action": "deny"
+    },
+    {
+      "permission": "plan_enter",
+      "pattern": "*",
+      "action": "deny"
+    },
+    {
+      "permission": "plan_exit",
+      "pattern": "*",
+      "action": "deny"
+    },
+    {
+      "permission": "read",
+      "pattern": "*",
+      "action": "allow"
+    },
+    {
+      "permission": "read",
+      "pattern": "*.env",
+      "action": "ask"
+    },
+    {
+      "permission": "read",
+      "pattern": "*.env.*",
+      "action": "ask"
+    },
+    {
+      "permission": "read",
+      "pattern": "*.env.example",
+      "action": "allow"
+    },
+    {
+      "permission": "*",
+      "pattern": "*",
+      "action": "deny"
+    },
+    {
+      "permission": "probe_*",
+      "pattern": "*",
+      "action": "allow"
+    },
+    {
+      "permission": "StructuredOutput",
+      "pattern": "*",
+      "action": "allow"
+    },
+    {
+      "permission": "*",
+      "pattern": "*",
+      "action": "deny"
+    },
+    {
+      "permission": "probe_*",
+      "pattern": "*",
+      "action": "allow"
+    },
+    {
+      "permission": "StructuredOutput",
+      "pattern": "*",
+      "action": "allow"
+    },
+    {
+      "permission": "external_directory",
+      "pattern": "<probe-root>\\data\\opencode\\tool-output\\*",
+      "action": "allow"
+    }
+  ],
+  "autoupdate": false,
+  "shutdown": "pass",
+  "provider": "local deterministic HTTP fixture; no model inference",
+  "providerTurns": 2
+}

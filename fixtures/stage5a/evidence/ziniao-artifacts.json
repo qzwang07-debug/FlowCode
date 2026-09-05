@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "kernel": "142.0.7444.168",
+  "playwright": "1.62.1",
+  "existingContext": true,
+  "video": {
+    "status": "unknown",
+    "reason": "recordVideo is not configured on the borrowed context; no inferred video support"
+  },
+  "trace": {
+    "status": "supported",
+    "scope": "actions-only; snapshots/screenshots/sources disabled",
+    "networkBytes": 0,
+    "capturedResourceCount": 0
+  },
+  "fixtureScreenshot": "pass",
+  "cliDownloadDirectoryReported": true,
+  "wrongExpectedNameRejected": true,
+  "accountConfigFingerprintRechecked": true,
+  "originalPagesPreserved": true
+}

@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "version": "1.18.29",
+  "endpoint": "GET /doc",
+  "rawCaptureSha256": "67a9c8036e63776d80376ecd34c022d13a26615c5e5722e1c301250942588088",
+  "completePaths": 162
+}

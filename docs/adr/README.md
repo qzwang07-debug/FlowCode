@@ -19,3 +19,7 @@ one by adding a new ADR and linking both records.
 ## Index
 
 - [0001 — FlowCode fork baseline and upstream lineage](0001-flowcode-fork-baseline.md)
+- [0002 — Versioned execution contracts](0002-versioned-execution-contracts.md)
+- [0003 — Pinned OpenCode protocol and configuration boundary](0003-opencode-pinned-integration.md)
+- [0004 — Windows execution isolation feasibility](0004-windows-execution-isolation.md)
+- [0005 — Ziniao recording and project-connection path](0005-ziniao-cdp-recording-and-runtime.md)

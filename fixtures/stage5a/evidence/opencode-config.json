@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "version": "1.18.29",
+  "merged": {
+    "precedence": "inline wins overlapping username",
+    "agents": [
+      "custom-canary",
+      "directory-canary",
+      "global-canary",
+      "home-canary",
+      "inline-canary",
+      "project-canary",
+      "standalone-canary"
+    ],
+    "globalMcpMerged": true,
+    "pluginActuallyExecuted": true,
+    "customToolActuallyLoaded": true
+  },
+  "isolated": {
+    "ambientGlobalProjectHomeExcluded": true,
+    "pluginAbsent": true,
+    "mcpAbsent": true,
+    "customToolAbsent": true,
+    "controls": [
+      "empty HOME/USERPROFILE",
+      "empty XDG config/data/cache/state",
+      "managed config directory",
+      "project discovery disabled",
+      "--pure",
+      "minimal process environment"
+    ]
+  },
+  "conclusion": "OPENCODE_CONFIG_DIR alone is not isolation. Config containment is separate from OS containment."
+}

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "cliVersion": "1.0.8",
+  "provenance": "Observed response shapes; all account/store values replaced with synthetic fixture data, unrelated IP fields omitted.",
+  "list": {"ok":true,"data":{"items":[{"storeId":"fixture-store","storeName":"Fixture store","platformName":"fixture"}],"limit":100,"page":1,"total":1}},
+  "resolve": {"ok":true,"data":{"matched":true,"matchedBy":"name","name":"Fixture store","platformName":"fixture","storeId":"fixture-store"}},
+  "stopped": {"ok":true,"data":{"downloadFolderPath":null,"running":false,"storeId":"fixture-store"}},
+  "running": {"ok":true,"data":{"downloadFolderPath":"<local-store-download-directory>","running":true,"storeId":"fixture-store","storeName":"Fixture store"}},
+  "expectedNameEcho": {"ok":true,"data":{"matched":true,"matchedBy":"id","name":"Wrong expected name","platformName":"fixture","storeId":"fixture-store"}},
+  "observations": [
+    "The first 30-second open invocation timed out; state later changed from not running to running without an immediate repeat launch.",
+    "resolve --id --expected-name can echo the requested name; host independently verifies authoritative paginated list entries.",
+    "Current CLI config has currentProfile/profiles fields; contents remain local. Profile plus config-byte fingerprint binds account identity.",
+    "No actual cold kernel download response was observed; kernelDownloading handling remains unknown, not supported."
+  ]
+}

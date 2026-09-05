@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "os": "10.0.26200",
+  "candidate": "AppContainer (zero capabilities) + one-process kill-on-close Job + explicit directory ACL + minimal environment",
+  "control": {
+    "insideRead": true,
+    "insideWrite": true,
+    "outsideReadBlocked": false,
+    "outsideWriteBlocked": false,
+    "junctionReadBlocked": false,
+    "loopbackBlocked": false,
+    "internetBlocked": false,
+    "hostProcessAccessBlocked": false,
+    "childProcessBlocked": false,
+    "credentialReadBlocked": false,
+    "credentialEnvironmentAbsent": false,
+    "appContainerToken": false
+  },
+  "sandbox": {
+    "insideRead": true,
+    "insideWrite": true,
+    "outsideReadBlocked": true,
+    "outsideWriteBlocked": true,
+    "junctionReadBlocked": true,
+    "loopbackBlocked": true,
+    "internetBlocked": true,
+    "hostProcessAccessBlocked": true,
+    "childProcessBlocked": true,
+    "credentialReadBlocked": true,
+    "credentialEnvironmentAbsent": true,
+    "appContainerToken": true
+  },
+  "unreviewedCodeExecutionEnabled": false,
+  "nodeControl": {
+    "version": "24.19.0",
+    "checks": {
+      "insideRead": true,
+      "insideWrite": true,
+      "outsideReadBlocked": false,
+      "outsideWriteBlocked": false,
+      "junctionReadBlocked": false,
+      "loopbackBlocked": false,
+      "internetBlocked": false,
+      "childProcessBlocked": false,
+      "credentialEnvironmentAbsent": false
+    }
+  },
+  "nodeSandbox": {
+    "version": "24.19.0",
+    "checks": {
+      "insideRead": true,
+      "insideWrite": true,
+      "outsideReadBlocked": true,
+      "outsideWriteBlocked": true,
+      "junctionReadBlocked": true,
+      "loopbackBlocked": true,
+      "internetBlocked": true,
+      "childProcessBlocked": true,
+      "credentialEnvironmentAbsent": true
+    }
+  },
+  "nativeCompatibilityVersion": "6.2.9200.0",
+  "runtimeScope": ".NET Framework 4 and Node 24.19.0 fixed canaries; full OpenCode/Playwright process-tree integration remains a later Runner task",
+  "verification": "pass: positive control reachable, AppContainer boundary blocked"
+}

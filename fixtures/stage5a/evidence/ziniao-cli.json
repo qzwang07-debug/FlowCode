@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "cliVersion": "1.0.8",
+  "binarySha256": "4e838532dbcf791b2dc5295a36a70980c0450999f87abaff78c24338bf83c548",
+  "listAndExactBinding": "pass",
+  "accountConfigFingerprint": "pass",
+  "selectedStoreRunning": true,
+  "downloadDirectoryReported": true,
+  "toolNames": [
+    "resolve_store",
+    "list_stores",
+    "open_store",
+    "close_store",
+    "visit_page",
+    "click_element",
+    "input_text",
+    "get_page_content",
+    "query_elements",
+    "scroll_page",
+    "take_screenshot",
+    "wait_for_element",
+    "wait_for_navigation",
+    "extract_data",
+    "run_automation",
+    "prepare_agent",
+    "get_logs",
+    "download_file",
+    "execute_script",
+    "debug_compare_lists"
+  ],
+  "helpFlags": {
+    "store list": [
+      "--all",
+      "--format",
+      "--help",
+      "--jq",
+      "--keyword",
+      "--limit",
+      "--page",
+      "--type"
+    ],
+    "store resolve": [
+      "--expected-name",
+      "--format",
+      "--help",
+      "--id",
+      "--jq",
+      "--name"
+    ],
+    "store open": [
+      "--expected-name",
+      "--headless",
+      "--help",
+      "--id",
+      "--jq",
+      "--name",
+      "--privacy",
+      "--url",
+      "--window-ratio"
+    ],
+    "store prepare-agent": [
+      "--help",
+      "--jq"
+    ],
+    "page extract": [
+      "--format",
+      "--help",
+      "--jq",
+      "--mode",
+      "--payload",
+      "--store-id"
+    ],
+    "page snapshot": [
+      "--help",
+      "--jq",
+      "--max-items",
+      "--store-id",
+      "--target-id",
+      "--timeout"
+    ],
+    "page exec": [
+      "--help",
+      "--jq",
+      "--script",
+      "--store-id",
+      "--target-id",
+      "--timeout"
+    ],
+    "page upload": [
+      "--confirmation-token",
+      "--file",
+      "--help",
+      "--hint",
+      "--jq",
+      "--purpose",
+      "--selector",
+      "--store-id",
+      "--target-id",
+      "--timeout",
+      "--trigger-ref",
+      "--trigger-selector"
+    ],
+    "automation run": [
+      "--help",
+      "--jq",
+      "--steps"
+    ]
+  },
+  "mutatingCommandsExecuted": false
+}

@@ -1,0 +1,297 @@
+{
+  "schemaVersion": 1,
+  "id": "ziniao-stage5a-validated",
+  "provider": "ziniao",
+  "checkedAt": 1788585413527,
+  "versions": {
+    "cli": "1.0.8",
+    "client": "6.26.6.7",
+    "kernel": "142.0.7444.168",
+    "playwright": "1.62.1"
+  },
+  "transport": "cdp-adapter",
+  "results": [
+    {
+      "feature": "cli-query",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-artifacts"
+      ],
+      "detail": "Real version-bound selected-store connection, authoritative name rejection and config fingerprint recheck."
+    },
+    {
+      "feature": "exact-store-binding",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-artifacts"
+      ],
+      "detail": "Real version-bound selected-store connection, authoritative name rejection and config fingerprint recheck."
+    },
+    {
+      "feature": "account-binding",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-artifacts"
+      ],
+      "detail": "Real version-bound selected-store connection, authoritative name rejection and config fingerprint recheck."
+    },
+    {
+      "feature": "store-launch",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-startup"
+      ],
+      "detail": "Observed not-running to running transition after a timed-out launch; no blind retry. Cold kernel download was not observed."
+    },
+    {
+      "feature": "kernel-preparation",
+      "status": "unknown",
+      "evidenceRefs": [],
+      "detail": "Not verified to the full capability contract. See the 5A matrix; do not infer support."
+    },
+    {
+      "feature": "extension-load",
+      "status": "unsupported",
+      "evidenceRefs": [
+        "ziniao-browser"
+      ],
+      "detail": "Extensions.loadUnpacked is unavailable in the tested launch; Native Messaging itself remains unknown."
+    },
+    {
+      "feature": "site-permission",
+      "status": "unknown",
+      "evidenceRefs": [],
+      "detail": "Not verified to the full capability contract. See the 5A matrix; do not infer support."
+    },
+    {
+      "feature": "native-messaging",
+      "status": "unknown",
+      "evidenceRefs": [],
+      "detail": "Not verified to the full capability contract. See the 5A matrix; do not infer support."
+    },
+    {
+      "feature": "endpoint-identity",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-artifacts"
+      ],
+      "detail": "Real version-bound selected-store connection, authoritative name rejection and config fingerprint recheck."
+    },
+    {
+      "feature": "semantic-capture",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-manual-capture"
+      ],
+      "detail": "Actual user input/click captured; manual receipt is not a whole-run Flush pass. Final Flush has its separate evidence."
+    },
+    {
+      "feature": "browser.document",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-browser"
+      ],
+      "detail": "Trusted semantic events observed in the local fixture; production mapping is Stage 5B."
+    },
+    {
+      "feature": "browser.navigate",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-browser"
+      ],
+      "detail": "Trusted semantic events observed in the local fixture; production mapping is Stage 5B."
+    },
+    {
+      "feature": "browser.click",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-browser"
+      ],
+      "detail": "Trusted semantic events observed in the local fixture; production mapping is Stage 5B."
+    },
+    {
+      "feature": "browser.fill",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-browser"
+      ],
+      "detail": "Trusted semantic events observed in the local fixture; production mapping is Stage 5B."
+    },
+    {
+      "feature": "browser.select",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-browser"
+      ],
+      "detail": "Trusted semantic events observed in the local fixture; production mapping is Stage 5B."
+    },
+    {
+      "feature": "browser.check",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-browser"
+      ],
+      "detail": "Trusted semantic events observed in the local fixture; production mapping is Stage 5B."
+    },
+    {
+      "feature": "browser.submit",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-browser"
+      ],
+      "detail": "Trusted semantic events observed in the local fixture; production mapping is Stage 5B."
+    },
+    {
+      "feature": "browser.tab-open",
+      "status": "unknown",
+      "evidenceRefs": [],
+      "detail": "Not verified to the full capability contract. See the 5A matrix; do not infer support."
+    },
+    {
+      "feature": "browser.tab-close",
+      "status": "unknown",
+      "evidenceRefs": [],
+      "detail": "Not verified to the full capability contract. See the 5A matrix; do not infer support."
+    },
+    {
+      "feature": "browser.popup",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-browser"
+      ],
+      "detail": "Real local-fixture transport probe; no claim about production UI or all sites."
+    },
+    {
+      "feature": "browser.upload",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-browser"
+      ],
+      "detail": "Trusted semantic events observed in the local fixture; production mapping is Stage 5B."
+    },
+    {
+      "feature": "browser.download",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-browser"
+      ],
+      "detail": "Real local-fixture transport probe; no claim about production UI or all sites."
+    },
+    {
+      "feature": "iframe",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-browser"
+      ],
+      "detail": "Real local-fixture transport probe; no claim about production UI or all sites."
+    },
+    {
+      "feature": "shadow-dom",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-browser"
+      ],
+      "detail": "Real local-fixture transport probe; no claim about production UI or all sites."
+    },
+    {
+      "feature": "spa",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-browser"
+      ],
+      "detail": "Real local-fixture transport probe; no claim about production UI or all sites."
+    },
+    {
+      "feature": "flush",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-browser"
+      ],
+      "detail": "Real local-fixture transport probe; no claim about production UI or all sites."
+    },
+    {
+      "feature": "reconnect",
+      "status": "unknown",
+      "evidenceRefs": [],
+      "detail": "Not verified to the full capability contract. See the 5A matrix; do not infer support."
+    },
+    {
+      "feature": "trusted-origin",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-browser"
+      ],
+      "detail": "Real local-fixture transport probe; no claim about production UI or all sites."
+    },
+    {
+      "feature": "cross-store-isolation",
+      "status": "unknown",
+      "evidenceRefs": [],
+      "detail": "Not verified to the full capability contract. See the 5A matrix; do not infer support."
+    },
+    {
+      "feature": "playwright-cdp",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-artifacts"
+      ],
+      "detail": "Real version-bound selected-store connection, authoritative name rejection and config fingerprint recheck."
+    },
+    {
+      "feature": "existing-context",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-artifacts"
+      ],
+      "detail": "Real version-bound selected-store connection, authoritative name rejection and config fingerprint recheck."
+    },
+    {
+      "feature": "trace",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-artifacts"
+      ],
+      "detail": "Actions-only Trace with snapshots/screenshots/sources disabled; 0 network bytes and 0 resources."
+    },
+    {
+      "feature": "video",
+      "status": "unknown",
+      "evidenceRefs": [],
+      "detail": "Not verified to the full capability contract. See the 5A matrix; do not infer support."
+    },
+    {
+      "feature": "upload",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-browser"
+      ],
+      "detail": "Real local-fixture transport probe; no claim about production UI or all sites."
+    },
+    {
+      "feature": "download",
+      "status": "supported",
+      "evidenceRefs": [
+        "ziniao-browser"
+      ],
+      "detail": "Real local-fixture transport probe; no claim about production UI or all sites."
+    },
+    {
+      "feature": "login-expired",
+      "status": "unknown",
+      "evidenceRefs": [],
+      "detail": "Not verified to the full capability contract. See the 5A matrix; do not infer support."
+    },
+    {
+      "feature": "pause-resume",
+      "status": "unknown",
+      "evidenceRefs": [],
+      "detail": "Not verified to the full capability contract. See the 5A matrix; do not infer support."
+    },
+    {
+      "feature": "side-effect-retry",
+      "status": "unknown",
+      "evidenceRefs": [],
+      "detail": "Not verified to the full capability contract. See the 5A matrix; do not infer support."
+    }
+  ]
+}

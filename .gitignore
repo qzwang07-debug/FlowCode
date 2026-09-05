@@ -5,6 +5,7 @@ release
 .compliance
 .compliance-cache
 .compliance-review
+.stage5a/
 *.log
 .DS_Store
 
