@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "cli": "1.0.8",
+  "client": "6.26.6.7",
+  "kernel": "142.0.7444.168",
+  "playwright": "1.62.1",
+  "exactStoreBinding": true,
+  "discovery": "version-bound exact chrome_<storeId> profile + owner PID + owned loopback listener; no arbitrary port scan",
+  "originalPageCount": 1,
+  "fixtureTransport": "local bytes fulfilled for a unique nonce path on the already authorized site origin; cross-origin fixture uses alternate port; no request to the business server; direct loopback and .test navigation blocked by this client",
+  "extensionLoad": {
+    "status": "unavailable-in-current-launch",
+    "reason": "Error: cdpSession.send: Protocol error (Extensions.loadUnpacked): Method not available."
+  },
+  "popup": "pass",
+  "upload": "pass",
+  "download": {
+    "suggestedFilename": "flowcode-fixture.csv",
+    "failure": null
+  },
+  "downloadImported": "pass",
+  "pageCannotAccessBinding": true,
+  "syntheticDispatch": {
+    "eventsBefore": 18,
+    "note": "Main-world dispatch is rejected by isTrusted; pending input flushes are checked separately."
+  },
+  "manualHumanCapture": "pass",
+  "flush": "gap",
+  "capturedEventCounts": {
+    "browser.document": 5,
+    "browser.fill": 6,
+    "browser.click": 11,
+    "browser.check": 1,
+    "browser.submit": 1,
+    "browser.navigate": 1
+  },
+  "frameCount": 4,
+  "eventsBounded": true,
+  "passwordBlocked": true,
+  "rejectedBindings": 0,
+  "gaps": 0,
+  "navigationReinjection": true,
+  "crossStoreIsolation": "scope verified against selected PID and local pages; no events collected from pre-existing/unrelated targets",
+  "originalPagesPreserved": true
+}

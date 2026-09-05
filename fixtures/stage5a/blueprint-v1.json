@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "legacy-blueprint",
+  "projectKind": "web-test",
+  "intent": "Submit the local fixture form and verify success.",
+  "preconditions": [],
+  "variables": [],
+  "steps": [{"id":"submit","action":"click","description":"Submit fixture form.","target":{"kind":"role","role":"button","name":"Submit"},"evidenceRefs":["event-submit"]}],
+  "assertions": [{"id":"success","source":"user-marker","matcher":"toBeVisible","target":{"kind":"role","role":"status"},"confirmed":true,"evidenceRefs":["event-success"]}],
+  "cleanup": [],
+  "evidenceRefs": [{"id":"event-submit","kind":"event","reference":"evt-submit"},{"id":"event-success","kind":"event","reference":"evt-success"}],
+  "privacy": {"containsSensitiveData":false,"redactions":[],"userReviewed":true}
+}

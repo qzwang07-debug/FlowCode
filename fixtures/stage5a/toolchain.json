@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "validatedOn": "2026-09-05",
+  "opencode": {
+    "version": "1.18.29",
+    "installation": "Explicit local external runtime installation; no auto-upgrade or bundled redistribution in Stage 5A",
+    "npmPackage": "opencode-windows-x64@1.18.29",
+    "npmIntegrity": "sha512-xtWiZNMiwFtBl7q9yMG+XK/BTYGfgFoHLDx4ruWVYCoxjV0NYwjJi6rB9B3xIVbTclzu81YLKNFcT3kNBEG9Yw==",
+    "binarySha256": "88d2fa691b2d9e32fde6d1039382a850ddf96fe49cd41683c6375fe1dc8ec2a5",
+    "license": "MIT (upstream); external executable not committed"
+  },
+  "ziniao": {
+    "cliVersion": "1.0.8",
+    "clientVersion": "6.26.6.7",
+    "kernelVersion": "142.0.7444.168",
+    "cliBinarySha256": "4e838532dbcf791b2dc5295a36a70980c0450999f87abaff78c24338bf83c548",
+    "installation": "Detect user-installed CLI; UNLICENSED npm package is not redistributed"
+  },
+  "playwright": "1.62.1",
+  "node": "24.19.0",
+  "windows": "10.0.26200 x64"
+}

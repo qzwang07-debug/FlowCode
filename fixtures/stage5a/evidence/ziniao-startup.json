@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "cliVersion": "1.0.8",
+  "provenance": "Sanitized transcription of the initial scoped CLI probe output in the 2026-09-05 acceptance session; no original store identifiers retained.",
+  "initialState": {"running":false,"downloadDirectoryReported":false},
+  "openInvocation": {"command":"store open --id <selected-store> --expected-name <selected-name>","timeoutMs":30000,"result":"timed-out"},
+  "subsequentState": {"running":true,"downloadDirectoryReported":true},
+  "blindRetryPerformed": false,
+  "kernelDownloadResponseObserved": false
+}

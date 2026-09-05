@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "chrome",
+        "edge",
+        "ziniao"
+      ]
+    },
+    "checkedAt": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "versions": {
+      "type": "object",
+      "properties": {
+        "cli": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "client": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "kernel": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "playwright": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      },
+      "additionalProperties": false
+    },
+    "transport": {
+      "type": "string",
+      "enum": [
+        "extension-native",
+        "cdp-adapter",
+        "undecided"
+      ]
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "feature": {
+            "type": "string",
+            "enum": [
+              "cli-query",
+              "exact-store-binding",
+              "account-binding",
+              "store-launch",
+              "kernel-preparation",
+              "extension-load",
+              "site-permission",
+              "native-messaging",
+              "endpoint-identity",
+              "semantic-capture",
+              "browser.document",
+              "browser.navigate",
+              "browser.click",
+              "browser.fill",
+              "browser.select",
+              "browser.check",
+              "browser.submit",
+              "browser.tab-open",
+              "browser.tab-close",
+              "browser.popup",
+              "browser.upload",
+              "browser.download",
+              "iframe",
+              "shadow-dom",
+              "spa",
+              "flush",
+              "reconnect",
+              "trusted-origin",
+              "cross-store-isolation",
+              "playwright-cdp",
+              "existing-context",
+              "trace",
+              "video",
+              "upload",
+              "download",
+              "login-expired",
+              "pause-resume",
+              "side-effect-retry"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "supported",
+              "unsupported",
+              "unknown"
+            ]
+          },
+          "evidenceRefs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+            }
+          },
+          "detail": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "feature",
+          "status",
+          "evidenceRefs",
+          "detail"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "provider",
+    "checkedAt",
+    "versions",
+    "transport",
+    "results"
+  ],
+  "additionalProperties": false,
+  "$comment": "Structural interchange schema. Host MUST additionally run the corresponding Zod graph/refinement validator and Blueprint content-hash verifier; this JSON Schema alone does not establish execution readiness or privacy."
+}
