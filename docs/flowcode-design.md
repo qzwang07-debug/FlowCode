@@ -1,14 +1,16 @@
 # FlowCode 产品与技术设计
 
-> 状态：已确认方向，进入实施准备
-> 文档版本：1.0
-> 日期：2026-09-01
+> 状态：阶段 0–4 已完成；本次修订规划阶段 5 及之后，新增能力尚未实现。
+> 文档版本：1.1
+> 日期：2026-09-05
 > 基线：Microsoft Skill Recorder 0.5.0（提交 `c7f2fe4402527a0eb7f4fc1b653bf438229bac61`）
-> 目标平台：Windows 11、Google Chrome、Microsoft Edge
+> 目标平台：Windows 11、Google Chrome、Microsoft Edge；阶段 5 起接入紫鸟浏览器。
+
+阶段 0–4 的实施任务与验收保持冻结。本版的 Schema 补强、紫鸟接入和功能建议全部属于阶段 5 及之后，允许后续演进共享模块，但不要求重做已完成阶段。详细 CLI 核查、能力边界与录制路径见 [紫鸟接入说明](ziniao-integration.md)。
 
 ## 1. 摘要
 
-FlowCode 是一个开源的“示范一次，生成并持续维护自动化项目”的桌面开发工具。它以 Skill Recorder 为产品与代码基线，保留跨应用的屏幕、窗口、剪贴板和旁白录制能力，并增加 Chrome/Edge 浏览器语义录制、可选 CDP 深度证据、项目模板、断言管理、代码查看、测试报告和 OpenCode 编码 Agent。
+FlowCode 是一个开源的“示范一次，生成并持续维护自动化项目”的桌面开发工具，服务于包括电商浏览器自动化在内的项目开发。它以 Skill Recorder 为产品与代码基线，保留跨应用的屏幕、窗口、剪贴板和旁白录制能力，已建立 Chrome/Edge 语义录制与确定性 Blueprint 基线；后续增加紫鸟店铺录制和运行、项目生成、断言管理、测试报告和 OpenCode 编码 Agent。
 
 FlowCode 不以机械重放录屏为目标。一次录制首先被转换为可审阅、可脱敏、与具体模型无关的 `Automation Blueprint`，随后由 OpenCode 在隔离的 Git 工作树中把 Blueprint 写入已经创建好的 Playwright 项目。用户可以只分析录制，也可以继续让 Agent 编码、运行、修复、查看 Diff 并接受或回滚结果。
 
@@ -25,6 +27,9 @@ FlowCode 支持两种项目：
 | 产品名称 | FlowCode |
 | 第一阶段平台 | Windows 11 |
 | 第一阶段浏览器 | Chrome、Edge |
+| 后续浏览器 | 阶段 5 增加紫鸟语义录制，阶段 6 增加紫鸟项目运行 |
+| 电商运行环境 | 紫鸟 CLI/ZClaw 管理店铺，按精确店铺绑定复用授权环境；代理、指纹和登录态由紫鸟管理 |
+| 紫鸟接入决策 | 阶段 5A 实测后固定采集和 Playwright 连接路径，不把 CLI 页面操作接口视为录制接口 |
 | 普通浏览器采集 | Manifest V3 扩展 + Native Messaging |
 | 深度浏览器采集 | 扩展按次申请 `debugger` 权限，通过 CDP 增强 |
 | 跨应用采集 | 第一阶段保留 Skill Recorder 现有能力，不新增原生 UIA 操作录制 |
@@ -65,6 +70,8 @@ FlowCode 将这些问题分解为采集、证据、分析、编码、验证和�
 6. 自动运行项目、采集报告、展示代码、断言、Diff 和 Agent 轨迹。
 7. 允许后续录制持续修改同一个项目，并安全接受或回滚。
 8. 在没有云端 AI 时仍能完成录制、证据保存、确定性时间线和导出。
+9. 从阶段 5 起，能够录制紫鸟中选定店铺的人工操作，再为两种项目生成代码并在选定店铺环境中运行。
+10. 支持步骤整理、生成前体检、数据提取与变量传递、人工接管、失败步骤局部补录，以及后续显式数据批次。
 
 ### 4.2 第一阶段非目标
 
@@ -76,6 +83,7 @@ FlowCode 将这些问题分解为采集、证据、分析、编码、验证和�
 - 不直接修改用户主分支，不自动推送远端。
 - 不建设通用 IDE，也不替代 VS Code。
 - 不同时维护多个 Coding Harness。
+- 首版不建设通用 ERP 管理后台、不修改紫鸟代理/指纹配置、不默认跨店铺批量操作；浏览器环境适配不增加第二个 Coding Harness。
 
 ## 5. 核心用户场景
 
@@ -125,6 +133,21 @@ FlowCode 将这些问题分解为采集、证据、分析、编码、验证和�
 - 断言建议。
 - Automation Blueprint 导出包。
 
+### 5.5 紫鸟电商店铺录制与项目生成（阶段 5/6）
+
+1. 用户在 Project Studio 选择紫鸟、精确店铺与目标项目/测试或 Workflow。
+2. FlowCode 检测 CLI、客户端/内核和采集/运行能力，核对账号引用与店铺身份并取得独占租约。
+3. 用户在保留代理、指纹和登录态的紫鸟环境中操作；FlowCode 记录该店铺的真实语义动作、页面上下文与桌面证据。
+4. 用户整理步骤、选择参数/固定值、确认断言，按生成前体检补齐缺口。
+5. OpenCode 在 Worktree 生成或修改 Playwright POM/Workflow 项目，在本地 Fixture/测试环境验证。
+6. 用户审阅 Diff 后，在运行页核对店铺与输入，发起实际业务运行；必要步骤暂停交给用户，结束显示逐步结果与产物。
+
+一次录制绑定一个店铺和一个 Target。停止录制或结束运行只释放本次采集/执行资源，默认保留用户原有店铺与页面。生成代码保存逻辑环境引用，不包含真实店铺 ID、临时 CDP 端点或快照 ref。
+
+### 5.6 持续维护与数据批次（阶段 7）
+
+页面变化导致失败时，用户选择失败步骤范围并补录，FlowCode 生成局部 Blueprint Patch 和代码 Diff，保留人工代码与已确认断言。之后可导入多组 JSON/CSV 数据，按行运行同一 Workflow；多店铺执行使用用户明确选择的店铺与数据映射，逐店隔离确认、状态和产物。
+
 ## 6. 总体架构
 
 ```mermaid
@@ -135,6 +158,12 @@ flowchart LR
         CDP[Optional chrome.debugger / CDP]
         CS --> SW
         CDP --> SW
+    end
+
+    subgraph Ziniao[紫鸟店铺环境：阶段 5 起]
+        ZC[CLI / ZClaw]
+        ZB[精确绑定的店铺浏览器]
+        ZC --> ZB
     end
 
     subgraph Desktop[FlowCode Desktop]
@@ -149,6 +178,9 @@ flowchart LR
         GS[Git Worktree Service]
         PR[Project Runner]
         RR[Report Reader]
+        ZS[ZiniaoCliService]
+        ZA[已验证的紫鸟语义采集 Adapter]
+        RT[Browser Runtime / 租约]
     end
 
     SW <--> BR
@@ -165,6 +197,12 @@ flowchart LR
     ES --> PS
     OC --> PS
     RR --> PS
+    PS --> ZS
+    ZS --> ZC
+    ZB --> ZA
+    ZA --> EF
+    PR --> RT
+    RT --> ZB
 ```
 
 ### 6.1 设计原则
@@ -175,7 +213,9 @@ flowchart LR
 - **先分析后写入**：分析器只读，编码 Agent 只能在用户确认后获得写权限。
 - **按需取证**：DOM、网络、截图通过工具按需读取，不整体塞入 Prompt。
 - **代码是最终事实**：Blueprint 解释意图，项目源码和测试报告决定当前实现状态。
-- **所有写入可撤销**：Agent 在隔离 Git 工作树中工作。
+- **Agent 代码变更可撤销**：Agent 在隔离 Git 工作树中工作。
+- **代码变更与业务副作用分别管理**：Worktree 可撤销代码变更；订单、发布、库存等远端动作需独立确认和恢复策略。
+- **浏览器能力以验证为准**：CLI 查询、人工录制、Playwright 连接与产物支持分别记录；连接成功不隐含授权深度数据采集。
 
 ## 7. 目标代码结构
 
@@ -202,6 +242,8 @@ FlowCode/
 ```
 
 目录迁移不得与功能改造同时大规模进行。每次迁移必须保留公共接口兼容层，并先移动测试。
+
+阶段 5/6 优先在现有布局增加 `electron/ziniao/`、`electron/browser-runtime/` 和必要的共享契约，不以目录迁移作为紫鸟接入前置。浏览器 Provider 适配与唯一的 `OpenCodeService` 是不同层次。
 
 ## 8. 核心领域模型
 
@@ -237,7 +279,7 @@ interface RecordingSessionLink {
 }
 ```
 
-### 8.3 Blueprint
+### 8.3 Blueprint v1 基线（阶段 0–4）
 
 ```ts
 interface AutomationBlueprint {
@@ -261,6 +303,25 @@ interface AutomationBlueprint {
 - `ProjectRun`：一次测试或自动化执行，保存日志、状态、报告、截图、视频和 Trace。
 - 两者使用不同 ID，但可通过 `recordingId`、`blueprintId`、`gitCommit` 关联。
 
+### 8.5 阶段 5 起的执行契约
+
+阶段 5A 定义新版本 Zod/JSON Schema，后续按子阶段实现：
+
+| 契约 | 必需语义 | 实现入口 |
+|---|---|---|
+| Blueprint v2 | revision/Hash、来源版本、逻辑页面与 frame 定位链、Tab/Popup 生命周期、动作与结果关联、输入/输出绑定、明确的断言位置、人工步骤 | 5A 契约；5B 采集映射；5C 分析/审阅 |
+| ProjectTarget/ProjectContext | 稳定目标 ID、入口文件、相关 Page Object/Fixture、断言索引、代码 Hash；只读脱敏摘要 | 5A 契约；6A 索引与上下文 |
+| BrowserEnvironmentProfile | Chrome/Edge/紫鸟 provider、账号引用/精确店铺绑定、站点范围、登录方式、版本与能力快照 | 5A 契约；5B 录制；6A 运行 |
+| BrowserSessionLease | 所属录制或 Run、环境与店铺身份、页面范围、启动归属、有效期、释放状态 | 5B/6A |
+| Run 请求 v2 | 项目、Target、Worktree、环境、Blueprint revision、类型化参数与受控凭据/文件引用 | 6A |
+| Confirmation/Checkpoint | 用户确认所绑定的计划、Blueprint/代码 Hash、店铺、参数及步骤结果 | 5C/6A/6B |
+
+阶段 4 审阅已有 `stepId`，但最终 v1 断言结构没有执行位置；阶段 5A 的新契约必须保存并校验 `beforeStepId/afterStepId`，不能依赖模型从文字猜测插入位置。页面/变量/证据等引用必须存在且归属于本次 Blueprint。
+
+已有 v1 Session/Blueprint 保持可读，原始事件不重写；迁移产生新派生版本。无法恢复的页面上下文、断言锚点或变量绑定明确标为待补齐，不能填入臆测值。Blueprint、目标、参数或代码变化时，对应生成/执行确认失效。
+
+CLI 的原始 `storeId`、CDP target ID、端口和快照 ref 属于本机环境或会话，不是长期项目接口；导出的项目使用逻辑环境/页面引用。
+
 ## 9. 存储布局
 
 ### 9.1 全局数据
@@ -271,6 +332,8 @@ interface AutomationBlueprint {
 ├─ sessions/<sessionId>/
 ├─ agent-runs/<agentRunId>/
 ├─ browser-bridge/
+├─ browser-profiles/             # 阶段 5 起，本机账号/店铺绑定与能力
+├─ browser-leases/               # 阶段 5 起，租约元数据；不保存可复用 CDP 凭据
 ├─ models/
 ├─ logs/
 └─ project-registry.json
@@ -285,11 +348,14 @@ interface AutomationBlueprint {
 ├─ project.json
 ├─ blueprints/
 ├─ assertion-index.json
+├─ target-index.json             # 阶段 6A 起
 ├─ recording-links.json
 └─ runs/                       # 默认 gitignore
 ```
 
 可提交到 Git 的内容：`project.json`、经用户确认的 Blueprint、非敏感断言索引。运行日志、登录态、录屏和原始网络数据默认忽略。
+
+阶段 6 起，非敏感目标索引与参数 Schema 可进入 Git；店铺/账号绑定和机器环境配置留在全局受控存储。AgentRun 审计与待保留产物不能只存于将被删除的 Worktree。
 
 ## 10. 统一事件模型
 
@@ -432,13 +498,23 @@ Desktop 点击录制时广播 `record.start`；扩展收到同一个 `sessionId`
 
 ### 11.5 采集等级
 
-| 模式 | 默认数据 | 权限 |
+| 模式 | 数据范围 | 权限与阶段 |
 |---|---|---|
-| Standard | 动作、Locator、导航、下载、状态码和脱敏路径 | 站点权限 |
-| Enhanced | Standard + DOM 摘要、Console、页面错误、响应结构 | 会话确认 |
-| Full Debug | Enhanced + DOM Snapshot、请求/响应正文、可选登录态 | `debugger` 权限 + 逐次确认 |
+| Standard | 动作、Locator、导航、上传/下载元数据和脱敏路径；不承诺网络状态码 | Chrome/Edge 站点权限；紫鸟按 5A 验证的通道和店铺/站点授权采集 |
+| Enhanced | Standard + 网络元数据、最小 DOM 摘要、Console、页面错误和经允许的响应结构 | 阶段 8A；Chrome/Edge 按次申请 `debugger`，紫鸟确认新增数据类别 |
+| Full Debug | Enhanced + 分别开启的 DOM Snapshot、请求/响应正文 | 阶段 8B；基于可用连接逐项确认，登录态导出使用独立授权 |
 
 Full Debug 不成为全局永久默认。切换页面或会话后必须重新显示数据范围。
+
+紫鸟 Standard 采集可能使用 CDP 作为传输，这不使其自动成为 Enhanced/Full Debug。能力矩阵同时记录采集通道和数据等级，避免把端点访问能力误当作用户授权。
+
+### 11.6 紫鸟语义录制（阶段 5A/5B）
+
+`ziniao-cli 1.0.8` 的店铺/页面操作和多步骤执行不能直接提供人工动作录制。5A 优先验证复用 FlowCode 扩展与 Native Messaging；必要时验证经身份绑定的 CDP 语义采集 Adapter，选定一条生产路径后在 5B 实现。完整核查、参数和失败条件见 [紫鸟接入说明](ziniao-integration.md)。
+
+紫鸟事件使用独立 provider/source 和逻辑页面引用，复用时钟、序号、Locator、敏感阻断、Flush 与 Gap 契约。只采集当前租约允许的店铺/页面/Origin；人工动作与自动执行有明确来源，跨导航/iframe/Popup 后仍核对身份。快照 ref 和原始 tab/target ID 不进入长期代码。
+
+可见店铺录制、无模型导出、停止后保留原环境、跨店铺不串事件是阶段 5B 的必验项。紫鸟连接失败不能静默伪装成普通 Chrome 录制。
 
 ## 12. Native Messaging Bridge
 
@@ -450,6 +526,8 @@ Bridge 是随 FlowCode 安装的小型本地进程，职责仅限：
 - 在 Desktop 未运行时返回 `desktop-unavailable`，或在用户点击扩展按钮时唤醒 Desktop。
 
 Bridge 不读取项目、不调用模型、不保存 API Key。大体积 DOM/网络内容先压缩并写入 Desktop 管理的会话文件，消息中只传引用和 Hash。
+
+上述 Chrome/Edge 注册链路保持兼容。紫鸟只有在 5A 实测 Native Messaging 支持后才增加专门配置，不覆盖已有 Host Registry，不假定紫鸟使用 Chrome 的注册表键；选用 CDP 时通过独立受控采集服务接入 Evidence Fusion。
 
 ## 13. Evidence Store 与 Evidence MCP
 
@@ -487,6 +565,7 @@ recording_get_dom_snapshot
 recording_get_network_summary
 recording_get_network_exchange
 recording_get_assertion_markers
+project_get_context
 recording_submit_blueprint
 ```
 
@@ -499,6 +578,10 @@ recording_submit_blueprint
 - 完整审计日志。
 
 模型按需取证；未授权的 Full Debug 数据对工具表现为不存在。
+
+阶段 5C 新增的 `project_get_context` 仅返回本次绑定 Target 的脱敏摘要与代码 Hash，不接受任意路径。6A 索引未建立时返回明确能力状态，不谎称已经对齐现有项目。`recording_submit_blueprint` 由宿主校验并保存候选版本，不修改原始证据或自动确认断言。
+
+分析前预览本次发送的数据类别和脱敏状态；撤权/取消后停止新取证并使 Run Token 失效。基础发送预览和 Prompt Injection 测试在 5C 完成，阶段 8 仅扩展新增数据类别。
 
 ## 14. OpenCode 集成
 
@@ -516,13 +599,15 @@ FlowCode 只集成 OpenCode，不创建 `HarnessAdapter` 抽象。内部使用�
 
 OpenCode 版本必须锁定，并在升级时跑契约测试。不得直接依赖未文档化内部模块。
 
+5A 同时验证真实固定版本服务与 Fake Server；关闭自动升级，明确安装/检测策略。全局、项目、Inline 配置和插件/MCP/自定义工具可能合并，必须验证最终加载面，不能只设置一个配置目录就宣称隔离。
+
 ### 14.2 两个 Agent 角色
 
 #### flowcode-analyzer
 
-- 只能调用 Evidence MCP 和 Blueprint 提交工具。
+- 只能调用本次授权的 Evidence MCP、只读 ProjectContext 和 Blueprint 提交工具。
 - 禁止编辑文件。
-- 禁止 Shell、外网和子 Agent。
+- 禁止 Shell、外网工具和子 Agent；模型 Provider 通信由 OpenCodeService 的受控网络策略处理。
 - 读取确定性时间线后按需请求截图、DOM 或网络证据。
 - 必须提交符合 Zod/JSON Schema 的 Blueprint。
 
@@ -534,6 +619,8 @@ OpenCode 版本必须锁定，并在升级时跑契约测试。不得直接依�
 - 允许受控的 lint/typecheck/test/run 命令。
 - 禁止 `git push`、访问外部目录、读取凭据和未授权网络。
 - 必须先写变更计划，再修改代码，再运行验证。
+
+两种 Agent 均不直接持有紫鸟 CLI 凭据、任意 `zclaw invoke`/`page exec` 能力或原始 CDP 端点。浏览器操作由受控运行层处理；自动验证与真实店铺执行的边界见第 17、20 节。
 
 ### 14.3 模型与自定义 API
 
@@ -560,6 +647,8 @@ Analyzer 需要 Tool Calling；没有 Vision 时仍可使用 DOM、事件和本�
 4. OpenCode 达到质量门槛后切换默认。
 5. Builder 全部迁移后删除 Copilot SDK 和登录 UI。
 
+5C 的迁移验收必须冻结样本与模型/Prompt 版本，除意图、步骤顺序和证据依据外，检查最终 Schema/引用合法率及已确认断言保留率 100%、敏感泄露和跨店铺取证 0。具体样本和门槛见实施手册，不只比较总平均分。
+
 不得在同一个提交中同时删除 Copilot 和引入全部 Project Studio 功能。
 
 ## 15. Automation Blueprint
@@ -584,12 +673,17 @@ automation-blueprint/
 
 Blueprint 是 Analyzer 与 Builder 的稳定契约。项目代码不得依赖原始录像文件的私有路径。
 
-### 15.2 示例
+### 15.2 阶段 5 起的执行语义示例
 
 ```yaml
-schemaVersion: 1
-kind: web-test
+schemaVersion: 2
+id: blueprint-order-create
+revision: 1
+projectKind: web-test
 intent: 创建客户订单并确认成功提示
+
+pages:
+  - id: main
 
 preconditions:
   - authenticatedAs: sales-user
@@ -605,10 +699,12 @@ variables:
 steps:
   - id: s1
     action: navigate
+    pageRef: main
     urlPattern: /orders/new
 
   - id: s2
     action: fill
+    pageRef: main
     locator:
       kind: role
       role: textbox
@@ -617,6 +713,7 @@ steps:
 
   - id: s3
     action: click
+    pageRef: main
     locator:
       kind: role
       role: button
@@ -625,12 +722,24 @@ steps:
 assertions:
   - id: a1
     source: user-marker
+    afterStepId: s3
+    pageRef: main
     target:
       kind: role
       role: status
     matcher: toContainText
     expected: 创建成功
 ```
+
+示例仅展示核心语义，完整 Zod/JSON Schema 及必填字段由 5A 定义并测试，不直接将此片段用作测试 Fixture。每个断言明确执行位置，frame 使用可重定位的 Locator 链，Popup/下载结果与触发动作绑定。未支持动作、缺失上下文和待人工确认的事项必须可表示。
+
+### 15.3 审阅、步骤整理与生成前体检（5C）
+
+- 删除误操作、合并重复输入、选择固定值/参数、标记人工步骤，均作用于派生 Blueprint；原始证据保持不变。
+- 编辑步骤后重验断言锚点、页面、变量依赖和证据引用；保留版本 Diff 与用户反馈。
+- 体检检查 Gap、缺失/非唯一 Locator、页面/frame 上下文、必填参数、未确认断言、敏感审阅、人工步骤和运行环境能力。
+- 结果区分“Schema 合法”“可审阅”“满足生成条件”，逐项说明待补内容；不能用文件存在或一个不透明分数代替判断。
+- Blueprint revision/Hash、计划、目标与代码基线绑定确认；发生相关变化后重新审阅，不沿用旧确认。
 
 ## 16. 项目模板
 
@@ -712,6 +821,16 @@ project/
 }
 ```
 
+### 16.4 Browser Runtime、目标与环境（6A）
+
+两种模板通过统一的 Runtime/Fixture 入口获得页面，不把浏览器品牌与项目类型绑定。普通 Chrome/Edge 使用受控启动；紫鸟由 `ZiniaoCliService` 解析用户选择的店铺租约，再使用 5A 验证的 Playwright 连接方式复用授权上下文。CDP 的高级能力与 Playwright 原生连接不同，须按客户端/内核验证。
+
+阶段 6A 提供稳定 Target、最小断言索引、运行参数 Schema 和静态元数据读取；阶段 7 完善索引和编辑体验。Electron 主进程不能为读取参数表单而 import 未审阅的 Workflow。
+
+运行请求使用项目/Target/Worktree/环境 ID 与类型化参数，由主进程解析 cwd、入口、命令和产物位置。模型验证进程不继承模型 Key；Secret 与文件通过受控引用/通道传入。依赖和锁文件在受控 Worktree 中准备，不能隐式把可修改依赖链接到用户主项目。
+
+紫鸟模板不硬编码店铺 ID、端口、快照 ref、账号或绝对路径，不通过启动空白浏览器代替复用登录环境。连接释放遵守资源归属；借用浏览器不能在通用清理逻辑中关闭用户店铺和既有标签页。
+
 ## 17. Git 与代码写入安全
 
 ### 17.1 隔离流程
@@ -729,6 +848,8 @@ project/
 
 如果用户原工作树有未提交修改，FlowCode 不得自动包含、覆盖或清理这些修改。默认基于当前 HEAD 创建隔离 Worktree；如需包含未提交状态，必须显式创建可恢复快照并确认。
 
+阶段 6B 沿用已有 dirty/HEAD 保护与 fast-forward 接受流程，先形成受控本地提交；其他合并方式单独实现和验证。确认绑定 Blueprint/Change Plan/代码 Hash，变更时重新比较。Worktree 删除前转存必要 Diff、验证结果和产物；远端业务副作用不随 Worktree 回滚。
+
 ### 17.2 OpenCode 权限
 
 - 允许读取当前 Worktree。
@@ -740,6 +861,22 @@ project/
 - `npm install` 和所有外网命令询问。
 - 删除、移动大量文件询问。
 - `.env*`、凭据路径和会话原始敏感文件拒绝读取。
+
+### 17.3 实际执行边界（5A/6）
+
+OpenCode 官方说明权限系统不提供安全隔离。Worktree、无 Shell 拼接和命令白名单也不能阻止被执行的 JavaScript 使用其进程权限。阶段 5A 必须明确并实测 Windows 文件、进程、网络和凭据隔离方案，形成 ADR；自动验证由落实该边界的受控 Runner 执行。
+
+CLI 凭据与环境管理留在 Desktop 受控服务，模型不获得任意 ERP API、CLI 配置切换、关闭店铺或页面脚本入口。OpenCode 加载的项目/全局配置、插件、MCP 和自定义工具一并进入验证范围。
+
+原始紫鸟 CDP 连接提供广泛浏览器控制能力，不能宣称等价于单 Selector 授权。自动生成代码优先在本地 Fixture/测试环境验证；真实店铺由用户审阅代码后选择环境并发起运行。对进程隔离、店铺互斥和业务操作授权分别记录能力，不以其中一项代替其他项。
+
+### 17.4 验证与有限修复（6B）
+
+- 实际执行选定 Worktree/Target 和已确认断言，记录相关 Page Object/Fixture 影响的回归范围。
+- 零测试、全部跳过、只通过 typecheck 或模板元数据 smoke，不算业务验证成功。
+- 修复默认最多 3 轮，并受 Token/时间/费用上限约束；保留每次验证结果。
+- 不允许通过删除断言、增加 skip/only、吞异常或降低业务期望获得成功；改变用户期望必须重新生成审阅 Patch。
+- 测试失败保留现场；达到上限或无法判断外部操作结果时交由用户处理，不盲目重放整个业务流程。
 
 ## 18. 断言系统
 
@@ -768,6 +905,8 @@ Marker 同时关联当前活动页面、最近动作和当前截图。
 
 ### 18.3 AST 提取
 
+最小目标/断言索引在阶段 6A 交付，供持续修改和有效通过判断；以下完整 AST 与展示能力在 7A 扩展。
+
 使用 TypeScript Compiler API扫描：
 
 - `expect()`、`expect.soft()`、`expect.poll()`。
@@ -775,6 +914,8 @@ Marker 同时关联当前活动页面、最近动作和当前截图。
 - `page.waitForURL()`、`waitForResponse()` 等显式等待。
 - `test()`、`test.describe()`、`test.step()` 上下文。
 - FlowCode 生成的稳定注释 ID。
+
+显式等待以同步条件单独记录，不能计入业务断言覆盖。动态 Helper 无法确定时保留 unknown，由代码位置和用户确认补充，不伪造运行结果。
 
 生成代码在断言前写入：
 
@@ -796,11 +937,15 @@ AST 不能理解的动态断言显示为“需要人工确认”，不得假装�
 
 代码是最终来源。Project Studio 修改断言时不直接改文件，而是创建一个小型 Blueprint Patch，让 OpenCode 修改代码并展示 Diff。代码变化后重新生成 Assertion Index。
 
+Patch 包含基础 Blueprint revision、目标代码 Hash 和断言步骤锚点。已有代码或确认内容发生变化时先解决版本差异，再执行修改。
+
 ## 19. Project Studio
 
 ### 19.1 形态
 
 Project Studio 使用现有 React/Vite 技术栈，默认嵌入 Electron；FlowCode 可启动绑定到 `127.0.0.1` 随机端口的本地服务，在系统浏览器打开同一 UI。两种客户端通过 Transport Adapter 分别使用 Electron IPC 或本地认证 API。
+
+Electron 体验与最小 Windows 安装包先交付。本地 Web UI 单列阶段 9B，不作为紫鸟录制、项目运行或首版安装包的前置。
 
 本地服务必须使用随机会话令牌、严格 CORS、CSP 和 Origin 校验，不绑定 `0.0.0.0`。
 
@@ -817,6 +962,8 @@ Project Studio 使用现有 React/Vite 技术栈，默认嵌入 Electron；FlowC
 /projects/:projectId/runs
 /projects/:projectId/reports/:runId
 /projects/:projectId/agent/:agentRunId
+/projects/:projectId/environments
+/projects/:projectId/batches
 ```
 
 ### 19.3 工作区布局
@@ -827,7 +974,9 @@ Project Studio 使用现有 React/Vite 技术栈，默认嵌入 Electron；FlowC
 - 底部：运行日志、测试结果、问题、Agent 工具轨迹。
 - 顶部：录制、分析、编写、运行、停止、接受、回滚。
 
-第一阶段允许轻量编辑；任何保存均先展示 Diff，并禁止编辑项目根之外文件。
+阶段 5B 起增加明确的浏览器/店铺选择与状态；6A 增加参数、登录与人工接管；7A 增加失败步骤局部补录，7B 增加批次。界面展示当前店铺和任务范围，不向用户暴露 CDP 端口、内部路径或工具配置细节。
+
+轻量编辑在阶段 7A 交付；任何保存均先展示 Diff，并禁止编辑项目根之外文件。
 
 ## 20. 项目运行与报告
 
@@ -857,7 +1006,25 @@ Project Studio 使用现有 React/Vite 技术栈，默认嵌入 Electron；FlowC
 - JUnit XML，供 CI 使用。
 - 失败截图、视频和 Trace。
 
-Project Studio 的结构化测试树来源于 JSON/JUnit；HTML Report 和 Trace Viewer 作为深度详情打开。报告按 Run ID 保存，并记录代码 Commit、Blueprint 和浏览器版本。
+基础结果解析、目标执行检查和外部报告入口在 6A 完成，完整浏览在 7A 完成。步骤/断言树优先来源于 Playwright JSON 或受控 Reporter；JUnit 用于兼容汇总，不能据其虚构断言级状态。HTML Report 和 Trace Viewer 作为深度详情打开。
+
+报告按 Run ID 保存，并记录实际 Worktree/代码版本、Blueprint revision、目标、运行环境和浏览器/紫鸟内核版本。首次本地失败也需保留 Trace，不能仅配置不会发生的首次重试；紫鸟不支持的产物明确标记。每次 Run 独立保存，必要产物在 Worktree 清理前转存。
+
+### 20.3 电商数据流与文件产物（6B）
+
+支持“提取页面订单号/商品数据 → 类型校验 → 绑定后续输入 → 输出 JSON/CSV/文件”。提取结果通过变量引用传递，禁止模型在生成时把录制样例值替代运行时数据。上传参数使用用户选择的文件引用；紫鸟下载先遵守已验证的店铺允许目录，再通过受控导入关联到 Run。
+
+### 20.4 人工接管、提交与恢复（6A/6B）
+
+6A 提供参数表单、手工登录、暂停/继续与持久化执行检查点；6B 将其用于 Blueprint 人工步骤和业务写动作。MFA/验证码交给用户，不绕过。恢复前重新核对店铺、页面、登录状态、已完成步骤和输入版本。
+
+读取、可重复写入和结果不确定的提交采用不同重试策略。发布、改价、库存、发货等动作展示影响摘要与必要确认；CLI 超时不表示远端未执行，应先核对业务唯一键/结果或请求人工核对。确认只覆盖本次店铺、参数和步骤。
+
+### 20.5 局部补录与数据批次（7A/7B）
+
+7A 从失败 Run 定位同一 Target 的步骤范围，补录后生成版本化 Patch，重验断言、变量依赖、人工代码和相关回归。7B 导入 JSON/CSV 并预览字段映射，按行记录状态、产物和检查点，继续时不重复已完成的业务提交。
+
+首版批次绑定单店铺；多店铺队列需用户显式选择店铺与数据映射，采用有界串行执行与店铺互斥。账号切换、权限变化或人工确认暂停当前工作，不能隐式遍历全部店铺或把部分成功显示成全部成功。后台定时任务和无人值守发布不在本版范围。
 
 ## 21. 隐私与安全
 
@@ -877,9 +1044,11 @@ Project Studio 的结构化测试树来源于 JSON/JUnit；HTML Report 和 Trace
 1. 不导出。
 2. 生成登录步骤。
 3. 经确认导出 Playwright `storageState`。
-4. 运行时连接用户明确授权的当前浏览器会话。
+4. 运行时连接用户明确授权、且已经验证可连接的浏览器会话；不能假定普通日常 Chrome 可直接被接管。
 
 `storageState` 必须保存在 gitignored 路径，可选择使用 Windows DPAPI 加密，并带过期提示。开启一次不改变全局默认。
+
+这些运行准备在 6A 实现。紫鸟默认复用所选店铺的现有授权环境，登录态继续由紫鸟管理；不复制 profile、修改代理/指纹或自动导出 Cookie。失效登录态由用户在原环境重新登录，环境复用与敏感数据导出是独立授权。
 
 ### 21.3 Prompt Injection
 
@@ -912,6 +1081,18 @@ idle
 ```
 
 状态写入磁盘后再更新 UI。应用崩溃后根据最后持久状态恢复，不依赖内存状态。
+
+### 22.1.1 阶段 5/6 状态扩展
+
+上述流程表达产品顺序，后续实现将录制、分析、编写与 ProjectRun 分开持久化，避免一次运行覆盖原录制状态：
+
+- 录制来源状态包含环境准备、录制、Flush、Gap/降级和结束；紫鸟内核准备不算已经开始录制。
+- AgentRun 保存 analysis/planning/editing/validating/review-ready 等 phase，并区分等待用户、失败、取消与中断恢复。
+- ProjectRun 保存 preparing/running/paused/waiting-user/interrupted 与终态，检查点绑定 Target、环境/店铺、Blueprint/代码/参数版本。
+- 自动运行持有独立店铺租约；恢复必须重新取得并验证租约，不能只靠磁盘里的 running 状态继续提交。
+- 每次分析/修订产生新的派生版本；确认和恢复操作具有幂等标识，不能重复接受或重复执行外部动作。
+
+具体状态 Schema 在 5A 定义、5B/5C/6A 分批实现；旧 Session 保持兼容。
 
 ### 22.2 关键消息
 
@@ -949,6 +1130,10 @@ report.ready
 - 测试失败：不自动回滚，展示失败并允许 Agent 修复或用户拒绝。
 - FlowCode 崩溃：扫描未完成 Session、Worktree 和 Run，提供恢复/清理界面。
 - 模板升级失败：保持原模板版本和项目不变。
+- 紫鸟未安装/未登录/版本不支持：Doctor 分别说明原因；保留录制和项目，不替换为普通浏览器冒充成功。
+- 紫鸟店铺身份或 CLI 账号配置改变：暂停相关租约，重新核对后再恢复。
+- CLI 超时/应用崩溃但业务结果未知：先查询状态或人工核对，不重发提交；保留已完成行/店铺检查点。
+- 局部补录或批次失败：保持原代码和成功结果，只继续明确未完成且允许重试的工作。
 
 ## 24. 非功能需求
 
@@ -985,6 +1170,8 @@ report.ready
 - AST 断言提取。
 - 模板复制和路径防穿越。
 - OpenCode 权限配置生成。
+- 阶段 5 起的 v1/v2 兼容、断言锚点、页面/变量引用与确认失效。
+- 紫鸟 CLI 命令白名单、各命令响应 Schema、账号/店铺绑定与能力矩阵。
 
 ### 25.2 集成测试
 
@@ -993,6 +1180,9 @@ report.ready
 - Analyzer 通过 Fake OpenCode Server 调用 Evidence MCP。
 - Builder 在临时 Git Worktree 中写入并回滚。
 - Playwright Report → Project Studio Test Tree。
+- 紫鸟采集 Adapter → Source/时钟/Flush → Evidence → Blueprint，跨店铺不得混入。
+- Target/Worktree/参数/运行环境解析，断言有效覆盖与假通过阻断。
+- CLI 取消后状态核对、租约冲突、人工接管和批次续跑。
 
 ### 25.3 端到端测试
 
@@ -1001,6 +1191,11 @@ report.ready
 - 新建自动化项目、参数化运行并产生报告。
 - 在已有项目追加一次录制并安全接受 Diff。
 - 敏感字段、跨域 iframe、Popup、下载、断线恢复和 CDP 降级。
+- 紫鸟指定测试店铺人工录制 → Blueprint → Worktree 项目生成 → 复用环境运行，分别验证两种项目类型。
+- 用户原有页面保留、账号切换/重名店铺、上传下载、登录过期与人工暂停恢复。
+- 局部补录修复后仍执行原确认断言；多组数据/明确多店铺队列不重复提交、不串状态。
+
+从阶段 5 起维护 CLI/客户端/内核/Playwright 版本能力矩阵。Fake Server/Schema 测试与真实 OpenCode、Windows 隔离、紫鸟 E2E 分开记录；已核查 CLI 帮助或店铺列表不等于录制与运行验收通过。
 
 ### 25.4 上游回归门槛
 
@@ -1028,21 +1223,32 @@ npm run compliance:licenses
 - Playwright 作为版本锁定依赖使用；避免复制其未公开内部实现。
 - 如果移植 Playwright Codegen 源码，必须单独记录 Apache-2.0 来源、文件和修改。
 - OpenCode 作为外部进程/固定依赖集成，不 Vendor 整仓源码。
+- 紫鸟 CLI 首版作为用户已安装的外部能力检测使用；本机 1.0.8 包标记为 `UNLICENSED`，不默认再分发。客户端下载、许可和版本兼容策略在 5A/9A 明确。
 - FlowCode 名称和品牌不得暗示 Microsoft、Playwright 或 OpenCode 官方认可。
 
 ## 27. 高层阶段
 
-1. **基线与品牌**：锁定上游行为、建立 FlowCode 命名和测试基线。
-2. **项目核心与模板**：项目 Registry、模板复制、Git 服务和基础 Project Studio。
-3. **浏览器语义录制**：扩展、Bridge、统一事件和连接状态。
-4. **Evidence 与 Blueprint**：融合、Evidence MCP、断言 Marker 和确定性导出。
-5. **OpenCode Analyzer**：自定义 Provider、只读 Agent 和分析审阅。
-6. **OpenCode Builder**：隔离 Worktree、代码计划、写入、验证和 Diff。
-7. **断言与报告**：AST、双向修改、测试树、HTML/JSON/JUnit/Trace。
-8. **CDP 增强与隐私**：网络、DOM、Console、逐级授权和 Prompt Injection 防护。
-9. **打包与开源发布**：Windows Installer、扩展分发、签名、升级和贡献文档。
+阶段 0–4 已完成并冻结，以下编号与实施手册一致，不追加历史工作项：
 
-详细执行顺序和 AI 开发约束见 `docs/flowcode-implementation-plan.md`。
+| 阶段 | 内容与状态 |
+|---|---|
+| 0 | 已完成：基线、品牌与上游同步 |
+| 1 | 已完成：共享契约、项目核心与模板 |
+| 2 | 已完成：Git Worktree、基础 Runner 与 Project Studio |
+| 3 | 已完成：Chrome/Edge 扩展与 Native Bridge |
+| 4 | 已完成：Evidence Fusion、确定性 Blueprint 与断言 Marker |
+| 5A | 执行契约、OpenCode 实际接入/隔离、紫鸟 CLI 与采集/连接可行性验证 |
+| 5B | 紫鸟店铺选择、语义录制与无模型 Blueprint 导出 |
+| 5C | Evidence MCP、受控 ProjectContext、只读 Analyzer、步骤整理与生成前体检 |
+| 6A | 目标/最小断言索引、运行环境与登录、Worktree Runner、参数表单、人工接管、基础报告 |
+| 6B | Builder、数据提取/变量传递、有限修复、业务提交恢复、持续修改与 Diff |
+| 7A | 编辑与断言同步、完整报告、失败步骤局部补录 |
+| 7B | JSON/CSV 数据批次、显式多店铺队列和续跑 |
+| 8A/8B | Enhanced/Full Debug 深度证据与对应隐私控制 |
+| 9A | Windows 安装包、引导、兼容检测、升级与开源分发 |
+| 9B | 同一 React UI 的本地 Web Transport |
+
+首版交付路径为 `5A → 5B → 5C → 6A → 6B → 7A → 9A`。7B、8、9B 独立交付，不阻塞 Standard 模式首版。最小索引、登录、报告和基础隐私不再等待后续阶段；详细入口、任务和验收见 [实施手册](flowcode-implementation-plan.md)。
 
 ## 28. 第一版完成定义
 
@@ -1060,6 +1266,17 @@ FlowCode v0.1 MVP 必须满足：
 10. 密码、Cookie、Authorization 和 API Key 默认不进入证据或模型请求。
 11. 原有 Skill Recorder 录屏、旁白、敏感保护和回归测试继续工作。
 
+本次增加的首版要求均在阶段 5 及之后实现：
+
+12. 用户可选择紫鸟精确店铺，录制真实语义动作、审阅证据并生成两种 Playwright 项目；跨店铺不串事件或运行。
+13. Blueprint 保存断言位置、页面/frame 和变量关系，支持步骤整理和生成前体检；确认与内容版本绑定。
+14. 运行器实际使用选定 Target/Worktree/环境，复用授权登录态，支持参数、提取结果传递、上传下载和人工接管。
+15. 生成代码真正执行确认断言，失败有证据和有限修复；零测试、全部跳过和模板 smoke 不能充当业务验证。
+16. 用户可局部补录失败步骤，审阅 Patch/Diff 并保留人工代码；提交恢复不重复远端业务动作。
+17. Windows x64 安装包完成必要依赖/CLI/浏览器检测、引导与升级保留数据验证。
+
+多组数据/多店铺批次、深度 CDP 数据和本地 Web UI 分别在 7B、8、9B 交付；上述 MVP 定义不要求回到阶段 0–4 新增实现。
+
 ## 29. 主要风险
 
 | 风险 | 缓解措施 |
@@ -1073,6 +1290,12 @@ FlowCode v0.1 MVP 必须满足：
 | Agent 破坏项目 | Git Worktree、路径边界、命令权限、无自动 push |
 | 上游同步困难 | 小步扩展、保留接口、避免早期全仓重排 |
 | Windows 原生兼容问题 | CI 与实机 Chrome/Edge E2E、避免 WSL/Docker 强依赖 |
+| 紫鸟 CLI 查询可用但无法录制/连接 | 5A 分开验证采集、运行和产物，固定版本/ADR，不臆造端点 |
+| 店铺或 CLI 账号切换导致串店 | 精确身份、店铺租约、恢复前核对、逐店隔离确认和结果 |
+| 将权限配置误认为沙箱 | 实测 Windows 文件/进程/网络隔离，检查配置/插件加载面 |
+| 提交超时后重试造成重复业务动作 | 类型化副作用、唯一键/结果检查、持久化检查点与人工核对 |
+| 自动修复通过弱化断言获得成功 | 断言保留门槛、代码/Blueprint Hash、有效执行报告与人工 Patch |
+| CLI 再分发与版本兼容不明确 | 首版检测用户已安装 CLI，单独核实分发策略和版本能力矩阵 |
 
 ## 30. 参考资料
 
@@ -1083,6 +1306,13 @@ FlowCode v0.1 MVP 必须满足：
 - Chrome Debugger API：<https://developer.chrome.com/docs/extensions/reference/api/debugger>
 - Edge Extensions：<https://learn.microsoft.com/microsoft-edge/extensions/>
 - OpenCode：<https://github.com/anomalyco/opencode>
-- OpenCode Server：<https://dev.opencode.ai/docs/server/>
+- OpenCode Server：<https://opencode.ai/docs/server/>
 - OpenCode Providers：<https://opencode.ai/docs/providers/>
 - OpenCode Permissions：<https://opencode.ai/docs/permissions/>
+- OpenCode 安全边界：<https://github.com/anomalyco/opencode/blob/dev/SECURITY.md>
+- OpenCode 配置合并：<https://opencode.ai/docs/config/>
+- 紫鸟 CLI 本机核查与后续验收：[ziniao-integration.md](ziniao-integration.md)
+- 紫鸟官方 Skills：<https://github.com/ziniao-open/skills>
+- Playwright CDP：<https://playwright.dev/docs/api/class-browsertype#browser-type-connect-over-cdp>
+- Playwright 登录态：<https://playwright.dev/docs/auth>
+- Chrome 远程调试约束：<https://developer.chrome.com/blog/remote-debugging-port>

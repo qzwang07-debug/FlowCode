@@ -6,12 +6,15 @@ The project is based on [Microsoft Skill Recorder](https://github.com/microsoft/
 
 ## Status
 
-FlowCode is being implemented incrementally from the inherited Skill Recorder 0.5.0 code. Stage 0 establishes the FlowCode brand, upstream lineage, regression baseline, and Windows quality gate without changing recording or analysis behavior.
+FlowCode is being implemented incrementally from the inherited Skill Recorder 0.5.0 code. Stages 0–4 are complete, covering the baseline, projects, isolated worktrees and runner, Chrome/Edge semantic recording, evidence fusion, and deterministic Blueprint review/export.
+
+The next work starts at Stage 5A. Planned capabilities include Ziniao store recording and Playwright project execution, OpenCode analysis/building, runtime parameters and login, assertion verification, and workflow maintenance. These additions are a roadmap, not currently available features; they do not add requirements to completed Stages 0–4.
 
 ## Design documents
 
 - [Product and technical design](docs/flowcode-design.md)
 - [Staged AI implementation playbook](docs/flowcode-implementation-plan.md)
+- [Ziniao CLI findings and integration plan](docs/ziniao-integration.md)
 - [Upstream synchronization policy](docs/upstream-sync.md)
 - [Architecture Decision Records](docs/adr/README.md)
 - [Stage 0 regression baseline](docs/baselines/2026-09-01-stage-0.md)
