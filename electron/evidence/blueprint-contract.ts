@@ -25,6 +25,7 @@ export function canonicalJson(value: unknown): string {
   }
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
   return `{${Object.keys(value)
+    .filter((key) => (value as Record<string, unknown>)[key] !== undefined)
     .sort()
     .map(
       (key) =>

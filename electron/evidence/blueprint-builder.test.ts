@@ -2,11 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { AutomationBlueprintSchema } from "../../common/blueprint";
+import { AutomationBlueprintV2Schema } from "../../common/blueprint-v2";
 import type { BrowserSemanticEvent } from "../../common/browser";
 import type { FlowEvent } from "../../common/evidence";
 import type { SessionMetaV2 } from "../../common/session";
 import {
   buildDeterministicBlueprint,
+  buildDeterministicBlueprintV2,
   createBlueprintReview,
 } from "./blueprint-builder";
 import { fuseEvidence } from "./fusion";
@@ -136,4 +138,97 @@ test("the deterministic builder produces variables, evidence, and marker asserti
   assert.equal(revised.intent, review.intent);
   assert.equal(revised.assertions[0]?.confirmed, true);
   assert.equal(revised.privacy.userReviewed, true);
+});
+
+test("the v2 builder maps approved popup and iframe context without model inference", () => {
+  const click = browserEvent("click-popup", 0, 11_000, "browser.click", {
+    ...commonPayload,
+    target: { tag: "button", role: "button", name: "Open details" },
+    locators: [
+      {
+        kind: "role",
+        value: "button|Open details",
+        unique: true,
+        score: 100,
+      },
+    ],
+    button: 0,
+    modifiers: [],
+  });
+  const popup = browserEvent("popup", 1, 11_100, "browser.popup", {
+    tabId: 2,
+    windowId: 0,
+    openerTabId: 1,
+    url: "https://example.test/details",
+  });
+  const tabOpen = browserEvent("popup-tab", 2, 11_110, "browser.tab-open", {
+    tabId: 2,
+    windowId: 0,
+    openerTabId: 1,
+    url: "https://example.test/details",
+  });
+  const document = browserEvent("popup-document", 3, 11_200, "browser.document", {
+    tabId: 2,
+    frameId: 0,
+    documentId: "doc-popup",
+    url: "https://example.test/details",
+    title: "Details",
+  });
+  const fill = browserEvent("frame-fill", 4, 11_300, "browser.fill", {
+    tabId: 2,
+    frameId: 1,
+    documentId: "doc-frame",
+    url: "https://frame.example.test/form",
+    frameLocatorChain: [
+      {
+        kind: "css",
+        value: 'iframe[title="Details form"]',
+        unique: true,
+        score: 90,
+      },
+    ],
+    target: { tag: "input", role: "textbox", name: "Reference" },
+    locators: [
+      {
+        kind: "role",
+        value: "textbox|Reference",
+        unique: true,
+        score: 100,
+      },
+    ],
+    value: { kind: "text", value: "fixture", length: 7, truncated: false },
+  });
+  const marker: FlowEvent = {
+    schemaVersion: 1,
+    eventId: "assert-frame",
+    sessionId: session.id,
+    sourceId: "user",
+    source: "user",
+    seq: 0,
+    epochMs: 11_350,
+    type: "assertion.marker",
+    payload: { markerId: "marker-frame", note: "Reference is accepted" },
+  };
+  const evidence = fuseEvidence({
+    session,
+    desktopEvents: [marker],
+    browserEvents: [click, tabOpen, popup, document, fill],
+    clockSamples: [],
+    gaps: [],
+  });
+  const review = createBlueprintReview(session, "web-test", evidence);
+  const blueprint = buildDeterministicBlueprintV2(session, evidence, review);
+  assert.deepEqual(AutomationBlueprintV2Schema.parse(blueprint), blueprint);
+  assert.equal(blueprint.pages.length, 2);
+  assert.equal(blueprint.pages.find((page) => page.kind === "popup")?.id, "page-2");
+  assert.equal(blueprint.frames.length, 1);
+  assert.deepEqual(blueprint.frames[0]?.locatorChain, [
+    { kind: "css", selector: 'iframe[title="Details form"]' },
+  ]);
+  assert.equal(blueprint.steps.length, 2);
+  assert.equal(blueprint.steps[1]?.pageRef, "page-2");
+  assert.equal(blueprint.steps[1]?.frameRef, blueprint.frames[0]?.id);
+  assert.equal(blueprint.results[0]?.kind, "popup");
+  assert.equal(blueprint.assertions[0]?.afterStepId, blueprint.steps[1]?.id);
+  assert.equal(blueprint.gaps.length, 0);
 });

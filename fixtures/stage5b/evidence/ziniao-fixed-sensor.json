@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "clientVersion": "6.27.2.14",
+  "event": "trusted Shadow click",
+  "normalizedButton": 0,
+  "gapCount": 0,
+  "flush": "pass",
+  "sourceActor": "human"
+}

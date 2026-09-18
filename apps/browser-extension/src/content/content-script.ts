@@ -140,7 +140,10 @@ function startContentSensor(): void {
       payload: {
         ...eventContext(),
         ...describe(element),
-        button: event.button,
+        button:
+          Number.isInteger(event.button) && event.button >= 0 && event.button <= 4
+            ? event.button
+            : 0,
         modifiers,
       },
     });

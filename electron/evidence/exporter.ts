@@ -6,13 +6,14 @@ import path from "node:path";
 import { ZipArchive } from "archiver";
 
 import type { AutomationBlueprint, BlueprintVariable } from "../../common/blueprint";
+import type { AutomationBlueprintV2 } from "../../common/blueprint-v2";
 import type { FlowEvent, EvidenceIndex } from "../../common/evidence";
 import { maskValue } from "../../common/sensitive";
 
 export interface BlueprintExportInput {
   destination: string;
   sessionDir: string;
-  blueprint: AutomationBlueprint;
+  blueprint: AutomationBlueprint | AutomationBlueprintV2;
   evidenceIndex: EvidenceIndex;
   browserEvents: readonly FlowEvent[];
   includeScreenshots: boolean;
@@ -131,6 +132,7 @@ function exportContents(input: BlueprintExportInput): Map<string, string> {
   const browserEvents = input.browserEvents.map((event) =>
     sanitizeBrowserEvent(event, redact),
   );
+  files.set("blueprint.json", json(input.blueprint));
   files.set(
     "workflow.yaml",
     json({
@@ -138,8 +140,20 @@ function exportContents(input: BlueprintExportInput): Map<string, string> {
       kind: input.blueprint.projectKind,
       intent: input.blueprint.intent,
       preconditions: input.blueprint.preconditions,
+      ...(input.blueprint.schemaVersion === 2
+        ? {
+            source: input.blueprint.source,
+            revision: input.blueprint.revision,
+            contentHash: input.blueprint.contentHash,
+            pages: input.blueprint.pages,
+            frames: input.blueprint.frames,
+          }
+        : {}),
       steps: input.blueprint.steps,
       cleanup: input.blueprint.cleanup,
+      ...(input.blueprint.schemaVersion === 2
+        ? { results: input.blueprint.results, gaps: input.blueprint.gaps }
+        : {}),
     }),
   );
   files.set("assertions.yaml", json(input.blueprint.assertions));
@@ -162,6 +176,7 @@ function exportContents(input: BlueprintExportInput): Map<string, string> {
     ].join("\n"),
   );
   files.set("evidence/timeline.json", json(input.evidenceIndex.timeline));
+  files.set("evidence/gaps.json", json(input.evidenceIndex.gaps));
   files.set(
     "evidence/browser-actions.jsonl",
     `${browserEvents.map((event) => jsonLine(event)).join("\n")}${browserEvents.length ? "\n" : ""}`,
@@ -237,6 +252,7 @@ export async function writeBlueprintExport(input: BlueprintExportInput): Promise
     json({
       schemaVersion: 1,
       blueprintId: input.blueprint.id,
+      blueprintSchemaVersion: input.blueprint.schemaVersion,
       sessionId: input.evidenceIndex.sessionId,
       generatedAt: input.evidenceIndex.generatedAt,
       screenshotsIncluded: input.includeScreenshots,

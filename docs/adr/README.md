@@ -23,3 +23,4 @@ one by adding a new ADR and linking both records.
 - [0003 — Pinned OpenCode protocol and configuration boundary](0003-opencode-pinned-integration.md)
 - [0004 — Windows execution isolation feasibility](0004-windows-execution-isolation.md)
 - [0005 — Ziniao recording and project-connection path](0005-ziniao-cdp-recording-and-runtime.md)
+- [0006 — Ziniao production semantic recording](0006-ziniao-production-recording.md)

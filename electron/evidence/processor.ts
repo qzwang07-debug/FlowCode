@@ -7,6 +7,10 @@ import {
   type AutomationBlueprint,
 } from "../../common/blueprint";
 import {
+  AutomationBlueprintV2Schema,
+  type AutomationBlueprintV2,
+} from "../../common/blueprint-v2";
+import {
   BlueprintReviewSchema,
   EvidenceIndexSchema,
   normalizeStoredFlowEvent,
@@ -21,6 +25,7 @@ import {
 } from "../sensitive/scanner";
 import {
   buildDeterministicBlueprint,
+  buildDeterministicBlueprintV2,
   createBlueprintReview,
 } from "./blueprint-builder";
 import { fuseEvidence, type FusedEvidence } from "./fusion";
@@ -29,6 +34,7 @@ export const EVIDENCE_INDEX_FILE = "evidence-index.json";
 export const EVIDENCE_TIMELINE_FILE = "evidence-timeline.json";
 export const BLUEPRINT_REVIEW_FILE = "blueprint-review.json";
 export const BLUEPRINT_FILE = "blueprint.json";
+export const BLUEPRINT_V2_FILE = "blueprint-v2.json";
 
 export interface ProcessedEvidence {
   session: SessionMetaV2;
@@ -36,6 +42,7 @@ export interface ProcessedEvidence {
   index: EvidenceIndex;
   review: BlueprintReview;
   blueprint: AutomationBlueprint;
+  blueprintV2: AutomationBlueprintV2;
   /** Main-process-only raw matches used to redact export evidence; never sent over IPC. */
   sensitiveValues: string[];
 }
@@ -291,6 +298,9 @@ export async function processEvidenceSession(
         .map(([category, count]) => ({ category, count })),
     },
   });
+  const blueprintV2 = AutomationBlueprintV2Schema.parse(
+    buildDeterministicBlueprintV2(session, evidence, review),
+  );
 
   await Promise.all([
     writeJsonAtomic(path.join(sessionDir, EVIDENCE_INDEX_FILE), evidence.index),
@@ -300,6 +310,7 @@ export async function processEvidenceSession(
     ),
     writeJsonAtomic(path.join(sessionDir, BLUEPRINT_REVIEW_FILE), review),
     writeJsonAtomic(path.join(sessionDir, BLUEPRINT_FILE), blueprint),
+    writeJsonAtomic(path.join(sessionDir, BLUEPRINT_V2_FILE), blueprintV2),
   ]);
   return {
     session,
@@ -307,6 +318,7 @@ export async function processEvidenceSession(
     index: evidence.index,
     review,
     blueprint,
+    blueprintV2,
     sensitiveValues: sensitive.values,
   };
 }

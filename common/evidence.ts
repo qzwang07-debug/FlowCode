@@ -6,7 +6,12 @@ import {
   BlueprintVariableSchema,
   JsonValueSchema,
 } from "./blueprint";
-import { BrowserGapSchema, BrowserKindSchema, BrowserLocatorSchema } from "./browser";
+import { AutomationBlueprintV2Schema } from "./blueprint-v2";
+import {
+  BrowserCaptureProviderSchema,
+  BrowserGapSchema,
+  BrowserLocatorSchema,
+} from "./browser";
 import { ProjectKindSchema } from "./project";
 import { SessionMetaV2Schema } from "./session";
 
@@ -165,7 +170,7 @@ export const BrowserClockSampleSchema = z
     schemaVersion: z.literal(1),
     sampleId: IdentifierSchema,
     sessionId: ShortIdSchema,
-    browser: BrowserKindSchema,
+    browser: BrowserCaptureProviderSchema,
     sourceId: IdentifierSchema,
     nonce: IdentifierSchema,
     desktopSentEpochMs: TimestampSchema,
@@ -354,6 +359,7 @@ export const EvidenceReviewSnapshotSchema = z
     index: EvidenceIndexSchema,
     review: BlueprintReviewSchema,
     blueprint: AutomationBlueprintSchema,
+    blueprintV2: AutomationBlueprintV2Schema.optional(),
   })
   .strict();
 export type EvidenceReviewSnapshot = z.infer<

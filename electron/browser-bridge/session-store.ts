@@ -6,9 +6,9 @@ import {
   BrowserCaptureSummarySchema,
   BrowserGapSchema,
   BrowserSemanticEventSchema,
+  type BrowserCaptureProvider,
   type BrowserCaptureSummary,
   type BrowserGap,
-  type BrowserKind,
   type BrowserSemanticEvent,
 } from "../../common/browser";
 import {
@@ -17,7 +17,7 @@ import {
 } from "../../common/evidence";
 
 interface SourceCaptureState {
-  browser: BrowserKind;
+  browser: BrowserCaptureProvider;
   sourceId: string;
   eventCount: number;
   firstSequence: number | null;
@@ -75,7 +75,7 @@ export class BrowserSessionStore {
     return store;
   }
 
-  source(browser: BrowserKind, sourceId: string): SourceCaptureState {
+  source(browser: BrowserCaptureProvider, sourceId: string): SourceCaptureState {
     const existing = this.sources.get(sourceId);
     if (existing) {
       if (existing.browser !== browser) {
@@ -97,7 +97,7 @@ export class BrowserSessionStore {
   }
 
   appendEvent(
-    browser: BrowserKind,
+    browser: BrowserCaptureProvider,
     input: BrowserSemanticEvent,
   ): Promise<"written" | "duplicate"> {
     const event = BrowserSemanticEventSchema.parse(input);
@@ -157,7 +157,7 @@ export class BrowserSessionStore {
   }
 
   markFlushed(
-    browser: BrowserKind,
+    browser: BrowserCaptureProvider,
     sourceId: string,
     droppedEvents: number,
   ): void {
@@ -167,7 +167,7 @@ export class BrowserSessionStore {
   }
 
   noteDropped(
-    browser: BrowserKind,
+    browser: BrowserCaptureProvider,
     sourceId: string,
     droppedEvents: number,
   ): void {

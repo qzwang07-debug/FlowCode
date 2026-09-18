@@ -14,6 +14,7 @@ import type {
 } from "../../common/project";
 import type { ProjectRun, ProjectRunAction } from "../../common/project-run";
 import type { EvidenceRecordingSummary } from "../../common/evidence";
+import type { RecordingBrowserSelection } from "../../common/ziniao-recording";
 import type {
   ProjectFileContent,
   ProjectRunLogEvent,
@@ -23,6 +24,7 @@ import type {
 
 import "./project-studio.css";
 import { EvidenceReview } from "./EvidenceReview";
+import { ZiniaoEnvironmentPicker } from "../ziniao/ZiniaoEnvironmentPicker";
 
 const PROJECT_KINDS: readonly {
   id: ProjectKind;
@@ -49,6 +51,7 @@ export function ProjectStudio() {
   const [selected, setSelected] = useState<FlowProject | null>(null);
   const [selectedRecording, setSelectedRecording] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [showEnvironments, setShowEnvironments] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -103,11 +106,25 @@ export function ProjectStudio() {
         <div className="project-studio-header-actions">
           <button
             type="button"
+            className="project-studio-quiet"
+            onClick={() => {
+              setSelected(null);
+              setSelectedRecording(null);
+              setShowCreate(false);
+              setShowEnvironments(true);
+              setError(null);
+            }}
+          >
+            Browser environments
+          </button>
+          <button
+            type="button"
             className="project-studio-primary"
             onClick={() => {
               setSelected(null);
               setSelectedRecording(null);
               setShowCreate(true);
+              setShowEnvironments(false);
               setError(null);
             }}
           >
@@ -188,6 +205,7 @@ export function ProjectStudio() {
                   onClick={() => {
                     setSelected(null);
                     setShowCreate(false);
+                    setShowEnvironments(false);
                     setSelectedRecording(recording.sessionId);
                     setError(null);
                   }}
@@ -209,7 +227,9 @@ export function ProjectStudio() {
               {error}
             </div>
           )}
-          {selectedRecording ? (
+          {showEnvironments ? (
+            <BrowserEnvironmentPanel />
+          ) : selectedRecording ? (
             <EvidenceReview sessionId={selectedRecording} onChanged={refreshEvidence} />
           ) : showCreate ? (
             <NewProjectWizard
@@ -218,6 +238,7 @@ export function ProjectStudio() {
                 setSelected(project);
                 setSelectedRecording(null);
                 setShowCreate(false);
+                setShowEnvironments(false);
                 void refresh();
               }}
             />
@@ -245,7 +266,7 @@ function Welcome({
   return (
     <div className="project-studio-welcome">
       <span className="project-studio-kicker">
-        Stage 4 · Projects and evidence
+        Stage 5B · Projects, evidence, and recording environments
       </span>
       <h2>
         {projectCount === 0
@@ -265,6 +286,37 @@ function Welcome({
           Create project
         </button>
       )}
+    </div>
+  );
+}
+
+function BrowserEnvironmentPanel() {
+  const [provider, setProvider] =
+    useState<RecordingBrowserSelection["provider"]>("ziniao");
+  const [selection, setSelection] =
+    useState<RecordingBrowserSelection | null>(null);
+  return (
+    <div className="project-studio-environments">
+      <span className="project-studio-kicker">Stage 5B · Recording source</span>
+      <h2>Browser environments</h2>
+      <p>
+        Bind a Ziniao environment by the exact store returned by CLI, prepare its
+        visible browser, and choose one approved page. Endpoints and credentials
+        stay in the main process and are never shown here.
+      </p>
+      <ZiniaoEnvironmentPicker
+        provider={provider}
+        selection={selection}
+        onProviderChange={setProvider}
+        onSelectionChange={setSelection}
+      />
+      <div className="project-studio-boundary">
+        {provider === "ziniao"
+          ? selection?.provider === "ziniao"
+            ? "This bound profile is available in the Recorder HUD; prepare its current page there before starting."
+            : "Choose an exact store and approved page to create a local recording profile."
+          : `${provider === "chrome" ? "Chrome" : "Edge"} uses the existing extension and Native Bridge path.`}
+      </div>
     </div>
   );
 }
@@ -703,9 +755,9 @@ function ProjectOverview({ project }: { project: FlowProject }) {
       </section>
 
       <div className="project-studio-boundary">
-        Stage 4 boundary: files remain read-only and commands remain fixed
-        template scripts. Agent access, code editing, AST assertion parsing,
-        and report interpretation are not enabled.
+        Stage 5B boundary: files remain read-only and commands remain fixed
+        template scripts. Agent access, code editing, project execution through
+        Ziniao, AST assertion parsing, and report interpretation are not enabled.
       </div>
     </div>
   );

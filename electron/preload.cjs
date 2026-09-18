@@ -21,6 +21,12 @@ const IPC = {
   doctor: "doctor:check",
   browserCaptureStatus: "browser-capture:status",
   browserCaptureStatusChanged: "browser-capture:status-changed",
+  ziniaoEnvironment: "ziniao:environment",
+  ziniaoStoreSearch: "ziniao:store-search",
+  ziniaoPrepare: "ziniao:prepare",
+  ziniaoCancelPrepare: "ziniao:prepare-cancel",
+  ziniaoSelectPage: "ziniao:page-select",
+  ziniaoStatusChanged: "ziniao:status-changed",
   copilotSignIn: "copilot:sign-in",
   statusChanged: "recorder:status-changed",
   recordingPrivacyReviewed: "recorder:privacy-reviewed",
@@ -132,6 +138,16 @@ contextBridge.exposeInMainWorld("skillRecorder", {
     const listener = (_event, status) => cb(status);
     ipcRenderer.on(IPC.browserCaptureStatusChanged, listener);
     return () => ipcRenderer.removeListener(IPC.browserCaptureStatusChanged, listener);
+  },
+  ziniaoEnvironment: () => ipcRenderer.invoke(IPC.ziniaoEnvironment),
+  searchZiniaoStores: (input) => ipcRenderer.invoke(IPC.ziniaoStoreSearch, input),
+  prepareZiniao: (input) => ipcRenderer.invoke(IPC.ziniaoPrepare, input),
+  cancelZiniaoPrepare: () => ipcRenderer.invoke(IPC.ziniaoCancelPrepare),
+  selectZiniaoPage: (input) => ipcRenderer.invoke(IPC.ziniaoSelectPage, input),
+  onZiniaoStatusChanged: (cb) => {
+    const listener = (_event, status) => cb(status);
+    ipcRenderer.on(IPC.ziniaoStatusChanged, listener);
+    return () => ipcRenderer.removeListener(IPC.ziniaoStatusChanged, listener);
   },
   copilotSignIn: () => ipcRenderer.invoke(IPC.copilotSignIn),
   onStatusChanged: (cb) => {

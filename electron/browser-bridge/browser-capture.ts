@@ -47,6 +47,7 @@ interface BrowserClient {
 interface ActiveBrowserSession {
   id: string;
   startedAt: number;
+  selectedBrowser: BrowserKind | null;
   phase: "recording" | "flushing";
   store: BrowserSessionStore;
   expectedSources: Map<string, BrowserKind>;
@@ -147,6 +148,7 @@ export class BrowserCaptureService {
     sessionId: string,
     sessionDir: string,
     startedAt: number,
+    selectedBrowser?: BrowserKind,
   ): Promise<void> {
     if (!this.initialized || this.disposed) {
       throw new Error("Browser capture bridge is unavailable.");
@@ -161,6 +163,7 @@ export class BrowserCaptureService {
     const active: ActiveBrowserSession = {
       id: sessionId,
       startedAt,
+      selectedBrowser: selectedBrowser ?? null,
       phase: "recording",
       store,
       expectedSources: new Map(),
@@ -173,7 +176,7 @@ export class BrowserCaptureService {
     };
     this.active = active;
     for (const client of this.clients.values()) {
-      if (!client.sourceId) continue;
+      if (!client.sourceId || !this.matchesActive(active, client)) continue;
       this.addExpectedSource(active, client);
       this.sendStart(client, active);
       this.sendClockPings(client, 3);
@@ -188,7 +191,8 @@ export class BrowserCaptureService {
     }
     active.phase = "flushing";
     for (const client of this.clients.values()) {
-      if (client.sourceId) this.addExpectedSource(active, client);
+      if (client.sourceId && this.matchesActive(active, client))
+        this.addExpectedSource(active, client);
     }
     const deadlineEpochMs = this.now() + this.flushTimeoutMs;
     active.flushDeadlineEpochMs = deadlineEpochMs;
@@ -420,7 +424,7 @@ export class BrowserCaptureService {
       client.droppedEvents = message.droppedEvents;
       client.lastSequence = message.lastSequence;
       const active = this.active;
-      if (active?.phase === "recording") {
+      if (active?.phase === "recording" && this.matchesActive(active, client)) {
         this.addExpectedSource(active, client);
         active.store.noteDropped(
           connection.browser,
@@ -437,6 +441,7 @@ export class BrowserCaptureService {
         if (message.kind === "browser.hello") this.sendClockPings(client, 3);
       } else if (
         active?.phase === "flushing" &&
+        this.matchesActive(active, client) &&
         active.expectedSources.has(message.sourceId) &&
         active.flushDeadlineEpochMs !== null
       ) {
@@ -466,6 +471,15 @@ export class BrowserCaptureService {
           protocolVersion: BROWSER_BRIDGE_PROTOCOL_VERSION,
           code: "invalid-session",
           message: "That browser recording session is no longer active.",
+        });
+        return;
+      }
+      if (!this.matchesActive(active, client)) {
+        this.transport.send(connection.id, {
+          kind: "bridge.error",
+          protocolVersion: BROWSER_BRIDGE_PROTOCOL_VERSION,
+          code: "invalid-session",
+          message: "This browser is not selected for the active recording.",
         });
         return;
       }
@@ -519,7 +533,13 @@ export class BrowserCaptureService {
 
   private sendRecordState(connectionId: string): void {
     const active = this.active;
-    if (active && active.phase === "recording") {
+    const client = this.clients.get(connectionId);
+    if (
+      active &&
+      active.phase === "recording" &&
+      client &&
+      this.matchesActive(active, client)
+    ) {
       this.transport.send(connectionId, {
         kind: "record.state",
         protocolVersion: BROWSER_BRIDGE_PROTOCOL_VERSION,
@@ -585,6 +605,16 @@ export class BrowserCaptureService {
       active.droppedBaselines.set(client.sourceId, client.droppedEvents);
     }
     active.store.source(client.connection.browser, client.sourceId);
+  }
+
+  private matchesActive(
+    active: ActiveBrowserSession,
+    client: BrowserClient,
+  ): boolean {
+    return (
+      active.selectedBrowser === null ||
+      client.connection.browser === active.selectedBrowser
+    );
   }
 
   private clientForSource(sourceId: string): BrowserClient | null {
@@ -666,7 +696,12 @@ export class BrowserCaptureService {
       lastSeenAt: clients.length
         ? Math.max(...clients.map((client) => client.lastSeenAt))
         : null,
-      state: this.active?.phase ?? "idle",
+      state:
+        this.active &&
+        (this.active.selectedBrowser === null ||
+          this.active.selectedBrowser === browser)
+          ? this.active.phase
+          : "idle",
       error:
         this.transport.registrationError ??
         clients.find((client) => client.error)?.error ??

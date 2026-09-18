@@ -22,6 +22,7 @@ import { scanSensitiveTexts } from "../sensitive/scanner";
 import { writeBlueprintExport } from "./exporter";
 import {
   BLUEPRINT_FILE,
+  BLUEPRINT_V2_FILE,
   BLUEPRINT_REVIEW_FILE,
   EVIDENCE_INDEX_FILE,
   processEvidenceSession,
@@ -138,7 +139,7 @@ export class EvidenceService {
     await writeBlueprintExport({
       destination,
       sessionDir: sessionDir(sessionId),
-      blueprint: snapshot.blueprint,
+      blueprint: processed.blueprintV2,
       evidenceIndex: snapshot.index,
       browserEvents: processed.evidence.events
         .filter((event) => event.source === "browser" || event.source === "cdp")
@@ -168,9 +169,11 @@ export class EvidenceService {
     const review = BlueprintReviewSchema.safeParse(
       await readJson(path.join(directory, BLUEPRINT_REVIEW_FILE)),
     );
-    const blueprintReady = AutomationBlueprintSchema.safeParse(
-      await readJson(path.join(directory, BLUEPRINT_FILE)),
-    ).success;
+    const blueprintReady =
+      AutomationBlueprintSchema.safeParse(
+        await readJson(path.join(directory, BLUEPRINT_FILE)),
+      ).success ||
+      (await readJson(path.join(directory, BLUEPRINT_V2_FILE))) !== null;
     return EvidenceRecordingSummarySchema.parse({
       sessionId: session.id,
       startedAt: session.startedAt,
@@ -214,6 +217,7 @@ export class EvidenceService {
       index: processed.index,
       review: processed.review,
       blueprint: processed.blueprint,
+      blueprintV2: processed.blueprintV2,
     });
   }
 
