@@ -172,11 +172,19 @@ try {
       Start-Sleep -Milliseconds 25
     }
 
+    # Hosted arm64 images may need several seconds to retire a released file
+    # handle, so keep this bounded while allowing the retry path to settle.
     Move-DirectoryTree `
       -Source $lockedSourceDirectory `
       -Destination $lockedDestinationDirectory `
-      -MaxAttempts 6 `
-      -RetryDelayMilliseconds 100
+      -MaxAttempts 10 `
+      -RetryDelayMilliseconds 250
+    if (-not $locker.WaitForExit(5000)) {
+      throw "The directory-lock test helper did not release its handle."
+    }
+    if ($locker.ExitCode -ne 0) {
+      throw "The directory-lock test helper exited with code $($locker.ExitCode)."
+    }
     if (-not [IO.Directory]::Exists($lockedDestinationDirectory)) {
       throw "Move-DirectoryTree did not recover from a transient file lock."
     }
