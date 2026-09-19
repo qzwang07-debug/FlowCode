@@ -129,7 +129,11 @@ try {
   }
   $lockedSourceDirectory = Join-Path $testRoot "locked-source"
   $lockedDestinationDirectory = Join-Path $testRoot "locked-destination"
-  $lockedFile = Join-Path $lockedSourceDirectory "scanned.exe"
+  # The helper process supplies the deterministic exclusive lock. Using an
+  # executable suffix also invites the runner's real-time scanner to add an
+  # unrelated lock after the helper releases it, which makes this unit test
+  # nondeterministic on hosted Windows arm64 images.
+  $lockedFile = Join-Path $lockedSourceDirectory "scanner-lock.fixture"
   $readyFile = Join-Path $testRoot "locker-ready"
   [IO.Directory]::CreateDirectory($lockedSourceDirectory) | Out-Null
   [IO.File]::WriteAllText($lockedFile, "endpoint scanner simulation")
@@ -157,6 +161,7 @@ try {
   $locker = Start-Process `
     -FilePath $powerShellExecutable `
     -ArgumentList @("-NoProfile", "-NonInteractive", "-EncodedCommand", $encodedLockerSource) `
+    -WindowStyle Hidden `
     -PassThru
   try {
     $readyDeadline = (Get-Date).AddSeconds(10)
