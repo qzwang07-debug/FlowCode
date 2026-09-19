@@ -1,0 +1,242 @@
+.ziniao-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  color: var(--text);
+}
+
+.ziniao-picker.studio {
+  max-width: 820px;
+  padding: 22px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.ziniao-picker.compact {
+  grid-column: 1 / -1;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.ziniao-picker-heading,
+.ziniao-profile-row,
+.ziniao-search form,
+.ziniao-pagination,
+.ziniao-store-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ziniao-picker-heading {
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.ziniao-picker h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.ziniao-picker-heading p {
+  max-width: 620px;
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.ziniao-field {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.ziniao-field select,
+.ziniao-field input {
+  min-width: 0;
+  min-height: 36px;
+  padding: 7px 10px;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.ziniao-field select:focus-visible,
+.ziniao-field input:focus-visible,
+.ziniao-picker button:focus-visible {
+  outline: 2px solid var(--brand-ink);
+  outline-offset: 2px;
+}
+
+.ziniao-flow,
+.ziniao-search,
+.ziniao-page-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ziniao-search,
+.ziniao-page-choice {
+  padding: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.ziniao-store-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 240px;
+  padding: 0;
+  margin: 0;
+  overflow: auto;
+  list-style: none;
+}
+
+.ziniao-store-list li {
+  justify-content: space-between;
+  padding: 9px 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.ziniao-store-list li div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ziniao-store-list strong,
+.ziniao-store-list span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ziniao-store-list strong {
+  font-size: 12px;
+}
+
+.ziniao-store-list span,
+.ziniao-page-url,
+.ziniao-empty {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.ziniao-primary,
+.ziniao-secondary,
+.ziniao-link,
+.ziniao-pagination button {
+  min-height: 34px;
+  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.ziniao-primary {
+  color: var(--brand-fg);
+  background: #cf2f1b;
+}
+
+.ziniao-secondary,
+.ziniao-pagination button {
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.ziniao-link {
+  color: var(--brand-ink);
+  background: transparent;
+}
+
+.ziniao-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.ziniao-checkbox input {
+  width: 16px;
+  height: 16px;
+}
+
+.ziniao-state {
+  padding: 4px 7px;
+  color: var(--muted);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.ziniao-state[data-state="recording"],
+.ziniao-ready {
+  color: #146c43;
+}
+
+.ziniao-message,
+.ziniao-error,
+.ziniao-ready {
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.ziniao-error {
+  color: #9e2416;
+  border-color: #dca59e;
+  background: #fff4f2;
+}
+
+.ziniao-pagination {
+  justify-content: space-between;
+}
+
+.ziniao-page-url {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.ziniao-picker.compact .ziniao-picker-heading p,
+.ziniao-picker.compact .ziniao-store-list span {
+  display: none;
+}
+
+.ziniao-picker.compact .ziniao-profile-row,
+.ziniao-picker.compact .ziniao-search form,
+.ziniao-picker.compact .ziniao-store-list li {
+  align-items: stretch;
+  flex-direction: column;
+}
+
+@media (max-width: 760px) {
+  .ziniao-profile-row,
+  .ziniao-search form,
+  .ziniao-store-list li {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

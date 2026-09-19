@@ -107,6 +107,7 @@ export function EvidenceReview({
     ],
     [snapshot],
   );
+  const blueprintSteps = snapshot?.blueprintV2?.steps ?? snapshot?.blueprint.steps ?? [];
 
   const updateAssertion = useCallback(
     (index: number, update: (current: BlueprintReviewAssertion) => BlueprintReviewAssertion) => {
@@ -205,7 +206,11 @@ export function EvidenceReview({
     <div className="evidence-review">
       <header className="evidence-review-header">
         <div>
-          <span className="project-studio-kicker">Stage 4 · Deterministic Blueprint</span>
+          <span className="project-studio-kicker">
+            {snapshot.blueprintV2
+              ? "Stage 5B · Deterministic Blueprint v2"
+              : "Stage 4 · Deterministic Blueprint"}
+          </span>
           <h2>{snapshot.projectName ?? `Recording ${sessionId}`}</h2>
           <p>
             {new Date(snapshot.session.startedAt).toLocaleString()} · {snapshot.session.link.mode === "analyze-only" ? "Analyze only" : "Analyze and build"}
@@ -232,6 +237,13 @@ export function EvidenceReview({
         <span>{snapshot.index.stats.browserEvents} browser events</span>
         <span>{snapshot.index.causalLinks.length} causal links</span>
         <span>{snapshot.index.gaps.length} gaps</span>
+        {snapshot.blueprintV2 && (
+          <>
+            <span>{snapshot.blueprintV2.pages.length} logical pages</span>
+            <span>{snapshot.blueprintV2.frames.length} frame chains</span>
+            <span>{snapshot.blueprintV2.gaps.length} generation gaps</span>
+          </>
+        )}
       </div>
 
       <section className="project-studio-panel evidence-review-intent">
@@ -292,10 +304,10 @@ export function EvidenceReview({
         <section className="project-studio-panel evidence-blueprint-steps">
           <div className="project-studio-panel-heading">
             <span>Blueprint steps</span>
-            <span>{snapshot.blueprint.steps.length}</span>
+            <span>{blueprintSteps.length}</span>
           </div>
           <ol>
-            {snapshot.blueprint.steps.map((step) => (
+            {blueprintSteps.map((step) => (
               <li key={step.id}>
                 <code>{step.action}</code>
                 <div>
@@ -444,7 +456,7 @@ export function EvidenceReview({
       </section>
 
       <div className="project-studio-boundary">
-        Stage 4 boundary: this Blueprint is deterministic and local. No model, Evidence MCP, Agent code write, AST assertion extraction, or CDP capture is enabled.
+        Stage 5B boundary: this Blueprint is deterministic and local. Ziniao may use the approved CDP semantic transport, but no model, Evidence MCP, Agent code write, or project execution is enabled.
       </div>
     </div>
   );

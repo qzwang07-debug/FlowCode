@@ -159,8 +159,20 @@ body[data-route="projects"] #root {
 
 .project-studio-welcome,
 .project-studio-overview,
-.project-studio-wizard {
+.project-studio-wizard,
+.project-studio-environments {
   max-width: 760px;
+}
+
+.project-studio-environments > p {
+  margin: 8px 0 20px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.project-studio-environments .project-studio-boundary {
+  margin-top: 14px;
 }
 
 .project-studio-runtime {

@@ -252,6 +252,38 @@ export function ziniaoReadArgs(
       ];
   }
 }
+
+export function ziniaoOpenArgs(
+  binding: z.infer<typeof ZiniaoStoreBindingSchema>,
+): string[] {
+  const value = ZiniaoStoreBindingSchema.parse(binding);
+  return [
+    "store",
+    "open",
+    "--id",
+    value.storeId,
+    "--expected-name",
+    value.expectedName,
+  ];
+}
+
+function wait(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new ZiniaoCliError("canceled"));
+      return;
+    }
+    const timer = setTimeout(resolve, ms);
+    signal?.addEventListener(
+      "abort",
+      () => {
+        clearTimeout(timer);
+        reject(new ZiniaoCliError("canceled"));
+      },
+      { once: true },
+    );
+  });
+}
 /** Internal, typed service; no Renderer IPC, arbitrary zclaw, scripts or close-store API. */
 export class ZiniaoCliService {
   constructor(
@@ -269,13 +301,26 @@ export class ZiniaoCliService {
       ? createHash("sha256").update(`${profile}\0${before}`).digest("hex")
       : profile;
   }
-  async list(page = 1, limit = 20, signal?: AbortSignal) {
+  async list(
+    page = 1,
+    limit = 20,
+    signal?: AbortSignal,
+    keyword?: string,
+  ) {
     const r = parse(
       StoreListResponseSchema,
-      await this.transport(ziniaoReadArgs({ kind: "list", page, limit }), {
-        signal,
-        timeoutMs: 30000,
-      }),
+      await this.transport(
+        ziniaoReadArgs({
+          kind: "list",
+          page,
+          limit,
+          ...(keyword ? { keyword } : {}),
+        }),
+        {
+          signal,
+          timeoutMs: 30000,
+        },
+      ),
     );
     if (r.data.page !== page || r.data.limit !== limit)
       throw new ZiniaoCliError("invalid-response");
@@ -303,6 +348,20 @@ export class ZiniaoCliService {
       storeId: r.data.storeId,
       expectedName: name,
     });
+  }
+  async bindStore(
+    storeId: string,
+    expectedName: string,
+    signal?: AbortSignal,
+  ) {
+    const before = await this.accountRef(signal);
+    const candidate = ZiniaoStoreBindingSchema.parse({
+      accountRef: before,
+      storeId,
+      expectedName,
+    });
+    await this.verifyBinding(candidate, signal);
+    return candidate;
   }
   async verifyBinding(
     binding: z.infer<typeof ZiniaoStoreBindingSchema>,
@@ -354,6 +413,47 @@ export class ZiniaoCliService {
     if (binding.accountRef !== (await this.accountRef(signal)))
       throw new ZiniaoCliError("account-changed");
     return r.data;
+  }
+  /** Open the exact store once, then query state until ready. A timed-out open is
+   * never retried blindly because the client may have accepted it already. */
+  async ensureVisibleRunning(
+    binding: z.infer<typeof ZiniaoStoreBindingSchema>,
+    options: {
+      signal?: AbortSignal;
+      readyTimeoutMs?: number;
+      pollIntervalMs?: number;
+      onProgress?: (state: z.infer<typeof StoreStateResponseSchema>["data"]) => void;
+    } = {},
+  ) {
+    const value = ZiniaoStoreBindingSchema.parse(binding);
+    const initial = await this.state(value, options.signal);
+    options.onProgress?.(initial);
+    if (initial.running) {
+      return { state: initial, launchOwnership: "borrowed" as const };
+    }
+    try {
+      // `store open` in CLI 1.0.8 has no --format flag and no stable JSON
+      // response. Its only trusted completion evidence is a subsequent exact
+      // binding + state query, whether this process exits or times out.
+      await this.transport(ziniaoOpenArgs(value), {
+        signal: options.signal,
+        timeoutMs: 30000,
+      });
+    } catch (error) {
+      if (!(error instanceof ZiniaoCliError) || !error.requiresStateCheck)
+        throw error;
+      // The mutation may have succeeded. State polling below is the only follow-up.
+    }
+    const deadline = Date.now() + (options.readyTimeoutMs ?? 120000);
+    while (Date.now() < deadline) {
+      await wait(options.pollIntervalMs ?? 1000, options.signal);
+      const current = await this.state(value, options.signal);
+      options.onProgress?.(current);
+      if (current.running) {
+        return { state: current, launchOwnership: "flowcode" as const };
+      }
+    }
+    throw new ZiniaoCliError("timed-out", true);
   }
   private async authoritativeStores(signal?: AbortSignal) {
     const rows: Array<z.infer<typeof ItemSchema>> = [];

@@ -127,60 +127,84 @@ try {
   if ([IO.Directory]::Exists((ConvertTo-ExtendedLengthPath -Path $destinationDirectory))) {
     throw "Remove-DirectoryTree left the destination directory behind."
   }
+  if (-not ("FlowCode.Tests.TransientFileLock" -as [type])) {
+    Add-Type -TypeDefinition @"
+using System;
+using System.IO;
+using System.Threading;
+
+namespace FlowCode.Tests
+{
+    public sealed class TransientFileLock : IDisposable
+    {
+        private readonly FileStream stream;
+        private readonly Thread releaseThread;
+        private Exception releaseError;
+
+        public TransientFileLock(string path, int holdMilliseconds)
+        {
+            stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            releaseThread = new Thread(() =>
+            {
+                try
+                {
+                    Thread.Sleep(holdMilliseconds);
+                }
+                catch (Exception exception)
+                {
+                    releaseError = exception;
+                }
+                finally
+                {
+                    stream.Dispose();
+                }
+            });
+            releaseThread.IsBackground = true;
+            releaseThread.Start();
+        }
+
+        public void WaitForRelease(int timeoutMilliseconds)
+        {
+            if (!releaseThread.Join(timeoutMilliseconds))
+            {
+                throw new TimeoutException("The transient file lock was not released in time.");
+            }
+            if (releaseError != null)
+            {
+                throw new InvalidOperationException("The transient file lock failed to release.", releaseError);
+            }
+        }
+
+        public void Dispose()
+        {
+            releaseThread.Join();
+            stream.Dispose();
+        }
+    }
+}
+"@
+  }
   $lockedSourceDirectory = Join-Path $testRoot "locked-source"
   $lockedDestinationDirectory = Join-Path $testRoot "locked-destination"
-  $lockedFile = Join-Path $lockedSourceDirectory "scanned.exe"
-  $readyFile = Join-Path $testRoot "locker-ready"
+  # A native thread supplies the deterministic exclusive lock. A child
+  # PowerShell process keeps the directory non-movable on hosted arm64 images
+  # even after disposing its stream, so it cannot model a bounded lock there.
+  $lockedFile = Join-Path $lockedSourceDirectory "scanner-lock.fixture"
   [IO.Directory]::CreateDirectory($lockedSourceDirectory) | Out-Null
   [IO.File]::WriteAllText($lockedFile, "endpoint scanner simulation")
 
-  $escapedLockedFile = $lockedFile.Replace("'", "''")
-  $escapedReadyFile = $readyFile.Replace("'", "''")
-  $lockerSource = @"
-`$stream = [IO.File]::Open(
-  '$escapedLockedFile',
-  [IO.FileMode]::Open,
-  [IO.FileAccess]::Read,
-  [IO.FileShare]::Read
-)
-try {
-  [IO.File]::WriteAllText('$escapedReadyFile', 'ready')
-  Start-Sleep -Milliseconds 500
-} finally {
-  `$stream.Dispose()
-}
-"@
-  $encodedLockerSource = [Convert]::ToBase64String(
-    [Text.Encoding]::Unicode.GetBytes($lockerSource)
-  )
-  $powerShellExecutable = [Diagnostics.Process]::GetCurrentProcess().MainModule.FileName
-  $locker = Start-Process `
-    -FilePath $powerShellExecutable `
-    -ArgumentList @("-NoProfile", "-NonInteractive", "-EncodedCommand", $encodedLockerSource) `
-    -PassThru
+  $locker = [FlowCode.Tests.TransientFileLock]::new($lockedFile, 500)
   try {
-    $readyDeadline = (Get-Date).AddSeconds(10)
-    while (-not [IO.File]::Exists($readyFile)) {
-      if ((Get-Date) -ge $readyDeadline -or $locker.HasExited) {
-        throw "The directory-lock test helper did not become ready."
-      }
-      Start-Sleep -Milliseconds 25
-    }
-
     Move-DirectoryTree `
       -Source $lockedSourceDirectory `
       -Destination $lockedDestinationDirectory `
       -MaxAttempts 6 `
       -RetryDelayMilliseconds 100
+    $locker.WaitForRelease(5000)
     if (-not [IO.Directory]::Exists($lockedDestinationDirectory)) {
       throw "Move-DirectoryTree did not recover from a transient file lock."
     }
   } finally {
-    if (-not $locker.HasExited) {
-      # The helper may exit between HasExited and Stop-Process; cleanup is idempotent.
-      Stop-Process -Id $locker.Id -Force -ErrorAction SilentlyContinue
-      $locker.WaitForExit()
-    }
     $locker.Dispose()
   }
 } finally {

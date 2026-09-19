@@ -1,4 +1,5 @@
-import { copyFileSync, mkdirSync, readdirSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -11,10 +12,24 @@ const rootDir = path.dirname(fileURLToPath(import.meta.url));
 /** Ship the CommonJS preloads + hidden capture page verbatim (they run in the
  *  renderer's isolated world and must not go through the ESM main pipeline). */
 function copyStaticAssets(): void {
+  const ziniaoSensor = path.join(
+    rootDir,
+    ".flowcode-build",
+    "ziniao",
+    "semantic-sensor.js",
+  );
+  if (!existsSync(ziniaoSensor)) {
+    execFileSync(process.execPath, [path.join(rootDir, "scripts", "build-ziniao-sensor.mjs")], {
+      cwd: rootDir,
+      windowsHide: true,
+      stdio: "inherit",
+    });
+  }
   const out = path.join(rootDir, "dist-electron");
   mkdirSync(out, { recursive: true });
   mkdirSync(path.join(out, "video"), { recursive: true });
   mkdirSync(path.join(out, "audio"), { recursive: true });
+  mkdirSync(path.join(out, "ziniao"), { recursive: true });
   const icons = path.join(out, "assets", "icons");
   mkdirSync(icons, { recursive: true });
   const iconSrc = path.join(rootDir, "electron", "assets", "icons");
@@ -37,6 +52,10 @@ function copyStaticAssets(): void {
   copyFileSync(
     path.join(rootDir, "electron", "audio", "capture-preload.cjs"),
     path.join(out, "audio", "capture-preload.cjs"),
+  );
+  copyFileSync(
+    ziniaoSensor,
+    path.join(out, "ziniao", "semantic-sensor.js"),
   );
 }
 

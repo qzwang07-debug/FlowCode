@@ -9,6 +9,7 @@ import {
   ziniaoReadArgs,
   parseAccountReference,
   createZiniaoTransport,
+  ziniaoOpenArgs,
 } from "./cli-service";
 import { splitWindowsCommandLine } from "./windows-command-line";
 
@@ -180,6 +181,21 @@ test("CLI whitelist rejects arbitrary script/tool/paths and keeps metacharacters
   assert.throws(() => parseAccountReference("* one\n* two"));
   assert.throws(() => parseAccountReference("no active profile"));
   assert.equal(new ZiniaoCliError("timed-out", true).requiresStateCheck, true);
+  assert.deepEqual(
+    ziniaoOpenArgs({
+      accountRef: "a".repeat(64),
+      storeId: "fixture-store",
+      expectedName: "Fixture store",
+    }),
+    [
+      "store",
+      "open",
+      "--id",
+      "fixture-store",
+      "--expected-name",
+      "Fixture store",
+    ],
+  );
 });
 test("real subprocess transport enforces timeout/cancellation without leaking stderr or arguments", async () => {
   const transport = createZiniaoTransport(process.execPath);
@@ -215,4 +231,53 @@ test("Windows process argument parsing distinguishes exact profile IDs from pref
     ],
   );
   assert.throws(() => splitWindowsCommandLine('"unterminated'));
+});
+
+test("visible store launch checks state after timeout and never blindly repeats open", async () => {
+  let running = false;
+  let openCalls = 0;
+  const service = new ZiniaoCliService(async (args) => {
+    if (args[0] === "config") return "* fixture-account";
+    if (args[1] === "list")
+      return JSON.stringify({
+        ok: true,
+        data: {
+          items: [
+            {
+              storeId: "fixture-store",
+              storeName: "Fixture store",
+              platformName: "fixture",
+            },
+          ],
+          page: 1,
+          limit: 100,
+          total: 1,
+        },
+      });
+    if (args[1] === "resolve") return JSON.stringify(response);
+    if (args[1] === "extract")
+      return JSON.stringify({
+        ok: true,
+        data: {
+          running,
+          storeId: "fixture-store",
+          storeName: "Fixture store",
+          downloadFolderPath: running ? "C:\\Fixture\\Downloads" : null,
+        },
+      });
+    if (args[1] === "open") {
+      openCalls += 1;
+      running = true;
+      throw new ZiniaoCliError("command-failed", true);
+    }
+    throw new Error("Unexpected test command.");
+  });
+  const binding = await service.bindStore("fixture-store", "Fixture store");
+  const ready = await service.ensureVisibleRunning(binding, {
+    pollIntervalMs: 1,
+    readyTimeoutMs: 100,
+  });
+  assert.equal(ready.state.running, true);
+  assert.equal(ready.launchOwnership, "flowcode");
+  assert.equal(openCalls, 1);
 });

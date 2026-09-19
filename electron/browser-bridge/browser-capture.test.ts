@@ -69,11 +69,14 @@ class FakeTransport implements BrowserBridgeTransport {
     }
   }
 
-  connect(id = "connection-1"): NativeBrowserConnection {
+  connect(
+    id = "connection-1",
+    browser: "chrome" | "edge" = "chrome",
+  ): NativeBrowserConnection {
     const connection: NativeBrowserConnection = {
       id,
-      browser: "chrome",
-      origin: "chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/",
+      browser,
+      origin: `${browser}-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/`,
     };
     this.connections.set(id, connection);
     this.listener?.connected(connection);
@@ -88,12 +91,12 @@ class FakeTransport implements BrowserBridgeTransport {
   }
 }
 
-function hello(): BrowserToDesktopMessage {
+function hello(browser: "chrome" | "edge" = "chrome"): BrowserToDesktopMessage {
   return {
     kind: "browser.hello",
     protocolVersion: 1,
-    browser: "chrome",
-    sourceId: "chrome-source",
+    browser,
+    sourceId: `${browser}-source`,
     extensionVersion: "0.5.0",
     captureState: "idle",
     sessionId: null,
@@ -117,6 +120,56 @@ function hello(): BrowserToDesktopMessage {
     ],
   };
 }
+
+test("an explicit Chrome or Edge selection activates only that semantic channel", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "flowcode-browser-selected-"));
+  const sessionDirectory = path.join(root, "session-selected");
+  await mkdir(sessionDirectory);
+  const transport = new FakeTransport();
+  const service = new BrowserCaptureService({
+    dataDir: root,
+    transport,
+    flushTimeoutMs: TEST_OPERATION_TIMEOUT_MS,
+  });
+  try {
+    await service.initialize();
+    const chrome = transport.connect("chrome-connection", "chrome");
+    const edge = transport.connect("edge-connection", "edge");
+    transport.deliver(chrome, hello("chrome"));
+    transport.deliver(edge, hello("edge"));
+    await turn();
+    await service.startSession("session-selected", sessionDirectory, 1000, "edge");
+    assert.equal(
+      transport.sent.some(
+        ({ connectionId, message }) =>
+          connectionId === chrome.id && message.kind === "record.start",
+      ),
+      false,
+    );
+    assert.equal(
+      transport.sent.some(
+        ({ connectionId, message }) =>
+          connectionId === edge.id && message.kind === "record.start",
+      ),
+      true,
+    );
+    const stopping = service.stopSession("session-selected");
+    await turn();
+    transport.deliver(edge, {
+      kind: "browser.flushed",
+      protocolVersion: 1,
+      browser: "edge",
+      sourceId: "edge-source",
+      sessionId: "session-selected",
+      lastSequence: -1,
+      droppedEvents: 0,
+    });
+    assert.equal((await stopping).degraded, false);
+  } finally {
+    await service.dispose();
+    await rm(root, { recursive: true, force: true });
+  }
+});
 
 function browserEvent(sessionId: string): BrowserToDesktopMessage {
   return {

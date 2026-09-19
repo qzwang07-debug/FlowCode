@@ -42,6 +42,19 @@ import type { ScreenSource } from "./screen";
 import type { SensitiveReport } from "./sensitive";
 import type { RecordingSessionLink } from "./session";
 import type {
+  RecordingBrowserSelection,
+  RecordingStartRequest,
+  ZiniaoEnvironmentSnapshot,
+  ZiniaoActionResultSchema,
+  ZiniaoPageSelectionRequestSchema,
+  ZiniaoPageSelectionResultSchema,
+  ZiniaoPrepareRequestSchema,
+  ZiniaoPrepareResultSchema,
+  ZiniaoRecordingStatus,
+  ZiniaoStoreSearchRequestSchema,
+  ZiniaoStoreSearchResultSchema,
+} from "./ziniao-recording";
+import type {
   BuiltSkill,
   SkillArchitecture,
   SkillPlan,
@@ -424,6 +437,8 @@ export interface StartOptions {
   screenSourceId?: string;
   /** Stable OS display identity used to validate the final Electron source. */
   screenDisplayId?: string;
+  /** Stage 5B semantic source selected in the trusted UI. */
+  browser?: RecordingBrowserSelection;
 }
 
 export interface StopResult {
@@ -599,6 +614,12 @@ export const IPC = {
   doctor: "doctor:check",
   browserCaptureStatus: "browser-capture:status",
   browserCaptureStatusChanged: "browser-capture:status-changed",
+  ziniaoEnvironment: "ziniao:environment",
+  ziniaoStoreSearch: "ziniao:store-search",
+  ziniaoPrepare: "ziniao:prepare",
+  ziniaoCancelPrepare: "ziniao:prepare-cancel",
+  ziniaoSelectPage: "ziniao:page-select",
+  ziniaoStatusChanged: "ziniao:status-changed",
   copilotSignIn: "copilot:sign-in",
   statusChanged: "recorder:status-changed",
   recordingPrivacyReviewed: "recorder:privacy-reviewed",
@@ -662,9 +683,9 @@ export const IPC = {
 /** Shape exposed on `window.skillRecorder` by the preload bridge. */
 export interface SkillRecorderApi {
   /** Request a start; may require the pre-recording privacy warning first. */
-  start(link?: RecordingSessionLink): Promise<StartResult>;
+  start(input?: RecordingStartRequest | RecordingSessionLink): Promise<StartResult>;
   /** Start once after the user explicitly proceeds through the privacy warning. */
-  confirmStart(link?: RecordingSessionLink): Promise<StartResult>;
+  confirmStart(input?: RecordingStartRequest | RecordingSessionLink): Promise<StartResult>;
   markRecordingPrivacyReviewed(): Promise<void>;
   onRecordingPrivacyWarningRequested(cb: () => void): () => void;
   stop(): Promise<StopResult>;
@@ -690,6 +711,18 @@ export interface SkillRecorderApi {
   onBrowserCaptureStatusChanged(
     cb: (status: BrowserCaptureStatus) => void,
   ): () => void;
+  ziniaoEnvironment(): Promise<ZiniaoEnvironmentSnapshot>;
+  searchZiniaoStores(
+    input: z.infer<typeof ZiniaoStoreSearchRequestSchema>,
+  ): Promise<z.infer<typeof ZiniaoStoreSearchResultSchema>>;
+  prepareZiniao(
+    input: z.infer<typeof ZiniaoPrepareRequestSchema>,
+  ): Promise<z.infer<typeof ZiniaoPrepareResultSchema>>;
+  cancelZiniaoPrepare(): Promise<z.infer<typeof ZiniaoActionResultSchema>>;
+  selectZiniaoPage(
+    input: z.infer<typeof ZiniaoPageSelectionRequestSchema>,
+  ): Promise<z.infer<typeof ZiniaoPageSelectionResultSchema>>;
+  onZiniaoStatusChanged(cb: (status: ZiniaoRecordingStatus) => void): () => void;
   /**
    * Open a terminal window running the bundled Copilot CLI's `login` command, so the
    * user can sign in without a globally installed `copilot`.

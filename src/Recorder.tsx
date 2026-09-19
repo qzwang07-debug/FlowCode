@@ -14,6 +14,10 @@ import type {
 } from "../common/browser";
 import type { ProjectListItem } from "../common/project";
 import type { RecordingSessionLink } from "../common/session";
+import type {
+  RecordingBrowserSelection,
+  ZiniaoRecordingStatus,
+} from "../common/ziniao-recording";
 import {
   DEFAULT_NARRATION_LANGUAGE,
   isNarrationLanguage,
@@ -25,6 +29,7 @@ import {
 import { formatMs } from "./format";
 import { RecordingPrivacyWarning } from "./RecordingPrivacyWarning";
 import { WhatsRecorded } from "./WhatsRecorded";
+import { ZiniaoEnvironmentPicker } from "./ziniao/ZiniaoEnvironmentPicker";
 
 const IS_MAC = typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent);
 /** Mirrors the main-process global shortcut "CommandOrControl+Shift+R", per OS. */
@@ -56,6 +61,7 @@ export function Recorder() {
   const [doctor, setDoctor] = useState<DoctorReport | null>(null);
   const [browserCapture, setBrowserCapture] =
     useState<BrowserCaptureStatus | null>(null);
+  const [ziniaoStatus, setZiniaoStatus] = useState<ZiniaoRecordingStatus | null>(null);
   const [narrationStatus, setNarrationStatus] = useState<NarrationStatus | null>(null);
   const [microphoneSettings, setMicrophoneSettings] =
     useState<MicrophoneSettingsStatus | null>(null);
@@ -81,6 +87,10 @@ export function Recorder() {
   const [recordingMode, setRecordingMode] =
     useState<RecordingSessionLink["mode"]>("analyze-only");
   const [recordingProjectId, setRecordingProjectId] = useState("");
+  const [browserProvider, setBrowserProvider] =
+    useState<RecordingBrowserSelection["provider"]>("chrome");
+  const [recordingBrowser, setRecordingBrowser] =
+    useState<RecordingBrowserSelection | null>({ provider: "chrome" });
   const narrationSettingsRef = useRef<HTMLElement>(null);
   const hudRef = useRef<HTMLDivElement>(null);
 
@@ -108,6 +118,9 @@ export function Recorder() {
     void window.skillRecorder.status().then(applyRecorderStatus);
     void window.skillRecorder.doctor().then(setDoctor);
     void window.skillRecorder.browserCaptureStatus().then(setBrowserCapture);
+    void window.skillRecorder
+      .ziniaoEnvironment()
+      .then((environment) => setZiniaoStatus(environment.status));
     void window.skillRecorder.narrationStatus().then(setNarrationStatus);
     void window.skillRecorder.microphoneSettings().then(setMicrophoneSettings);
     void window.skillRecorder.screenSettings().then(setScreenSettings);
@@ -117,6 +130,7 @@ export function Recorder() {
     const offRecorder = window.skillRecorder.onStatusChanged(applyRecorderStatus);
     const offBrowser =
       window.skillRecorder.onBrowserCaptureStatusChanged(setBrowserCapture);
+    const offZiniao = window.skillRecorder.onZiniaoStatusChanged(setZiniaoStatus);
     const offNarration = window.skillRecorder.onNarrationStatusChanged(setNarrationStatus);
     const offMicrophones =
       window.skillRecorder.onMicrophoneSettingsChanged(setMicrophoneSettings);
@@ -126,6 +140,7 @@ export function Recorder() {
     return () => {
       offRecorder();
       offBrowser();
+      offZiniao();
       offNarration();
       offMicrophones();
       offScreens();
@@ -168,6 +183,13 @@ export function Recorder() {
       ...(recordingProjectId ? { projectId: recordingProjectId } : {}),
     }),
     [recordingMode, recordingProjectId],
+  );
+  const startRequest = useMemo(
+    () => ({
+      link: sessionLink,
+      ...(recordingBrowser ? { browser: recordingBrowser } : {}),
+    }),
+    [recordingBrowser, sessionLink],
   );
 
   useEffect(() => {
@@ -255,7 +277,12 @@ export function Recorder() {
       window.alert("Choose a project for Analyze and build.");
       return;
     }
-    const res = await window.skillRecorder.start(sessionLink);
+    if (browserProvider === "ziniao" && recordingBrowser?.provider !== "ziniao") {
+      setShowNarrationSettings(true);
+      window.alert("Prepare and select one exact Ziniao page before recording.");
+      return;
+    }
+    const res = await window.skillRecorder.start(startRequest);
     if (res.privacyWarningRequired) {
       setShowRecordingWarning(true);
       return;
@@ -267,12 +294,14 @@ export function Recorder() {
     recording,
     recordingMode,
     recordingProjectId,
-    sessionLink,
+    browserProvider,
+    recordingBrowser,
+    startRequest,
   ]);
 
   const startAfterWarning = useCallback(async () => {
     setWarningStarting(true);
-    const res = await window.skillRecorder.confirmStart(sessionLink);
+    const res = await window.skillRecorder.confirmStart(startRequest);
     if (!res.ok) {
       setWarningStarting(false);
       window.alert(res.error ?? "Could not start recording.");
@@ -281,7 +310,7 @@ export function Recorder() {
     setShowRecordingWarning(false);
     setWarningStarting(false);
     applyRecorderStatus(await window.skillRecorder.status());
-  }, [applyRecorderStatus, sessionLink]);
+  }, [applyRecorderStatus, startRequest]);
 
   const openPrivacyReview = useCallback((origin: PrivacyReviewOrigin) => {
     setShowRecordingWarning(false);
@@ -594,6 +623,14 @@ export function Recorder() {
                 ▾
               </span>
             </div>
+            <ZiniaoEnvironmentPicker
+              compact
+              provider={browserProvider}
+              selection={recordingBrowser}
+              disabled={recording || transitioning}
+              onProviderChange={setBrowserProvider}
+              onSelectionChange={setRecordingBrowser}
+            />
             <label htmlFor="recording-mode">After recording</label>
             <div className="narrate-select-wrap">
               <select
@@ -634,7 +671,7 @@ export function Recorder() {
             </div>
             {recordingMode === "analyze-and-build" && (
               <p className="narrate-settings-note">
-                This session is linked now; Agent code writing remains disabled in Stage 4.
+                This session is linked now; Agent code writing remains disabled until Stage 6.
               </p>
             )}
             {(microphoneActionError ||
@@ -826,6 +863,25 @@ export function Recorder() {
             <>
               <BrowserCaptureRow label="Chrome capture" status={browserCapture.chrome} />
               <BrowserCaptureRow label="Edge capture" status={browserCapture.edge} />
+              {ziniaoStatus && (
+                <Row
+                  label="Ziniao capture"
+                  status={
+                    ziniaoStatus.state === "recording" ||
+                    ziniaoStatus.state === "idle" ||
+                    ziniaoStatus.state === "ready"
+                      ? "good"
+                      : ziniaoStatus.state === "unavailable" || ziniaoStatus.state === "error"
+                        ? "bad"
+                        : "warn"
+                  }
+                  note={
+                    ziniaoStatus.selectedStoreName
+                      ? `${ziniaoStatus.selectedStoreName} · ${ziniaoStatus.state}`
+                      : ziniaoStatus.error ?? ziniaoStatus.state
+                  }
+                />
+              )}
             </>
           )}
           {narrate && narrationStatus && (

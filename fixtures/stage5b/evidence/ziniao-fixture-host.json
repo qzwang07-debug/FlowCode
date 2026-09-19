@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "storeName": "<approved-test-store>",
+  "cliVersion": "1.0.8",
+  "clientVersion": "6.27.2.14",
+  "kernelVersion": "142.0.7444.168",
+  "fixtureOnly": true,
+  "submitted": true,
+  "spa": true,
+  "humanInputPresent": true,
+  "uploadSelected": true,
+  "iframeInputs": 2,
+  "popupComplete": true,
+  "downloadCount": 0,
+  "downloadContentVerified": false,
+  "originalPagesPreserved": true,
+  "fixtureHash": "4f0dfc96d9812b66eeee78f4d426ac6eee428c7ea9b4467da88ec6b767648f9a"
+}

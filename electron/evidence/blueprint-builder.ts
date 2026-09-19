@@ -6,6 +6,12 @@ import {
   type JsonValue,
 } from "../../common/blueprint";
 import {
+  AutomationBlueprintV2Schema,
+  type AutomationBlueprintV2,
+  type BlueprintStepV2,
+} from "../../common/blueprint-v2";
+import { BrowserLocatorSchema } from "../../common/browser";
+import {
   BlueprintReviewSchema,
   type BlueprintReview,
   type EvidenceTimelineItem,
@@ -14,6 +20,7 @@ import type { ProjectKind } from "../../common/project";
 import type { SessionMetaV2 } from "../../common/session";
 import type { FusedEvent, FusedEvidence } from "./fusion";
 import { bestLocator } from "./fusion";
+import { contractHash, sealBlueprint } from "./blueprint-contract";
 
 interface VariableCandidate {
   eventId: string;
@@ -397,5 +404,356 @@ export function buildDeterministicBlueprint(
         .map(([category, count]) => ({ category, count })),
       userReviewed: review.privacyReviewed,
     },
+  });
+}
+
+function eventTab(event: FusedEvent): number | null {
+  return typeof event.payload.tabId === "number" &&
+    Number.isInteger(event.payload.tabId)
+    ? event.payload.tabId
+    : null;
+}
+
+function eventFrame(event: FusedEvent): number | null {
+  return typeof event.payload.frameId === "number" &&
+    Number.isInteger(event.payload.frameId)
+    ? event.payload.frameId
+    : null;
+}
+
+function blueprintLocator(raw: unknown) {
+  const locator = BrowserLocatorSchema.safeParse(raw);
+  if (!locator.success) return undefined;
+  if (locator.data.kind === "role") {
+    const separator = locator.data.value.indexOf("|");
+    return {
+      kind: "role" as const,
+      role:
+        separator >= 0
+          ? locator.data.value.slice(0, separator)
+          : locator.data.value,
+      ...(separator >= 0
+        ? { name: locator.data.value.slice(separator + 1) }
+        : {}),
+    };
+  }
+  if (locator.data.kind === "css")
+    return { kind: "css" as const, selector: locator.data.value };
+  return { kind: locator.data.kind, value: locator.data.value };
+}
+
+/** Build executable-shape v2 context deterministically from semantic evidence.
+ * It never guesses a missing page/frame/causal edge: unresolved owners receive
+ * explicit gaps and cannot be marked automatic by the v2 host validator. */
+export function buildDeterministicBlueprintV2(
+  session: SessionMetaV2,
+  evidence: FusedEvidence,
+  rawReview: BlueprintReview,
+): AutomationBlueprintV2 {
+  const review = BlueprintReviewSchema.parse(rawReview);
+  if (review.sessionId !== session.id)
+    throw new Error("Blueprint review belongs to another session.");
+  const legacy = buildDeterministicBlueprint(session, evidence, review);
+  const gaps: AutomationBlueprintV2["gaps"] = [];
+  const addGap = (
+    ownerId: string,
+    field: AutomationBlueprintV2["gaps"][number]["field"],
+    reason: string,
+  ) => {
+    if (gaps.some((gap) => gap.ownerId === ownerId && gap.field === field)) return;
+    gaps.push({ id: `gap-${gaps.length + 1}`, ownerId, field, reason });
+  };
+  const evidenceRefs: AutomationBlueprintV2["evidenceRefs"] = [];
+  const evidenceIds = new Map<string, string>();
+  const addEvidence = (eventId: string): string => {
+    const existing = evidenceIds.get(eventId);
+    if (existing) return existing;
+    const id = `evidence-event-${String(evidenceIds.size + 1).padStart(5, "0")}`;
+    evidenceIds.set(eventId, id);
+    evidenceRefs.push({
+      id,
+      kind: "event",
+      reference: eventId,
+      sessionId: session.id,
+      evidenceVersion: 1,
+    });
+    return id;
+  };
+  const variableCandidates = deriveVariables(evidence.events);
+  const reviewedVariables = new Map(
+    review.variables.map((variable) => [variable.id, variable]),
+  );
+  const variablesByEvent = new Map(
+    variableCandidates.map((candidate) => [
+      candidate.eventId,
+      reviewedVariables.get(candidate.variable.id) ?? candidate.variable,
+    ]),
+  );
+
+  const pageByTab = new Map<number, string>();
+  const pageKind = new Map<number, "existing" | "tab" | "popup">();
+  for (const event of evidence.events) {
+    const tab = eventTab(event);
+    if (tab === null || pageByTab.has(tab)) continue;
+    pageByTab.set(tab, `page-${pageByTab.size + 1}`);
+    pageKind.set(tab, "existing");
+  }
+  for (const event of evidence.events) {
+    if (event.type !== "browser.popup" && event.type !== "browser.tab-open")
+      continue;
+    const tab = eventTab(event);
+    if (tab === null) continue;
+    if (event.type === "browser.popup") pageKind.set(tab, "popup");
+    else if (pageKind.get(tab) !== "popup") pageKind.set(tab, "tab");
+  }
+
+  const frameByKey = new Map<string, string>();
+  const frames: AutomationBlueprintV2["frames"] = [];
+  for (const event of evidence.events) {
+    const tab = eventTab(event);
+    const frame = eventFrame(event);
+    if (tab === null || frame === null || frame === 0) continue;
+    const pageRef = pageByTab.get(tab);
+    const key = `${tab}:${frame}`;
+    if (!pageRef || frameByKey.has(key)) continue;
+    const rawChain = Array.isArray(event.payload.frameLocatorChain)
+      ? event.payload.frameLocatorChain
+      : [];
+    const locatorChain = rawChain.flatMap((raw) => {
+      const locator = blueprintLocator(raw);
+      return locator ? [locator] : [];
+    });
+    if (locatorChain.length === 0) continue;
+    const id = `frame-${frames.length + 1}`;
+    frameByKey.set(key, id);
+    frames.push({ id, pageRef, locatorChain });
+  }
+
+  const actionEvents = evidence.events.filter(
+    (event) =>
+      actionFor(event) !== null &&
+      !["browser.tab-open", "browser.popup", "browser.download"].includes(
+        event.type,
+      ),
+  );
+  const steps: BlueprintStepV2[] = [];
+  const stepByEvent = new Map<string, BlueprintStepV2>();
+  for (const event of actionEvents) {
+    const originalAction = actionFor(event)!;
+    const action =
+      event.type === "browser.tab-close" ? "close-page" : originalAction;
+    const tab = eventTab(event);
+    const frame = eventFrame(event);
+    const pageRef = tab === null ? undefined : pageByTab.get(tab);
+    const frameRef =
+      tab === null || frame === null || frame === 0
+        ? undefined
+        : frameByKey.get(`${tab}:${frame}`);
+    const contextResolved = Boolean(
+      pageRef && (frame === null || frame === 0 || frameRef),
+    );
+    const target = bestLocator(event);
+    const variable = variablesByEvent.get(event.eventId);
+    const canAutomate =
+      contextResolved &&
+      (!["click", "fill", "select", "check", "uncheck", "submit", "upload"].includes(
+        action,
+      ) || Boolean(target));
+    const id = stepIdFor(
+      event.eventId,
+      evidence.index.timeline,
+      steps.length + 1,
+    );
+    const step = AutomationBlueprintV2Schema.shape.steps.element.parse({
+      id,
+      action,
+      description: describeStep(event),
+      handling: canAutomate ? "automatic" : "needs-review",
+      contextStatus: contextResolved ? "resolved" : "unresolved",
+      ...(pageRef ? { pageRef } : {}),
+      ...(frameRef ? { frameRef } : {}),
+      ...(target ? { target } : {}),
+      ...(event.type === "browser.navigate" && typeof event.payload.url === "string"
+        ? { urlPattern: event.payload.url }
+        : {}),
+      ...(variable
+        ? { input: { kind: "variable", variableRef: variable.id } }
+        : {}),
+      outputs: [],
+      evidenceRefs: [addEvidence(event.eventId)],
+    });
+    if (!contextResolved)
+      addGap(
+        id,
+        "context",
+        pageRef
+          ? "The iframe has no verified relocatable locator chain."
+          : "The semantic event has no approved logical page.",
+      );
+    if (!canAutomate && contextResolved)
+      addGap(id, "action", "The action needs a stable recorded locator before generation.");
+    steps.push(step);
+    stepByEvent.set(event.eventId, step);
+  }
+
+  const results: AutomationBlueprintV2["results"] = [];
+  const openingResultByTab = new Map<number, string>();
+  const popupTabs = new Set(
+    evidence.events
+      .filter((event) => event.type === "browser.popup")
+      .map(eventTab)
+      .filter((tab): tab is number => tab !== null),
+  );
+  const nearestPriorStep = (event: FusedEvent, tab?: number | null) =>
+    [...evidence.events]
+      .slice(0, evidence.events.indexOf(event))
+      .reverse()
+      .find((candidate) => {
+        const step = stepByEvent.get(candidate.eventId);
+        return step && (tab == null || eventTab(candidate) === tab);
+      });
+  for (const event of evidence.events) {
+    if (event.type !== "browser.popup" && event.type !== "browser.tab-open")
+      continue;
+    const tab = eventTab(event);
+    if (event.type === "browser.tab-open" && tab !== null && popupTabs.has(tab))
+      continue;
+    const opener =
+      typeof event.payload.openerTabId === "number"
+        ? event.payload.openerTabId
+        : null;
+    if (tab === null || openingResultByTab.has(tab)) continue;
+    const pageRef = pageByTab.get(tab);
+    const triggerEvent = nearestPriorStep(event, opener);
+    const trigger = triggerEvent ? stepByEvent.get(triggerEvent.eventId) : undefined;
+    if (!pageRef || !trigger) {
+      if (pageRef) addGap(pageRef, "causality", "The opening action could not be proven.");
+      pageKind.set(tab, "existing");
+      continue;
+    }
+    const id = `result-${results.length + 1}`;
+    results.push({
+      id,
+      kind: event.type === "browser.popup" ? "popup" : "tab",
+      triggerStepId: trigger.id,
+      pageRef,
+      evidenceRef: addEvidence(event.eventId),
+    });
+    openingResultByTab.set(tab, id);
+  }
+  for (const link of evidence.index.causalLinks) {
+    if (
+      link.kind !== "action-to-navigation" &&
+      link.kind !== "action-to-document"
+    )
+      continue;
+    const trigger = stepByEvent.get(link.fromEventId);
+    const resultEvent = evidence.events.find(
+      (event) => event.eventId === link.toEventId,
+    );
+    const tab = resultEvent ? eventTab(resultEvent) : null;
+    const pageRef = tab === null ? undefined : pageByTab.get(tab);
+    if (!trigger || !pageRef || !resultEvent) continue;
+    results.push({
+      id: `result-${results.length + 1}`,
+      kind: link.kind === "action-to-navigation" ? "navigation" : "document",
+      triggerStepId: trigger.id,
+      pageRef,
+      evidenceRef: addEvidence(resultEvent.eventId),
+    });
+  }
+  for (const event of evidence.events.filter(
+    (candidate) => candidate.type === "browser.download",
+  )) {
+    const tab = eventTab(event);
+    const triggerEvent = nearestPriorStep(event, tab);
+    const trigger = triggerEvent ? stepByEvent.get(triggerEvent.eventId) : undefined;
+    const pageRef =
+      tab === null
+        ? trigger?.pageRef
+        : pageByTab.get(tab) ?? trigger?.pageRef;
+    if (!trigger || !pageRef) {
+      addGap(legacy.id, "causality", "A download notification lacked a proven trigger.");
+      continue;
+    }
+    results.push({
+      id: `result-${results.length + 1}`,
+      kind: "download",
+      triggerStepId: trigger.id,
+      pageRef,
+      evidenceRef: addEvidence(event.eventId),
+    });
+  }
+
+  const pages: AutomationBlueprintV2["pages"] = [...pageByTab.entries()].map(
+    ([tab, id]) => {
+      const close = steps.find(
+        (step) =>
+          step.action === "close-page" && step.pageRef === pageByTab.get(tab),
+      );
+      const opening = openingResultByTab.get(tab);
+      return {
+        id,
+        kind: opening ? (pageKind.get(tab) ?? "tab") : "existing",
+        ...(opening ? { openedByResultRef: opening } : {}),
+        ...(close ? { closedByStepId: close.id } : {}),
+      };
+    },
+  );
+
+  const assertions: AutomationBlueprintV2["assertions"] = review.assertions.map(
+    (assertion) => {
+      const anchor = assertion.stepId
+        ? steps.find((step) => step.id === assertion.stepId)
+        : undefined;
+      const contextResolved = anchor?.contextStatus === "resolved";
+      const value = {
+        id: assertion.id,
+        source: "user-marker" as const,
+        matcher: assertion.matcher,
+        ...(assertion.expected !== undefined
+          ? { expected: { kind: "literal" as const, value: assertion.expected } }
+          : {}),
+        ...(assertion.target ? { target: assertion.target } : {}),
+        confirmed: assertion.confirmed,
+        contextStatus: contextResolved ? ("resolved" as const) : ("unresolved" as const),
+        ...(anchor ? { afterStepId: anchor.id } : {}),
+        ...(anchor?.pageRef ? { pageRef: anchor.pageRef } : {}),
+        ...(anchor?.frameRef ? { frameRef: anchor.frameRef } : {}),
+        evidenceRefs: [addEvidence(assertion.markerEventId)],
+      };
+      if (!anchor)
+        addGap(assertion.id, "anchor", "The marker has no saved step association.");
+      if (!contextResolved)
+        addGap(assertion.id, "context", "The assertion context is unresolved.");
+      return value;
+    },
+  );
+
+  return sealBlueprint({
+    schemaVersion: 2,
+    id: legacy.id,
+    revision: review.revision,
+    contentHash: "0".repeat(64),
+    source: {
+      sessionId: session.id,
+      sessionSchemaVersion: 2,
+      eventSchemaVersion: 1,
+      evidenceVersion: 1,
+      evidenceHash: contractHash(evidence.index),
+    },
+    projectKind: legacy.projectKind,
+    intent: legacy.intent,
+    pages,
+    frames,
+    preconditions: legacy.preconditions,
+    variables: review.variables,
+    steps,
+    cleanup: [],
+    assertions,
+    results,
+    evidenceRefs,
+    gaps,
+    privacy: legacy.privacy,
   });
 }

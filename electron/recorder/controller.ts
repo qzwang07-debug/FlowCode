@@ -22,6 +22,7 @@ import {
 import type { RecorderState } from "../../common/types";
 import { AssertionMarkerRequestSchema } from "../../common/evidence";
 import { createSessionMeta } from "../../common/session";
+import type { RecordingBrowserSelection } from "../../common/ziniao-recording";
 import {
   SYSTEM_DEFAULT_MICROPHONE_ID,
   type MicrophoneDevice,
@@ -74,6 +75,7 @@ export interface SessionBrowserCapture {
     sessionId: string,
     sessionDir: string,
     startedAt: number,
+    selection?: RecordingBrowserSelection,
   ): Promise<void>;
   stopSession(sessionId: string): Promise<unknown>;
 }
@@ -356,6 +358,7 @@ export class RecorderController {
           store.meta.id,
           store.dir,
           store.meta.startedAt,
+          options?.browser,
         );
         this.browserSessionId = store.meta.id;
       } catch (error) {
@@ -363,6 +366,11 @@ export class RecorderController {
           "browser capture start failed:",
           error instanceof Error ? error.message : error,
         );
+        if (options?.browser?.provider === "ziniao") {
+          const message = error instanceof Error ? error.message : String(error);
+          await this.rollbackFailedStart(store);
+          return { ok: false, error: message };
+        }
       }
     }
     log.info("Recording started:", store.meta.id, "->", store.dir);

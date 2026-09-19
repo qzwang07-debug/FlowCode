@@ -26,6 +26,15 @@ const HttpUrlSchema = z
 
 export const BrowserKindSchema = z.enum(["chrome", "edge"]);
 export type BrowserKind = z.infer<typeof BrowserKindSchema>;
+// Capture artifacts may be produced by the Stage 5 Ziniao adapter without
+// changing the Stage 3 extension/registration enum above.
+export const BrowserCaptureProviderSchema = z.enum([
+  ...BrowserKindSchema.options,
+  "ziniao",
+]);
+export type BrowserCaptureProvider = z.infer<
+  typeof BrowserCaptureProviderSchema
+>;
 
 export const BrowserSemanticEventTypeSchema = z.enum([
   "browser.document",
@@ -109,6 +118,9 @@ const FrameContextFields = {
   frameId: z.number().int().nonnegative(),
   documentId: IdentifierSchema,
   url: HttpUrlSchema,
+  // Main frames omit this field. CDP adapters preserve a relocatable chain for
+  // iframe contexts so Blueprint v2 never has to guess frame ownership.
+  frameLocatorChain: z.array(BrowserLocatorSchema).min(1).max(16).optional(),
 };
 
 const LocatorFields = {
@@ -655,7 +667,7 @@ export const BrowserGapSchema = z
     schemaVersion: z.literal(1),
     gapId: IdentifierSchema,
     sessionId: IdentifierSchema,
-    browser: BrowserKindSchema,
+    browser: BrowserCaptureProviderSchema,
     sourceId: IdentifierSchema,
     epochMs: TimestampSchema,
     reason: z.enum([
@@ -664,6 +676,9 @@ export const BrowserGapSchema = z
       "buffer-overflow",
       "sequence-gap",
       "write-failed",
+      "scope-rejected",
+      "identity-changed",
+      "connection-lost",
     ]),
     fromSequence: z.number().int().nonnegative().optional(),
     toSequence: z.number().int().nonnegative().optional(),
@@ -692,7 +707,7 @@ export const BrowserCaptureSummarySchema = z
     sources: z.array(
       z
         .object({
-          browser: BrowserKindSchema,
+          browser: BrowserCaptureProviderSchema,
           sourceId: IdentifierSchema,
           eventCount: z.number().int().nonnegative(),
           firstSequence: z.number().int().nonnegative().nullable(),
