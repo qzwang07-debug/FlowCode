@@ -1,0 +1,1195 @@
+{
+  "schemaVersion": 1,
+  "status": "implemented-real-eval-incomplete",
+  "currentImplementation": {
+    "promptVersion": "legacy-automation.6",
+    "policyVersion": "legacy-native-tools.5",
+    "scorerVersion": "native-tools.2",
+    "scenarioHash": "a020a4cbcfadea5835993afc2e91ba137e12b7c111beb5f5b1fb59f643a30675",
+    "sourceHashes": {
+      "electron/automationbuilder/builder.ts": "fb6011d3b306364531d9f3621e8e704270ed0be8dfd058a6bf6db1b144b7a4fe",
+      "electron/automationbuilder/tools.ts": "46607e5b48454a171a779352eedcace6342a613d7edc2a972ab80afe38ee2a6d",
+      "electron/automationbuilder/instructions.ts": "0c6dd0ae22c765d8bd090f6f742aaa4a07b8017565fcf83082afeffc9dd87775",
+      "electron/automationbuilder/native-tool-policy.ts": "0ab1492680b0a219db93731e2668c62e9c43322d1474f6fdeb78f36bf22675f6",
+      "evals/builder/score.ts": "40fa4485c3adf369f4f40ea4b4cb8fe427c5d9a9270d982cb667b158a2f7cfd3"
+    },
+    "realFullTrialsAtTheseVersions": 0
+  },
+  "reason": "Copilot monthly quota exhausted. No retry, paid-provider substitution or recharge after error.",
+  "cost": "Copilot account cost unavailable, not zero. No DeepSeek calls.",
+  "mode": "synthetic plan-only evaluation; no business actions executed",
+  "baseline": {
+    "at": "2026-10-01T05-47-41-691Z",
+    "model": "gpt-6.1-sol",
+    "originalPassing": 5,
+    "cases": [
+      {
+        "id": "github-issue-triage",
+        "originalOk": true,
+        "originalScore": {
+          "pass": true,
+          "score": 1,
+          "checks": [
+            {
+              "name": "uses one of: \"gh \"",
+              "pass": true,
+              "detail": "found \"gh \""
+            },
+            {
+              "name": "uses one of: \"gh issue\", \"gh api\"",
+              "pass": true,
+              "detail": "found \"gh issue\""
+            },
+            {
+              "name": "avoids \"playwright\"",
+              "pass": true
+            },
+            {
+              "name": "avoids \"browser_\"",
+              "pass": true
+            },
+            {
+              "name": "avoids \"click\"",
+              "pass": true
+            },
+            {
+              "name": "avoids \"navigate to github\"",
+              "pass": true
+            },
+            {
+              "name": "avoids \"github.com/acme\"",
+              "pass": true
+            }
+          ]
+        },
+        "currentScore": {
+          "pass": true,
+          "score": 1,
+          "checks": [
+            {
+              "name": "uses one of: \"gh \"",
+              "pass": true,
+              "detail": "found \"gh \""
+            },
+            {
+              "name": "uses one of: \"gh issue\", \"gh api\"",
+              "pass": true,
+              "detail": "found \"gh issue\""
+            },
+            {
+              "name": "avoids \"playwright\"",
+              "pass": true
+            },
+            {
+              "name": "avoids \"browser_\"",
+              "pass": true
+            },
+            {
+              "name": "avoids \"click\"",
+              "pass": true
+            },
+            {
+              "name": "avoids \"navigate to github\"",
+              "pass": true
+            },
+            {
+              "name": "avoids \"github.com/acme\"",
+              "pass": true
+            }
+          ]
+        },
+        "currentPlanIssues": [
+          {
+            "code": "github-step-tool",
+            "stepIndex": 0,
+            "message": "Name the matching gh command in this GitHub action prompt; a different step cannot supply its tool."
+          }
+        ]
+      },
+      {
+        "id": "github-stale-pr-nudge",
+        "originalOk": false,
+        "originalScore": {
+          "pass": false,
+          "score": 0.7142857142857143,
+          "checks": [
+            {
+              "name": "uses one of: \"gh \"",
+              "pass": false,
+              "detail": "none of these appeared in the steps"
+            },
+            {
+              "name": "uses one of: \"gh pr\", \"gh api\"",
+              "pass": false,
+              "detail": "none of these appeared in the steps"
+            },
+            {
+              "name": "avoids \"playwright\"",
+              "pass": true
+            },
+            {
+              "name": "avoids \"browser_\"",
+              "pass": true
+            },
+            {
+              "name": "avoids \"click\"",
+              "pass": true
+            },
+            {
+              "name": "avoids \"navigate to github\"",
+              "pass": true
+            },
+            {
+              "name": "avoids \"github.com/acme\"",
+              "pass": true
+            }
+          ]
+        },
+        "currentScore": {
+          "pass": false,
+          "score": 0.7142857142857143,
+          "checks": [
+            {
+              "name": "uses one of: \"gh \"",
+              "pass": true,
+              "detail": "found \"gh \""
+            },
+            {
+              "name": "uses one of: \"gh pr\", \"gh api\"",
+              "pass": false,
+              "detail": "none of these appeared in the steps"
+            },
+            {
+              "name": "avoids \"playwright\"",
+              "pass": true
+            },
+            {
+              "name": "avoids \"browser_\"",
+              "pass": false,
+              "detail": "informal browser/UI replay appeared in the steps"
+            },
+            {
+              "name": "avoids \"click\"",
+              "pass": true
+            },
+            {
+              "name": "avoids \"navigate to github\"",
+              "pass": true
+            },
+            {
+              "name": "avoids \"github.com/acme\"",
+              "pass": true
+            }
+          ]
+        },
+        "currentPlanIssues": [
+          {
+            "code": "github-tool",
+            "message": "Name the matching gh command (gh issue/pr/release/repo/api), not a generic browser or CLI."
+          },
+          {
+            "code": "github-comment-tool",
+            "message": "GitHub supports comments: use gh pr comment or the corresponding gh api request."
+          },
+          {
+            "code": "github-step-tool",
+            "stepIndex": 0,
+            "message": "Name the matching gh command in this GitHub action prompt; a different step cannot supply its tool."
+          },
+          {
+            "code": "github-browser",
+            "stepIndex": 1,
+            "message": "Replace GitHub UI replay with the matching gh CLI command; do not fall back to a browser for comments."
+          },
+          {
+            "code": "github-step-tool",
+            "stepIndex": 1,
+            "message": "Name the matching gh command in this GitHub action prompt; a different step cannot supply its tool."
+          }
+        ]
+      },
+      {
+        "id": "web-to-spreadsheet",
+        "originalOk": false,
+        "originalScore": {
+          "pass": false,
+          "score": 0.5,
+          "checks": [
+            {
+              "name": "uses one of: \"web_fetch\"",
+              "pass": false,
+              "detail": "none of these appeared in the steps"
+            },
+            {
+              "name": "uses one of: \"xlsx\"",
+              "pass": true,
+              "detail": "found \"xlsx\""
+            }
+          ]
+        },
+        "currentScore": {
+          "pass": false,
+          "score": 0.5,
+          "checks": [
+            {
+              "name": "uses one of: \"web_fetch\"",
+              "pass": false,
+              "detail": "none of these appeared in the steps"
+            },
+            {
+              "name": "uses one of: \"xlsx\"",
+              "pass": true,
+              "detail": "found \"xlsx\""
+            }
+          ]
+        },
+        "currentPlanIssues": [
+          {
+            "code": "public-web-tool",
+            "message": "Use web_fetch for public-page reads; generic fetch prose does not identify a catalogue tool."
+          }
+        ]
+      },
+      {
+        "id": "invoice-extract",
+        "originalOk": false,
+        "originalScore": {
+          "pass": false,
+          "score": 0,
+          "checks": [
+            {
+              "name": "uses one of: \"web_fetch\", \"browser_\", \"browser automation\"",
+              "pass": false,
+              "detail": "none of these appeared in the steps"
+            },
+            {
+              "name": "uses one of: \"xlsx\"",
+              "pass": false,
+              "detail": "none of these appeared in the steps"
+            }
+          ]
+        },
+        "currentScore": {
+          "pass": false,
+          "score": 0,
+          "checks": [
+            {
+              "name": "uses one of: \"web_fetch\", \"browser_\", \"browser automation\"",
+              "pass": false,
+              "detail": "none of these appeared in the steps"
+            },
+            {
+              "name": "uses one of: \"xlsx\"",
+              "pass": false,
+              "detail": "none of these appeared in the steps"
+            }
+          ]
+        },
+        "currentPlanIssues": [
+          {
+            "code": "spreadsheet-tool",
+            "stepIndex": 1,
+            "message": "Name and use the xlsx built-in skill in this spreadsheet step; a filename or another step is not a tool."
+          },
+          {
+            "code": "spreadsheet-ui",
+            "stepIndex": 1,
+            "message": "Use the xlsx skill to read/write the workbook, not the Numbers/Excel desktop UI."
+          },
+          {
+            "code": "spreadsheet-tool",
+            "stepIndex": 2,
+            "message": "Name and use the xlsx built-in skill in this spreadsheet step; a filename or another step is not a tool."
+          },
+          {
+            "code": "spreadsheet-tool",
+            "message": "The approved task includes a spreadsheet: use the xlsx built-in skill."
+          }
+        ]
+      },
+      {
+        "id": "research-compile",
+        "originalOk": true,
+        "originalScore": {
+          "pass": true,
+          "score": 1,
+          "checks": [
+            {
+              "name": "uses one of: \"web_fetch\"",
+              "pass": true,
+              "detail": "found \"web_fetch\""
+            },
+            {
+              "name": "uses one of: \"docx\", \"write\", \"note\", \".md\", \".txt\"",
+              "pass": true,
+              "detail": "found \"note\""
+            }
+          ]
+        },
+        "currentScore": {
+          "pass": true,
+          "score": 1,
+          "checks": [
+            {
+              "name": "uses one of: \"web_fetch\"",
+              "pass": true,
+              "detail": "found \"web_fetch\""
+            },
+            {
+              "name": "uses one of: \"docx\", \"write\", \"note\", \".md\", \".txt\"",
+              "pass": true,
+              "detail": "found \"note\""
+            }
+          ]
+        },
+        "currentPlanIssues": []
+      },
+      {
+        "id": "directory-lookup",
+        "originalOk": false,
+        "originalScore": {
+          "pass": false,
+          "score": 0.6666666666666666,
+          "checks": [
+            {
+              "name": "uses one of: \"web_fetch\", \"workiq_search_people\", \"workiq\"",
+              "pass": false,
+              "detail": "none of these appeared in the steps"
+            },
+            {
+              "name": "uses one of: \"xlsx\"",
+              "pass": true,
+              "detail": "found \"xlsx\""
+            },
+            {
+              "name": "avoids \"playwright\"",
+              "pass": true
+            }
+          ]
+        },
+        "currentScore": {
+          "pass": false,
+          "score": 0.6666666666666666,
+          "checks": [
+            {
+              "name": "uses one of: \"web_fetch\", \"workiq_search_people\", \"workiq\"",
+              "pass": false,
+              "detail": "none of these appeared in the steps"
+            },
+            {
+              "name": "uses one of: \"xlsx\"",
+              "pass": true,
+              "detail": "found \"xlsx\""
+            },
+            {
+              "name": "avoids \"playwright\"",
+              "pass": true
+            }
+          ]
+        },
+        "currentPlanIssues": [
+          {
+            "code": "directory-tool",
+            "message": "Use web_fetch for a readable web directory or workiq_search_people for an M365 directory; do not invent access or export login state."
+          }
+        ]
+      },
+      {
+        "id": "expense-report",
+        "originalOk": true,
+        "originalScore": {
+          "pass": true,
+          "score": 1,
+          "checks": [
+            {
+              "name": "uses one of: \"pdf\", \"view\", \"expense-report\"",
+              "pass": true,
+              "detail": "found \"pdf\""
+            }
+          ]
+        },
+        "currentScore": {
+          "pass": true,
+          "score": 1,
+          "checks": [
+            {
+              "name": "uses one of: \"pdf\", \"view\", \"expense-report\"",
+              "pass": true,
+              "detail": "found \"pdf\""
+            }
+          ]
+        },
+        "currentPlanIssues": [
+          {
+            "code": "receipt-read-tool",
+            "message": "Use view to read local receipt PDFs; mentioning a PDF or opening a viewer is not a native read tool."
+          }
+        ]
+      },
+      {
+        "id": "release-notes",
+        "originalOk": true,
+        "originalScore": {
+          "pass": true,
+          "score": 1,
+          "checks": [
+            {
+              "name": "uses one of: \"gh \"",
+              "pass": true,
+              "detail": "found \"gh \""
+            },
+            {
+              "name": "uses one of: \"gh pr\", \"gh api\", \"gh release\"",
+              "pass": true,
+              "detail": "found \"gh pr\""
+            },
+            {
+              "name": "avoids \"playwright\"",
+              "pass": true
+            },
+            {
+              "name": "avoids \"browser_\"",
+              "pass": true
+            },
+            {
+              "name": "avoids \"navigate to github\"",
+              "pass": true
+            }
+          ]
+        },
+        "currentScore": {
+          "pass": true,
+          "score": 1,
+          "checks": [
+            {
+              "name": "uses one of: \"gh \"",
+              "pass": true,
+              "detail": "found \"gh \""
+            },
+            {
+              "name": "uses one of: \"gh pr\", \"gh api\", \"gh release\"",
+              "pass": true,
+              "detail": "found \"gh pr\""
+            },
+            {
+              "name": "avoids \"playwright\"",
+              "pass": true
+            },
+            {
+              "name": "avoids \"browser_\"",
+              "pass": true
+            },
+            {
+              "name": "avoids \"navigate to github\"",
+              "pass": true
+            }
+          ]
+        },
+        "currentPlanIssues": [
+          {
+            "code": "github-pr-list-flag",
+            "stepIndex": 1,
+            "message": "gh pr list has no --milestone flag; use --search 'milestone:VALUE' and --state merged for release notes."
+          }
+        ]
+      },
+      {
+        "id": "windows-deploy",
+        "originalOk": false,
+        "originalScore": {
+          "pass": false,
+          "score": 0.8,
+          "checks": [
+            {
+              "name": "uses one of: \"az \"",
+              "pass": true,
+              "detail": "found \"az \""
+            },
+            {
+              "name": "uses one of: \"az webapp\", \"az login\", \"az group\", \"az account\"",
+              "pass": true,
+              "detail": "found \"az webapp\""
+            },
+            {
+              "name": "uses one of: \"xlsx\"",
+              "pass": false,
+              "detail": "none of these appeared in the steps"
+            },
+            {
+              "name": "avoids \"playwright\"",
+              "pass": true
+            },
+            {
+              "name": "avoids \"browser_\"",
+              "pass": true
+            }
+          ]
+        },
+        "currentScore": {
+          "pass": false,
+          "score": 0.6,
+          "checks": [
+            {
+              "name": "uses one of: \"az \"",
+              "pass": true,
+              "detail": "found \"az \""
+            },
+            {
+              "name": "uses one of: \"az webapp\", \"az login\", \"az group\", \"az account\"",
+              "pass": true,
+              "detail": "found \"az webapp\""
+            },
+            {
+              "name": "uses one of: \"xlsx\"",
+              "pass": false,
+              "detail": "none of these appeared in the steps"
+            },
+            {
+              "name": "avoids \"playwright\"",
+              "pass": true
+            },
+            {
+              "name": "avoids \"browser_\"",
+              "pass": false,
+              "detail": "informal browser/UI replay appeared in the steps"
+            }
+          ]
+        },
+        "currentPlanIssues": [
+          {
+            "code": "azure-browser",
+            "stepIndex": 1,
+            "message": "Use the az CLI for Azure operations and web_fetch or curl for the live endpoint; do not replay the Portal or browser UI."
+          },
+          {
+            "code": "spreadsheet-tool",
+            "stepIndex": 2,
+            "message": "Name and use the xlsx built-in skill in this spreadsheet step; a filename or another step is not a tool."
+          },
+          {
+            "code": "spreadsheet-tool",
+            "message": "The approved task includes a spreadsheet: use the xlsx built-in skill."
+          }
+        ]
+      },
+      {
+        "id": "lead-to-crm",
+        "originalOk": true,
+        "originalScore": {
+          "pass": true,
+          "score": 1,
+          "checks": [
+            {
+              "name": "uses one of: \"workiq_search_emails\", \"workiq_list_emails\", \"workiq_get_email\", \"workiq\"",
+              "pass": true,
+              "detail": "found \"workiq\""
+            }
+          ]
+        },
+        "currentScore": {
+          "pass": true,
+          "score": 1,
+          "checks": [
+            {
+              "name": "uses one of: \"workiq_search_emails\", \"workiq_list_emails\", \"workiq_get_email\", \"workiq\"",
+              "pass": true,
+              "detail": "found \"workiq\""
+            }
+          ]
+        },
+        "currentPlanIssues": [
+          {
+            "code": "mail-tool",
+            "message": "Use the catalogue's WorkIQ email read tools, not the Mail desktop UI."
+          }
+        ]
+      }
+    ]
+  },
+  "describer": {
+    "provider": "github-copilot",
+    "model": "gpt-6.1-sol",
+    "rawReport": "2026-10-01T13-13-54-535Z.json",
+    "rawReportSha256": "a1a41da38b7bb24db4ddfedf377016ebc7671838eec19f1cbcf314fd9202a61a",
+    "at": "2026-10-01T13-13-54-535Z",
+    "passing": 9,
+    "samples": 9,
+    "cases": [
+      {
+        "id": "web-to-spreadsheet",
+        "ok": true,
+        "durationMs": 21174,
+        "score": {
+          "score": 1,
+          "pass": true,
+          "checks": [
+            {
+              "name": "intent mentions one of [price, pricing, cost]",
+              "pass": true
+            },
+            {
+              "name": "intent mentions one of [spreadsheet, numbers, budget]",
+              "pass": true
+            },
+            {
+              "name": "step count in [2, 6]",
+              "pass": true,
+              "detail": "got 5"
+            },
+            {
+              "name": "involves app \"chrome\"",
+              "pass": true
+            },
+            {
+              "name": "involves app \"numbers\"",
+              "pass": true
+            },
+            {
+              "name": "ordered flow (3 actions)",
+              "pass": true
+            },
+            {
+              "name": "mentions one of [$49, 49, $490, 490, price, pricing]",
+              "pass": true
+            },
+            {
+              "name": "no noise step \"skill recorder\"",
+              "pass": true,
+              "critical": true
+            },
+            {
+              "name": "no noise step \"usernotificationcenter\"",
+              "pass": true,
+              "critical": true
+            },
+            {
+              "name": "no noise step \"gclid\"",
+              "pass": true,
+              "critical": true
+            },
+            {
+              "name": "no noise step \"utm_source\"",
+              "pass": true,
+              "critical": true
+            }
+          ]
+        }
+      },
+      {
+        "id": "invoice-extract",
+        "ok": true,
+        "durationMs": 15898,
+        "score": {
+          "score": 1,
+          "pass": true,
+          "checks": [
+            {
+              "name": "intent mentions one of [invoice, invoices, billing, table, rows]",
+              "pass": true
+            },
+            {
+              "name": "intent mentions one of [spreadsheet, numbers, extract, copy, enter, record, transfer]",
+              "pass": true
+            },
+            {
+              "name": "step count in [3, 8]",
+              "pass": true,
+              "detail": "got 3"
+            },
+            {
+              "name": "involves app \"chrome\"",
+              "pass": true
+            },
+            {
+              "name": "involves app \"numbers\"",
+              "pass": true
+            },
+            {
+              "name": "ordered flow (3 actions)",
+              "pass": true
+            },
+            {
+              "name": "mentions one of [inv-100, globex, initech, umbrella, 1,250, invoice, amount, row]",
+              "pass": true
+            },
+            {
+              "name": "no noise step \"skill recorder\"",
+              "pass": true,
+              "critical": true
+            },
+            {
+              "name": "no noise step \"usernotificationcenter\"",
+              "pass": true,
+              "critical": true
+            }
+          ]
+        }
+      },
+      {
+        "id": "research-compile",
+        "ok": true,
+        "durationMs": 18086,
+        "score": {
+          "score": 1,
+          "pass": true,
+          "checks": [
+            {
+              "name": "intent mentions one of [research, compile, gather, collect, summar, notes, quote]",
+              "pass": true
+            },
+            {
+              "name": "intent mentions one of [habit, habits]",
+              "pass": true
+            },
+            {
+              "name": "step count in [3, 8]",
+              "pass": true,
+              "detail": "got 4"
+            },
+            {
+              "name": "involves app \"chrome\"",
+              "pass": true
+            },
+            {
+              "name": "involves app \"textedit\"",
+              "pass": true
+            },
+            {
+              "name": "ordered flow (4 actions)",
+              "pass": true
+            },
+            {
+              "name": "mentions one of [quote, sentence, passage, text, habit]",
+              "pass": true
+            },
+            {
+              "name": "no noise step \"skill recorder\"",
+              "pass": true,
+              "critical": true
+            },
+            {
+              "name": "no noise step \"usernotificationcenter\"",
+              "pass": true,
+              "critical": true
+            }
+          ]
+        }
+      },
+      {
+        "id": "directory-lookup",
+        "ok": true,
+        "durationMs": 16208,
+        "score": {
+          "score": 1,
+          "pass": true,
+          "checks": [
+            {
+              "name": "intent mentions one of [contact, contacts, directory, email, phone, people, roster]",
+              "pass": true
+            },
+            {
+              "name": "intent mentions one of [spreadsheet, numbers, list, copy, collect, compile, gather]",
+              "pass": true
+            },
+            {
+              "name": "step count in [2, 7]",
+              "pass": true,
+              "detail": "got 6"
+            },
+            {
+              "name": "involves app \"chrome\"",
+              "pass": true
+            },
+            {
+              "name": "involves app \"numbers\"",
+              "pass": true
+            },
+            {
+              "name": "ordered flow (3 actions)",
+              "pass": true
+            },
+            {
+              "name": "mentions one of [email, @acme, phone, contact, dana, sam]",
+              "pass": true
+            },
+            {
+              "name": "no noise step \"skill recorder\"",
+              "pass": true,
+              "critical": true
+            },
+            {
+              "name": "no noise step \"usernotificationcenter\"",
+              "pass": true,
+              "critical": true
+            }
+          ]
+        }
+      },
+      {
+        "id": "irrelevant-detour",
+        "ok": true,
+        "durationMs": 17728,
+        "score": {
+          "score": 1,
+          "pass": true,
+          "checks": [
+            {
+              "name": "intent mentions one of [research, compile, gather, collect, summar, notes, quote]",
+              "pass": true
+            },
+            {
+              "name": "intent mentions one of [habit, habits]",
+              "pass": true
+            },
+            {
+              "name": "step count in [3, 7]",
+              "pass": true,
+              "detail": "got 4"
+            },
+            {
+              "name": "involves app \"chrome\"",
+              "pass": true
+            },
+            {
+              "name": "involves app \"textedit\"",
+              "pass": true
+            },
+            {
+              "name": "ordered flow (4 actions)",
+              "pass": true
+            },
+            {
+              "name": "mentions one of [quote, sentence, passage, habit]",
+              "pass": true
+            },
+            {
+              "name": "no noise step \"recipe\"",
+              "pass": true,
+              "critical": true
+            },
+            {
+              "name": "no noise step \"allrecipes\"",
+              "pass": true,
+              "critical": true
+            },
+            {
+              "name": "no noise step \"cookie\"",
+              "pass": true,
+              "critical": true
+            },
+            {
+              "name": "no noise step \"chocolate\"",
+              "pass": true,
+              "critical": true
+            },
+            {
+              "name": "no noise step \"skill recorder\"",
+              "pass": true,
+              "critical": true
+            },
+            {
+              "name": "no noise step \"usernotificationcenter\"",
+              "pass": true,
+              "critical": true
+            }
+          ]
+        }
+      },
+      {
+        "id": "expense-report",
+        "ok": true,
+        "durationMs": 23280,
+        "score": {
+          "score": 0.9090909090909091,
+          "pass": true,
+          "checks": [
+            {
+              "name": "intent mentions one of [expense, expenses, receipt, receipts, reimburse, reconcile]",
+              "pass": true
+            },
+            {
+              "name": "intent mentions one of [report, expensify, submit, file, enter, log]",
+              "pass": true
+            },
+            {
+              "name": "step count in [3, 9]",
+              "pass": false,
+              "detail": "got 12"
+            },
+            {
+              "name": "involves app \"chrome\"",
+              "pass": true
+            },
+            {
+              "name": "involves app \"preview\"",
+              "pass": true
+            },
+            {
+              "name": "ordered flow (4 actions)",
+              "pass": true
+            },
+            {
+              "name": "mentions one of [united, marriott, uber, $412, 412, $286, 286, $24, receipt, expense]",
+              "pass": true
+            },
+            {
+              "name": "no noise step \"skill recorder\"",
+              "pass": true,
+              "critical": true
+            },
+            {
+              "name": "no noise step \"usernotificationcenter\"",
+              "pass": true,
+              "critical": true
+            },
+            {
+              "name": "no noise step \"linknav\"",
+              "pass": true,
+              "critical": true
+            },
+            {
+              "name": "no noise step \"icid\"",
+              "pass": true,
+              "critical": true
+            }
+          ]
+        }
+      },
+      {
+        "id": "release-notes",
+        "ok": true,
+        "durationMs": 23104,
+        "score": {
+          "score": 1,
+          "pass": true,
+          "checks": [
+            {
+              "name": "intent mentions one of [release, changelog, release notes]",
+              "pass": true
+            },
+            {
+              "name": "intent mentions one of [deploy, ship, publish, version, cut]",
+              "pass": true
+            },
+            {
+              "name": "step count in [5, 12]",
+              "pass": true,
+              "detail": "got 9"
+            },
+            {
+              "name": "involves app \"terminal\"",
+              "pass": true
+            },
+            {
+              "name": "involves app \"chrome\"",
+              "pass": true
+            },
+            {
+              "name": "ordered flow (5 actions)",
+              "pass": true
+            },
+            {
+              "name": "mentions one of [#482, 482, #485, 485, #489, 489, v2.4, 2.4.0, rate limiting, pagination]",
+              "pass": true
+            },
+            {
+              "name": "no noise step \"skill recorder\"",
+              "pass": true,
+              "critical": true
+            },
+            {
+              "name": "no noise step \"usernotificationcenter\"",
+              "pass": true,
+              "critical": true
+            }
+          ]
+        }
+      },
+      {
+        "id": "lead-to-crm",
+        "ok": true,
+        "durationMs": 18812,
+        "score": {
+          "score": 1,
+          "pass": true,
+          "checks": [
+            {
+              "name": "intent mentions one of [lead, leads, prospect, contact, contacts]",
+              "pass": true
+            },
+            {
+              "name": "intent mentions one of [crm, salesforce, enter, add, create, qualify, log]",
+              "pass": true
+            },
+            {
+              "name": "step count in [3, 9]",
+              "pass": true,
+              "detail": "got 5"
+            },
+            {
+              "name": "involves app \"mail\"",
+              "pass": true
+            },
+            {
+              "name": "involves app \"chrome\"",
+              "pass": true
+            },
+            {
+              "name": "ordered flow (4 actions)",
+              "pass": true
+            },
+            {
+              "name": "mentions one of [jane, tom, acme, globex, @acme, @globex, vp ops, contact, lead]",
+              "pass": true
+            },
+            {
+              "name": "no noise step \"skill recorder\"",
+              "pass": true,
+              "critical": true
+            },
+            {
+              "name": "no noise step \"usernotificationcenter\"",
+              "pass": true,
+              "critical": true
+            },
+            {
+              "name": "no noise step \"trk=\"",
+              "pass": true,
+              "critical": true
+            }
+          ]
+        }
+      },
+      {
+        "id": "windows-deploy",
+        "ok": true,
+        "durationMs": 17856,
+        "score": {
+          "score": 1,
+          "pass": true,
+          "checks": [
+            {
+              "name": "intent mentions one of [deploy, deployment, publish, ship]",
+              "pass": true
+            },
+            {
+              "name": "intent mentions one of [azure]",
+              "pass": true
+            },
+            {
+              "name": "intent mentions one of [web app, webapp, app, site]",
+              "pass": true
+            },
+            {
+              "name": "step count in [4, 9]",
+              "pass": true,
+              "detail": "got 6"
+            },
+            {
+              "name": "involves app \"edge\"",
+              "pass": true
+            },
+            {
+              "name": "involves app \"terminal\"",
+              "pass": true
+            },
+            {
+              "name": "ordered flow (5 actions)",
+              "pass": true
+            },
+            {
+              "name": "mentions one of [azure]",
+              "pass": true
+            },
+            {
+              "name": "mentions one of [url, link, address, azurewebsites, contoso-crm]",
+              "pass": true
+            },
+            {
+              "name": "no noise step \"skill recorder\"",
+              "pass": true,
+              "critical": true
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "file": "fixtures/legacy-builder/attempt-2026-10-01T13-08-31-756Z.json",
+      "at": "2026-10-01T13-08-31-756Z",
+      "promptVersion": "legacy-automation.2",
+      "policyVersion": "legacy-native-tools.1",
+      "kind": "development",
+      "originalPassing": 10,
+      "currentPassing": 8,
+      "samples": 10,
+      "errors": [],
+      "rejectedProposals": 2,
+      "durationMs": 178454
+    },
+    {
+      "file": "fixtures/legacy-builder/attempt-2026-10-01T13-13-35-627Z.json",
+      "at": "2026-10-01T13-13-35-627Z",
+      "promptVersion": "legacy-automation.3",
+      "policyVersion": "legacy-native-tools.2",
+      "kind": "development",
+      "originalPassing": 9,
+      "currentPassing": 6,
+      "samples": 10,
+      "errors": [],
+      "rejectedProposals": 2,
+      "durationMs": 164005
+    },
+    {
+      "file": "fixtures/legacy-builder/attempt-2026-10-01T13-20-34-602Z.json",
+      "at": "2026-10-01T13-20-34-602Z",
+      "promptVersion": "legacy-automation.4",
+      "policyVersion": "legacy-native-tools.3",
+      "kind": "development",
+      "originalPassing": 10,
+      "currentPassing": 9,
+      "samples": 10,
+      "errors": [],
+      "rejectedProposals": 6,
+      "durationMs": 189844
+    },
+    {
+      "file": "fixtures/legacy-builder/attempt-2026-10-01T13-28-37-206Z.json",
+      "at": "2026-10-01T13-28-37-206Z",
+      "promptVersion": "legacy-automation.5",
+      "policyVersion": "legacy-native-tools.4",
+      "kind": "quota-interrupted-frozen-trial",
+      "originalPassing": 9,
+      "currentPassing": 8,
+      "samples": 10,
+      "errors": [
+        {
+          "id": "lead-to-crm",
+          "error": "Planning failed: You have exceeded your monthly quota"
+        }
+      ],
+      "rejectedProposals": 4,
+      "durationMs": 173863
+    },
+    {
+      "file": "fixtures/legacy-builder/attempt-2026-10-01T13-28-30-887Z.json",
+      "at": "2026-10-01T13-28-30-887Z",
+      "promptVersion": "legacy-automation.5",
+      "policyVersion": "legacy-native-tools.4",
+      "kind": "quota-interrupted-frozen-trial",
+      "originalPassing": 9,
+      "currentPassing": 6,
+      "samples": 10,
+      "errors": [
+        {
+          "id": "lead-to-crm",
+          "error": "Planning failed: You have exceeded your monthly quota"
+        }
+      ],
+      "rejectedProposals": 3,
+      "durationMs": 167586
+    }
+  ]
+}

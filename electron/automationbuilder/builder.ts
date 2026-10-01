@@ -24,6 +24,7 @@ import { createLogger } from "../logger";
 import { isValidSessionId, sessionDir } from "../recorder/session-store";
 import { AUTOMATION_BUILDER_INSTRUCTIONS } from "./instructions";
 import { createAutomationBuilderTools } from "./tools";
+import { assertNativeToolPlan } from "./native-tool-policy";
 
 const log = createLogger("AutomationBuilder");
 
@@ -118,6 +119,7 @@ export class AutomationBuilder extends AgentBuilder<LiveBuild> {
     // proposed plan for older callers that don't pass one.
     const plan = editedPlan ? AutomationPlanSchema.parse(editedPlan) : held?.lastPlan ?? null;
     if (!plan) throw new Error("There is no plan to build from yet.");
+    requireCatalogue(plan.architecture, "automation");
     // The reviewed tiles are the whole payload: validate ≥1 step and carry the
     // trigger/schedule/name/description/model/values verbatim. No second agent turn.
     let submission: AutomationSubmission;
@@ -126,6 +128,9 @@ export class AutomationBuilder extends AgentBuilder<LiveBuild> {
     } catch {
       throw new Error("Add at least one step before you create the automation.");
     }
+    // Revalidate user-edited tiles at the export boundary. Never rewrite the
+    // reviewed plan or bypass validation after a failed model proposal.
+    assertNativeToolPlan(plan, loadPersistedAnalysis(sessionId) ?? undefined);
     if (held) held.lastPlan = plan;
 
     this.active.add(sessionId);
@@ -162,10 +167,12 @@ export class AutomationBuilder extends AgentBuilder<LiveBuild> {
       }),
       ...createAutomationBuilderTools({
         architecture,
+        analysis,
         onProgress: (m) => this.emit(sessionId, "working", m),
         onPlan: (p) => {
           holder.plan = p;
         },
+        onRejectedPlan: () => { holder.plan = undefined; },
       }),
     ];
 
