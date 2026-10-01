@@ -13,6 +13,11 @@
     "npm": ">=11.17.0"
   },
   "scripts": {
+    "pretest": "npm run test:stage5c",
+    "test:stage5c": "node --experimental-transform-types --no-warnings --import ./evals/register.mjs --test electron/analyzer/review.test.ts electron/analyzer/evidence-mcp.test.ts electron/analyzer/provider-store.test.ts electron/analyzer/provider-broker.test.ts electron/analyzer/service.test.ts electron/analyzer/state.test.ts electron/analyzer/fixtures.test.ts electron/analyzer/browser-binding.test.ts electron/analyzer/migration-gate.test.ts",
+    "typecheck:stage5c": "tsc --noEmit -p scripts/stage5c/tsconfig.json",
+    "eval:stage5c": "node --experimental-transform-types --no-warnings --import ./evals/register.mjs evals/analyzer/run.ts",
+    "verify:stage5c:protocol": "node --experimental-transform-types --no-warnings --import ./evals/register.mjs scripts/stage5c/protocol-e2e.ts",
     "dev": "node scripts/run-reviewed-electron.mjs dev",
     "build:vite": "node scripts/build-ziniao-sensor.mjs && vite build && npm run build:extension && node scripts/assert-catalogue-bundle-boundary.mjs",
     "build:extension": "node apps/browser-extension/build.mjs",

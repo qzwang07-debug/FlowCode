@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { AnalyzerReview } from "./AnalyzerReview";
 
 import type { BlueprintLocator, JsonValue } from "../../common/blueprint";
 import type { BrowserLocator } from "../../common/browser";
@@ -246,6 +247,8 @@ export function EvidenceReview({
         )}
       </div>
 
+      <AnalyzerReview key={`${sessionId}-${snapshot.review.revision}`} sessionId={sessionId} />
+
       <section className="project-studio-panel evidence-review-intent">
         <div className="project-studio-panel-heading">
           <span>Blueprint intent</span>
@@ -303,7 +306,7 @@ export function EvidenceReview({
 
         <section className="project-studio-panel evidence-blueprint-steps">
           <div className="project-studio-panel-heading">
-            <span>Blueprint steps</span>
+            <span>Recorded baseline steps</span>
             <span>{blueprintSteps.length}</span>
           </div>
           <ol>

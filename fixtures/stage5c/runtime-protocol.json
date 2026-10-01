@@ -1,0 +1,69 @@
+{
+  "type": "real-fixed-runtime-protocol",
+  "model": "protocol-fixture",
+  "runtime": "1.18.29",
+  "phase": "review-ready",
+  "confirmedAssertionsPreserved": true,
+  "originalEvidenceUnchanged": true,
+  "auditNoSecrets": true,
+  "tools": [
+    [
+      "flowcode_probe"
+    ],
+    [],
+    [
+      "evidence_project_get_context",
+      "evidence_recording_get_assertion_markers",
+      "evidence_recording_get_blueprint",
+      "evidence_recording_get_browser_actions",
+      "evidence_recording_get_dom_summary",
+      "evidence_recording_get_events",
+      "evidence_recording_get_step",
+      "evidence_recording_get_timeline",
+      "evidence_recording_submit_blueprint"
+    ],
+    [
+      "evidence_project_get_context",
+      "evidence_recording_get_assertion_markers",
+      "evidence_recording_get_blueprint",
+      "evidence_recording_get_browser_actions",
+      "evidence_recording_get_dom_summary",
+      "evidence_recording_get_events",
+      "evidence_recording_get_step",
+      "evidence_recording_get_timeline",
+      "evidence_recording_submit_blueprint"
+    ],
+    [
+      "evidence_project_get_context",
+      "evidence_recording_get_assertion_markers",
+      "evidence_recording_get_blueprint",
+      "evidence_recording_get_browser_actions",
+      "evidence_recording_get_dom_summary",
+      "evidence_recording_get_events",
+      "evidence_recording_get_step",
+      "evidence_recording_get_timeline",
+      "evidence_recording_submit_blueprint"
+    ]
+  ],
+  "turns": 5,
+  "result": {
+    "schemaVersion": 1,
+    "id": "bcd879eb-5a2b-4a31-8b56-48239b99d86a",
+    "sessionId": "fixture-session",
+    "phase": "review-ready",
+    "startedAt": 1790849864803,
+    "finishedAt": 1790849871872,
+    "elapsedMs": 7069,
+    "provider": "flowcode-provider",
+    "model": "protocol-fixture",
+    "promptVersion": "flowcode-analyzer-5c.9",
+    "schemaVersionName": "blueprint-v2.5c.4",
+    "baseHash": "a68c4356073d2068c34d357e0c14b69bff88ffc80011af9cd08be53873b8b2e9",
+    "settingsHash": "d963572f2ecabe0dc0c16aff891f9529d9ebf70d44542def4d9afa567954a3dc",
+    "candidateHash": "00c0ab2869d1eeab3d2a5b05575133f35ff3a92fe2c910f019b89fdda85bcefc",
+    "inputTokens": 300,
+    "outputTokens": 300,
+    "costUsd": 0
+  },
+  "notQualityEval": true
+}

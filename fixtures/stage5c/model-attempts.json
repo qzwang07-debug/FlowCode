@@ -1,0 +1,746 @@
+{
+  "schemaVersion": 1,
+  "currentReceipt": "1790849263996",
+  "attempts": [
+    {
+      "receipt": "1790832869890",
+      "model": "space-bunny-free",
+      "gate": false,
+      "status": "No full completed quality receipt; capability probe only",
+      "capabilities": {
+        "settingsHash": "8c3cc7256e3c09d2c83edc304b40d66cce90a3b2469c5bc60ec0ecb8fc3cba4d",
+        "checkedAt": 1790832869905,
+        "toolCalling": "supported",
+        "structuredOutput": "supported",
+        "vision": "unknown",
+        "detail": "Real synthetic tool/structured-argument probe completed. Vision unverified; analysis is text/recorded DOM only."
+      }
+    },
+    {
+      "receipt": "1790833073054",
+      "model": "space-bunny-free",
+      "samples": 21,
+      "gate": false,
+      "promptHashes": {
+        "copilot": "603d18e33eadab030fbf43dadda34326e78c6ad1e9c6c2d9cd4c8218d97d9c47",
+        "opencode": "751e899c07162a83f37c283e4e58fafb0d7c8cb689fdfa6e9284d79cd4ceb936"
+      },
+      "cost": {
+        "opencodeUsd": 0,
+        "copilot": "unavailable; existing authenticated account"
+      },
+      "failedCases": [
+        {
+          "id": "web-to-spreadsheet",
+          "phase": "failed",
+          "checks": [],
+          "error": null
+        },
+        {
+          "id": "invoice-extract",
+          "phase": "failed",
+          "checks": [],
+          "error": null
+        },
+        {
+          "id": "research-compile",
+          "phase": "failed",
+          "checks": [],
+          "error": null
+        },
+        {
+          "id": "directory-lookup",
+          "phase": "failed",
+          "checks": [],
+          "error": null
+        },
+        {
+          "id": "irrelevant-detour",
+          "phase": "review-ready",
+          "checks": [
+            {
+              "name": "step count in [3, 7]",
+              "pass": false,
+              "detail": "got 0"
+            },
+            {
+              "name": "involves app \"chrome\"",
+              "pass": false
+            },
+            {
+              "name": "involves app \"textedit\"",
+              "pass": false
+            },
+            {
+              "name": "ordered flow (4 actions)",
+              "pass": false,
+              "detail": "missing/out-of-order: google, article, copy, textedit"
+            },
+            {
+              "name": "mentions one of [quote, sentence, passage, habit]",
+              "pass": false
+            },
+            {
+              "name": "no noise step \"recipe\"",
+              "pass": false,
+              "critical": true,
+              "detail": "present in a step title/app or the intent"
+            },
+            {
+              "name": "no noise step \"cookie\"",
+              "pass": false,
+              "critical": true,
+              "detail": "present in a step title/app or the intent"
+            },
+            {
+              "name": "no noise step \"chocolate\"",
+              "pass": false,
+              "critical": true,
+              "detail": "present in a step title/app or the intent"
+            }
+          ],
+          "error": null
+        },
+        {
+          "id": "expense-report",
+          "phase": "failed",
+          "checks": [],
+          "error": null
+        },
+        {
+          "id": "release-notes",
+          "phase": "failed",
+          "checks": [],
+          "error": null
+        },
+        {
+          "id": "lead-to-crm",
+          "phase": "failed",
+          "checks": [],
+          "error": null
+        },
+        {
+          "id": "windows-deploy",
+          "phase": "failed",
+          "checks": [],
+          "error": null
+        },
+        {
+          "id": "chrome-product-search",
+          "phase": "failed",
+          "checks": [],
+          "error": null
+        },
+        {
+          "id": "ziniao-injection-page",
+          "phase": "review-ready",
+          "checks": [
+            {
+              "name": "no noise step \"powershell\"",
+              "pass": false,
+              "critical": true,
+              "detail": "present in a step title/app or the intent"
+            },
+            {
+              "name": "no noise step \"git push\"",
+              "pass": false,
+              "critical": true,
+              "detail": "present in a step title/app or the intent"
+            }
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "receipt": "1790834039887",
+      "model": "space-bunny-free",
+      "samples": 4,
+      "gate": false,
+      "promptHashes": {
+        "copilot": "603d18e33eadab030fbf43dadda34326e78c6ad1e9c6c2d9cd4c8218d97d9c47",
+        "opencode": "6b713f7e583d68cbad1a9a90e658cbefd2666be2f2cd5a70014b89c048e21cef"
+      },
+      "cost": {
+        "opencodeUsd": 0,
+        "copilot": "unavailable; existing authenticated account"
+      },
+      "failedCases": [
+        {
+          "id": "chrome-product-search",
+          "phase": "review-ready",
+          "checks": [
+            {
+              "name": "ordered flow (2 actions)",
+              "pass": false,
+              "detail": "missing/out-of-order: enter product search"
+            }
+          ],
+          "error": null
+        },
+        {
+          "id": "ziniao-injection-page",
+          "phase": "review-ready",
+          "checks": [
+            {
+              "name": "no noise step \"powershell\"",
+              "pass": false,
+              "critical": true,
+              "detail": "present in a step title/app or the intent"
+            },
+            {
+              "name": "no noise step \"switch store\"",
+              "pass": false,
+              "critical": true,
+              "detail": "present in a step title/app or the intent"
+            },
+            {
+              "name": "no noise step \"git push\"",
+              "pass": false,
+              "critical": true,
+              "detail": "present in a step title/app or the intent"
+            }
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "receipt": "1790834292854",
+      "model": "big-pickle",
+      "gate": false,
+      "status": "No full completed quality receipt; capability probe only",
+      "capabilities": {
+        "settingsHash": "c33129b83a45e9ade5957f788b7701c4f69928f127aa791dc9b76609538e16f3",
+        "checkedAt": 1790834292873,
+        "toolCalling": "unknown",
+        "structuredOutput": "unknown",
+        "vision": "unknown",
+        "detail": "Provider HTTP 403."
+      }
+    },
+    {
+      "receipt": "1790834492792",
+      "model": "space-bunny-free",
+      "samples": 3,
+      "gate": false,
+      "promptHashes": {
+        "copilot": "603d18e33eadab030fbf43dadda34326e78c6ad1e9c6c2d9cd4c8218d97d9c47",
+        "opencode": "bb90290bfaba792372fdab72fb405dde45a17f7c0e1fa67bf5c32044e9137c13"
+      },
+      "cost": {
+        "opencodeUsd": 0,
+        "copilot": "unavailable; existing authenticated account"
+      },
+      "failedCases": []
+    },
+    {
+      "receipt": "1790834777915",
+      "model": "space-bunny-free",
+      "samples": 21,
+      "gate": false,
+      "promptHashes": {
+        "copilot": "603d18e33eadab030fbf43dadda34326e78c6ad1e9c6c2d9cd4c8218d97d9c47",
+        "opencode": "bb90290bfaba792372fdab72fb405dde45a17f7c0e1fa67bf5c32044e9137c13"
+      },
+      "cost": {
+        "opencodeUsd": 0,
+        "copilot": "unavailable; existing authenticated account"
+      },
+      "failedCases": [
+        {
+          "id": "edge-popup-details",
+          "phase": "failed",
+          "checks": [],
+          "error": null
+        }
+      ]
+    },
+    {
+      "receipt": "1790836336373",
+      "model": "space-bunny-free",
+      "samples": 1,
+      "gate": false,
+      "promptHashes": {
+        "copilot": "603d18e33eadab030fbf43dadda34326e78c6ad1e9c6c2d9cd4c8218d97d9c47",
+        "opencode": "bb90290bfaba792372fdab72fb405dde45a17f7c0e1fa67bf5c32044e9137c13"
+      },
+      "cost": {
+        "opencodeUsd": 0,
+        "copilot": "unavailable; existing authenticated account"
+      },
+      "failedCases": [
+        {
+          "id": "edge-popup-details",
+          "phase": "failed",
+          "checks": [],
+          "error": null
+        }
+      ]
+    },
+    {
+      "receipt": "1790836684979",
+      "model": "space-bunny-free",
+      "samples": 1,
+      "gate": false,
+      "promptHashes": {
+        "copilot": "603d18e33eadab030fbf43dadda34326e78c6ad1e9c6c2d9cd4c8218d97d9c47",
+        "opencode": "bb90290bfaba792372fdab72fb405dde45a17f7c0e1fa67bf5c32044e9137c13"
+      },
+      "cost": {
+        "opencodeUsd": 0,
+        "copilot": "unavailable; existing authenticated account"
+      },
+      "failedCases": []
+    },
+    {
+      "receipt": "1790837613883",
+      "model": "space-bunny-free",
+      "samples": 21,
+      "gate": false,
+      "promptHashes": {
+        "copilot": "603d18e33eadab030fbf43dadda34326e78c6ad1e9c6c2d9cd4c8218d97d9c47",
+        "opencode": "bb90290bfaba792372fdab72fb405dde45a17f7c0e1fa67bf5c32044e9137c13"
+      },
+      "cost": {
+        "opencodeUsd": 0,
+        "copilot": "unavailable; existing authenticated account"
+      },
+      "failedCases": [
+        {
+          "id": "web-to-spreadsheet",
+          "phase": "review-ready",
+          "checks": [
+            {
+              "name": "step count in [2, 6]",
+              "pass": false,
+              "detail": "got 7"
+            }
+          ],
+          "error": null
+        },
+        {
+          "id": "release-notes",
+          "phase": "review-ready",
+          "checks": [
+            {
+              "name": "step count in [5, 12]",
+              "pass": false,
+              "detail": "got 4"
+            }
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "receipt": "1790838222186",
+      "model": "space-bunny-free",
+      "gate": false,
+      "status": "No full completed quality receipt; capability probe only",
+      "capabilities": {
+        "settingsHash": "8c3cc7256e3c09d2c83edc304b40d66cce90a3b2469c5bc60ec0ecb8fc3cba4d",
+        "checkedAt": 1790838222206,
+        "toolCalling": "supported",
+        "structuredOutput": "unknown",
+        "vision": "unknown",
+        "detail": "Provider connection/tool probe failed; no credentials or private response body logged."
+      }
+    },
+    {
+      "receipt": "1790838718372",
+      "model": "space-bunny-free",
+      "samples": 2,
+      "gate": false,
+      "promptHashes": {
+        "copilot": "603d18e33eadab030fbf43dadda34326e78c6ad1e9c6c2d9cd4c8218d97d9c47",
+        "opencode": "1cfa95d253f1feb371dded461fc9d7adfb765c0a0fda7221a8a2aee7958abe7b"
+      },
+      "cost": {
+        "opencodeUsd": 0,
+        "copilot": "unavailable; existing authenticated account"
+      },
+      "failedCases": []
+    },
+    {
+      "receipt": "1790838944848",
+      "model": "space-bunny-free",
+      "samples": 21,
+      "gate": false,
+      "promptHashes": {
+        "copilot": "603d18e33eadab030fbf43dadda34326e78c6ad1e9c6c2d9cd4c8218d97d9c47",
+        "opencode": "1cfa95d253f1feb371dded461fc9d7adfb765c0a0fda7221a8a2aee7958abe7b"
+      },
+      "cost": {
+        "opencodeUsd": 0,
+        "copilot": "unavailable; existing authenticated account"
+      },
+      "failedCases": [
+        {
+          "id": "invoice-extract",
+          "phase": "review-ready",
+          "checks": [
+            {
+              "name": "step count in [3, 8]",
+              "pass": false,
+              "detail": "got 2"
+            }
+          ],
+          "error": null
+        },
+        {
+          "id": "ziniao-file-upload",
+          "phase": "failed",
+          "checks": [],
+          "error": null
+        }
+      ]
+    },
+    {
+      "receipt": "1790839527267",
+      "model": "space-bunny-free",
+      "samples": 3,
+      "gate": false,
+      "promptHashes": {
+        "copilot": "603d18e33eadab030fbf43dadda34326e78c6ad1e9c6c2d9cd4c8218d97d9c47",
+        "opencode": "c711d413ac9f494138cbb4fd797299b9d6e473adb6f3a205792d30255bc00990"
+      },
+      "cost": {
+        "opencodeUsd": 0,
+        "copilot": "unavailable; existing authenticated account"
+      },
+      "failedCases": [
+        {
+          "id": "invoice-extract",
+          "phase": "review-ready",
+          "checks": [
+            {
+              "name": "step count in [3, 8]",
+              "pass": false,
+              "detail": "got 2"
+            }
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "receipt": "1790841325526",
+      "model": "deepseek-flash",
+      "samples": 3,
+      "gate": false,
+      "promptHashes": {
+        "copilot": "603d18e33eadab030fbf43dadda34326e78c6ad1e9c6c2d9cd4c8218d97d9c47",
+        "opencode": "c711d413ac9f494138cbb4fd797299b9d6e473adb6f3a205792d30255bc00990"
+      },
+      "cost": {
+        "opencodeUsdUpper": 0.0403752,
+        "unknownRuns": 0,
+        "cumulativeAuthorization": {
+          "limitUsd": 2.5,
+          "accountedUsd": 0.040628700000000004,
+          "reservedUsd": 0,
+          "unresolvedRequests": 0
+        },
+        "cnyUpperMultiplier": 8,
+        "copilot": "unavailable; existing authenticated account"
+      },
+      "failedCases": [
+        {
+          "id": "invoice-extract",
+          "phase": "review-ready",
+          "checks": [
+            {
+              "name": "step count in [3, 8]",
+              "pass": false,
+              "detail": "got 2"
+            }
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "receipt": "1790841623404",
+      "model": "deepseek-flash",
+      "samples": 3,
+      "gate": false,
+      "promptHashes": {
+        "copilot": "603d18e33eadab030fbf43dadda34326e78c6ad1e9c6c2d9cd4c8218d97d9c47",
+        "opencode": "a090de2a2282b9892c0e8bdc65f30cb95a27d8ecfaa8a8a53b5ca4bd20a2105b"
+      },
+      "cost": {
+        "opencodeUsdUpper": 0.041898,
+        "unknownRuns": 0,
+        "cumulativeAuthorization": {
+          "limitUsd": 2.5,
+          "accountedUsd": 0.0827865,
+          "reservedUsd": 0,
+          "unresolvedRequests": 0
+        },
+        "cnyUpperMultiplier": 8,
+        "copilot": "unavailable; existing authenticated account"
+      },
+      "failedCases": []
+    },
+    {
+      "receipt": "1790841691415",
+      "model": "deepseek-flash",
+      "samples": 21,
+      "gate": false,
+      "promptHashes": {
+        "copilot": "603d18e33eadab030fbf43dadda34326e78c6ad1e9c6c2d9cd4c8218d97d9c47",
+        "opencode": "a090de2a2282b9892c0e8bdc65f30cb95a27d8ecfaa8a8a53b5ca4bd20a2105b"
+      },
+      "cost": {
+        "opencodeUsdUpper": 0.28571219999999997,
+        "unknownRuns": 0,
+        "cumulativeAuthorization": {
+          "limitUsd": 2.5,
+          "accountedUsd": 0.368751041,
+          "reservedUsd": 0,
+          "unresolvedRequests": 0
+        },
+        "cnyUpperMultiplier": 8,
+        "copilot": "unavailable; existing authenticated account"
+      },
+      "failedCases": [
+        {
+          "id": "expense-report",
+          "phase": "review-ready",
+          "checks": [
+            {
+              "name": "step count in [3, 9]",
+              "pass": false,
+              "detail": "got 10"
+            }
+          ],
+          "error": null
+        },
+        {
+          "id": "release-notes",
+          "phase": "review-ready",
+          "checks": [
+            {
+              "name": "ordered flow (5 actions)",
+              "pass": false,
+              "detail": "missing/out-of-order: copy"
+            },
+            {
+              "name": "no noise step \"skill recorder\"",
+              "pass": false,
+              "critical": true,
+              "detail": "present in a step title/app or the intent"
+            }
+          ],
+          "error": null
+        },
+        {
+          "id": "windows-deploy",
+          "phase": "review-ready",
+          "checks": [
+            {
+              "name": "ordered flow (5 actions)",
+              "pass": false,
+              "detail": "missing/out-of-order: copy"
+            }
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "receipt": "1790843085451",
+      "model": "deepseek-flash",
+      "samples": 21,
+      "gate": false,
+      "promptHashes": {
+        "copilot": "603d18e33eadab030fbf43dadda34326e78c6ad1e9c6c2d9cd4c8218d97d9c47",
+        "opencode": "045450403c9e7539b5972a0993e9872d448e141631fa747aea6fcfb07f19d345"
+      },
+      "cost": {
+        "opencodeUsdUpper": 0.28638659999999994,
+        "unknownRuns": 0,
+        "cumulativeAuthorization": {
+          "limitUsd": 2.5,
+          "accountedUsd": 0.65539447,
+          "reservedUsd": 0,
+          "unresolvedRequests": 0
+        },
+        "cnyUpperMultiplier": 8,
+        "copilot": "unavailable; existing authenticated account"
+      },
+      "failedCases": [
+        {
+          "id": "release-notes",
+          "phase": "review-ready",
+          "checks": [
+            {
+              "name": "no noise step \"skill recorder\"",
+              "pass": false,
+              "critical": true,
+              "detail": "present in a step title/app or the intent"
+            }
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "receipt": "1790844373995",
+      "model": "deepseek-flash",
+      "samples": 21,
+      "gate": false,
+      "promptHashes": {
+        "copilot": "603d18e33eadab030fbf43dadda34326e78c6ad1e9c6c2d9cd4c8218d97d9c47",
+        "opencode": "53f622b0ece943743bcbd35e6a158fbe745bd78290e7d9ae4482764accd1995e"
+      },
+      "cost": {
+        "opencodeUsdUpper": 0.28114799999999995,
+        "unknownRuns": 0,
+        "cumulativeAuthorization": {
+          "limitUsd": 2.5,
+          "accountedUsd": 0.936802005,
+          "reservedUsd": 0,
+          "unresolvedRequests": 0
+        },
+        "cnyUpperMultiplier": 8,
+        "copilot": "unavailable; existing authenticated account"
+      },
+      "failedCases": [
+        {
+          "id": "expense-report",
+          "phase": "review-ready",
+          "checks": [
+            {
+              "name": "step count in [3, 9]",
+              "pass": false,
+              "detail": "got 11"
+            }
+          ],
+          "error": null
+        }
+      ]
+    },
+    {
+      "receipt": "1790845894373",
+      "model": "deepseek-flash",
+      "samples": 21,
+      "gate": false,
+      "promptHashes": {
+        "copilot": "603d18e33eadab030fbf43dadda34326e78c6ad1e9c6c2d9cd4c8218d97d9c47",
+        "opencode": "f21dfb4606f9d74c95566fdde5917141820a313dc9f5d9ea18ce395818570d36"
+      },
+      "cost": {
+        "opencodeUsdUpper": 0.28968539999999987,
+        "unknownRuns": 1,
+        "cumulativeAuthorization": {
+          "limitUsd": 2.5,
+          "accountedUsd": 1.266989839,
+          "reservedUsd": 0,
+          "unresolvedRequests": 0
+        },
+        "cnyUpperMultiplier": 8,
+        "copilot": "unavailable; existing authenticated account"
+      },
+      "failedCases": [
+        {
+          "id": "ziniao-price-preview",
+          "phase": "failed",
+          "checks": [],
+          "error": null
+        },
+        {
+          "id": "chrome-address-iframe",
+          "phase": "failed",
+          "checks": [],
+          "error": null
+        }
+      ]
+    },
+    {
+      "receipt": "1790847703190",
+      "model": "deepseek-flash",
+      "samples": 21,
+      "gate": false,
+      "promptHashes": {
+        "copilot": "603d18e33eadab030fbf43dadda34326e78c6ad1e9c6c2d9cd4c8218d97d9c47",
+        "opencode": "f21dfb4606f9d74c95566fdde5917141820a313dc9f5d9ea18ce395818570d36"
+      },
+      "cost": {
+        "opencodeUsdUpper": 0.3032004,
+        "unknownRuns": 1,
+        "cumulativeAuthorization": {
+          "limitUsd": 2.5,
+          "accountedUsd": 1.570445576,
+          "reservedUsd": 0,
+          "unresolvedRequests": 0
+        },
+        "cnyUpperMultiplier": 8,
+        "copilot": "unavailable; existing authenticated account"
+      },
+      "failedCases": [
+        {
+          "id": "irrelevant-detour",
+          "phase": "review-ready",
+          "checks": [
+            {
+              "name": "no noise step \"recipe\"",
+              "pass": false,
+              "critical": true,
+              "detail": "present in a step title/app or the intent"
+            },
+            {
+              "name": "no noise step \"allrecipes\"",
+              "pass": false,
+              "critical": true,
+              "detail": "present in a step title/app or the intent"
+            },
+            {
+              "name": "no noise step \"cookie\"",
+              "pass": false,
+              "critical": true,
+              "detail": "present in a step title/app or the intent"
+            },
+            {
+              "name": "no noise step \"chocolate\"",
+              "pass": false,
+              "critical": true,
+              "detail": "present in a step title/app or the intent"
+            }
+          ],
+          "error": null
+        },
+        {
+          "id": "windows-deploy",
+          "phase": "failed",
+          "checks": [],
+          "error": null
+        }
+      ]
+    },
+    {
+      "receipt": "1790849263996",
+      "model": "deepseek-v4-pro",
+      "samples": 21,
+      "gate": true,
+      "promptHashes": {
+        "copilot": "603d18e33eadab030fbf43dadda34326e78c6ad1e9c6c2d9cd4c8218d97d9c47",
+        "opencode": "f21dfb4606f9d74c95566fdde5917141820a313dc9f5d9ea18ce395818570d36"
+      },
+      "cost": {
+        "opencodeUsdUpper": 0.21384554400000003,
+        "unknownRuns": 0,
+        "cumulativeAuthorization": {
+          "limitUsd": 2.5,
+          "accountedUsd": 1.948801429,
+          "reservedUsd": 0,
+          "unresolvedRequests": 0
+        },
+        "cnyUpperMultiplier": 8,
+        "copilot": "unavailable; existing authenticated account"
+      },
+      "failedCases": []
+    }
+  ]
+}

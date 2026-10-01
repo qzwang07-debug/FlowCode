@@ -32,6 +32,15 @@ import { registerIpc } from "./ipc";
 import { createLogger } from "./logger";
 import { registerEvidenceIpc } from "./evidence/ipc";
 import { EvidenceService } from "./evidence/service";
+import { AnalyzerService } from "./analyzer/service";
+import { ProviderStore } from "./analyzer/provider-store";
+import { WindowsCredentialVault } from "./analyzer/windows-credentials";
+import { RuntimeSettings } from "./analyzer/runtime-settings";
+import { registerAnalyzerIpc } from "./analyzer/ipc";
+import { RecordedBrowserAccess } from "./analyzer/browser-binding";
+import { migrationState } from "./analyzer/migration-gate";
+import { processEvidenceSession } from "./evidence/processor";
+import { sessionDir } from "./recorder/session-store";
 import { NarrationManager } from "./narration/manager";
 import { SensitiveModelManager } from "./sensitive/model-manager";
 import { RecorderController } from "./recorder/controller";
@@ -87,6 +96,7 @@ const narration = new NarrationManager((status) =>
 const sensitiveModels = new SensitiveModelManager((status) =>
   broadcast(IPC.sensitiveStatusChanged, status),
 );
+let analyzer: AnalyzerService | undefined;
 const microphones = new AudioRecorder((status) =>
   broadcast(IPC.microphoneSettingsChanged, status),
 );
@@ -226,7 +236,7 @@ const automationBuilder = new AutomationBuilder((progress) =>
 );
 
 /** Open, focus, and re-dock the Sessions library window (creating it lazily). */
-function openLibrary(): void {
+function openLegacyLibrary(): void {
   if (recorder.state === "recording") return;
   if (!recorderWindow || recorderWindow.isDestroyed()) return;
   if (libraryWindow && !libraryWindow.isDestroyed()) {
@@ -252,6 +262,11 @@ function openLibrary(): void {
 }
 
 /** Open Project Studio without changing recorder state. */
+async function openLibrary(): Promise<void> {
+  if (analyzer && migrationState(await analyzer.providerView()).defaultAnalyzer === "opencode") openProjectStudio();
+  else openLegacyLibrary();
+}
+
 function openProjectStudio(): void {
   if (recorder.state === "recording") return;
   if (projectStudioWindow && !projectStudioWindow.isDestroyed()) {
@@ -408,6 +423,7 @@ app.whenReady().then(async () => {
     sensitiveModels,
     () => recordingStartPending,
     () => browserCapture.status(),
+    async sessionId => { await analyzer?.revoke(sessionId); },
   );
   const templateRoot = app.isPackaged
     ? path.join(process.resourcesPath, "templates")
@@ -438,7 +454,23 @@ app.whenReady().then(async () => {
     },
     path.join(app.getPath("documents"), "FlowCode Projects"),
   );
-  registerEvidenceIpc(new EvidenceService({ projects }));
+  const evidence = new EvidenceService({ projects });
+  registerEvidenceIpc(evidence);
+  const analyzerRoot = !app.isPackaged && process.env.FLOWCODE_ANALYZER_TEST_ROOT
+    ? path.resolve(process.env.FLOWCODE_ANALYZER_TEST_ROOT) : path.join(app.getPath("userData"), "analyzer");
+  const runtime = new RuntimeSettings(analyzerRoot, app.isPackaged ? undefined :
+    path.join(app.getAppPath(), ".stage5a", "tools", "node_modules", "opencode-windows-x64", "bin", "opencode.exe"));
+  const recordedBrowser = new RecordedBrowserAccess(sessionDir, id => new ZiniaoProfileStore(ziniaoDataRoot).get(id));
+  analyzer = new AnalyzerService({ root: analyzerRoot, evidence,
+    binary: () => runtime.resolve(), providers: new ProviderStore(analyzerRoot, new WindowsCredentialVault()),
+    emit: run => broadcast(IPC.analyzerProgress, run), getOcr: () => sensitiveModels.getOcr(),
+    getEvents: async (id, kind) => (await processEvidenceSession(sessionDir(id), kind)).evidence.events,
+    getPrivateValues: id => recordedBrowser.privateValues(id),
+    getEnvironmentScope: id => recordedBrowser.scopeHash(id),
+    getCapabilities: source => recordedBrowser.capabilities(source),
+  });
+  await analyzer.initialize();
+  registerAnalyzerIpc(analyzer, runtime);
   registerZiniaoIpc(ziniaoEnvironment);
   try {
     await worktrees.recover();
@@ -458,6 +490,7 @@ app.whenReady().then(async () => {
   log.info("Capture: recording all sources");
 
   ipcMain.handle(IPC.openLibrary, () => openLibrary());
+  ipcMain.handle(IPC.openLegacyLibrary, () => openLegacyLibrary());
   ipcMain.handle(IPC.closeLibrary, () => {
     if (libraryWindow && !libraryWindow.isDestroyed()) libraryWindow.close();
   });
@@ -553,7 +586,7 @@ app.on("before-quit", (event) => {
   quitTask = (async () => {
     // stop() is serialized behind any start/mic/discard operation already in
     // flight, and is a harmless "Not recording" result when the app is idle.
-    await Promise.all([recorder.stop(), projectRuns?.dispose()]);
+    await Promise.all([recorder.stop(), projectRuns?.dispose(), analyzer?.dispose()]);
     await semanticCapture.dispose();
     await recorder.whenProcessed();
   })()

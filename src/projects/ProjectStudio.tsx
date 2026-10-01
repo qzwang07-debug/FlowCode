@@ -14,6 +14,7 @@ import type {
 } from "../../common/project";
 import type { ProjectRun, ProjectRunAction } from "../../common/project-run";
 import type { EvidenceRecordingSummary } from "../../common/evidence";
+import { ModelSettings } from "./ModelSettings";
 import type { RecordingBrowserSelection } from "../../common/ziniao-recording";
 import type {
   ProjectFileContent,
@@ -52,6 +53,7 @@ export function ProjectStudio() {
   const [selectedRecording, setSelectedRecording] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [showEnvironments, setShowEnvironments] = useState(false);
+  const [showModelSettings, setShowModelSettings] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -81,6 +83,7 @@ export function ProjectStudio() {
   }, [refresh]);
 
   const openProject = useCallback(async (projectId: string) => {
+    setShowModelSettings(false);
     setError(null);
     const result = await window.skillRecorder.openProject({ projectId });
     if (!result.ok) {
@@ -104,6 +107,7 @@ export function ProjectStudio() {
           <h1>Project Studio</h1>
         </div>
         <div className="project-studio-header-actions">
+          <button type="button" className="project-studio-quiet" onClick={() => setShowModelSettings(true)}>Model settings</button>
           <button
             type="button"
             className="project-studio-quiet"
@@ -112,6 +116,7 @@ export function ProjectStudio() {
               setSelectedRecording(null);
               setShowCreate(false);
               setShowEnvironments(true);
+              setShowModelSettings(false);
               setError(null);
             }}
           >
@@ -125,11 +130,13 @@ export function ProjectStudio() {
               setSelectedRecording(null);
               setShowCreate(true);
               setShowEnvironments(false);
+              setShowModelSettings(false);
               setError(null);
             }}
           >
             New project
           </button>
+          <button type="button" className="project-studio-quiet" onClick={() => void window.skillRecorder.openLegacyLibrary()}>Legacy library</button>
           <button
             type="button"
             className="project-studio-quiet"
@@ -206,6 +213,7 @@ export function ProjectStudio() {
                     setSelected(null);
                     setShowCreate(false);
                     setShowEnvironments(false);
+                    setShowModelSettings(false);
                     setSelectedRecording(recording.sessionId);
                     setError(null);
                   }}
@@ -227,7 +235,9 @@ export function ProjectStudio() {
               {error}
             </div>
           )}
-          {showEnvironments ? (
+          {showModelSettings ? (
+            <ModelSettings />
+          ) : showEnvironments ? (
             <BrowserEnvironmentPanel />
           ) : selectedRecording ? (
             <EvidenceReview sessionId={selectedRecording} onChanged={refreshEvidence} />

@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "os": "6.2.9200.0",
+  "candidate": "AppContainer (zero capabilities) + one-process kill-on-close Job + explicit directory ACL + minimal environment",
+  "control": {
+    "insideRead": true,
+    "insideWrite": true,
+    "outsideReadBlocked": false,
+    "outsideWriteBlocked": false,
+    "junctionReadBlocked": false,
+    "loopbackBlocked": false,
+    "internetBlocked": false,
+    "hostProcessAccessBlocked": false,
+    "childProcessBlocked": false,
+    "credentialReadBlocked": false,
+    "credentialEnvironmentAbsent": false,
+    "appContainerToken": false
+  },
+  "sandbox": {
+    "insideRead": true,
+    "insideWrite": true,
+    "outsideReadBlocked": true,
+    "outsideWriteBlocked": true,
+    "junctionReadBlocked": true,
+    "loopbackBlocked": true,
+    "internetBlocked": true,
+    "hostProcessAccessBlocked": true,
+    "childProcessBlocked": true,
+    "credentialReadBlocked": true,
+    "credentialEnvironmentAbsent": true,
+    "appContainerToken": true
+  },
+  "unreviewedCodeExecutionEnabled": false,
+  "nodeControl": {
+    "version": "24.19.0",
+    "checks": {
+      "insideRead": true,
+      "insideWrite": true,
+      "outsideReadBlocked": false,
+      "outsideWriteBlocked": false,
+      "junctionReadBlocked": false,
+      "loopbackBlocked": false,
+      "internetBlocked": false,
+      "childProcessBlocked": false,
+      "credentialEnvironmentAbsent": false
+    }
+  },
+  "nodeSandbox": {
+    "version": "24.19.0",
+    "checks": {
+      "insideRead": true,
+      "insideWrite": true,
+      "outsideReadBlocked": true,
+      "outsideWriteBlocked": true,
+      "junctionReadBlocked": true,
+      "loopbackBlocked": true,
+      "internetBlocked": true,
+      "childProcessBlocked": true,
+      "credentialEnvironmentAbsent": true
+    }
+  },
+  "sourceHashes": {
+    "native": "2d8164174eb32b5880652e401b8e56cd2b18bae663915e110ed30d4b795a6be1",
+    "node": "3daf2b73e2c6f64821b81c77aefac06c9e264606a1a170324a39c5fd30c61c9f",
+    "ps": "631c37209a49f95ff14fbfc329309668e6dbcedfbd65d2030bd0a618777d15db"
+  },
+  "externalPositiveControl": "A reachable public IPv4 endpoint resolved from opencode.ai; exact address not exported.",
+  "scope": "Same fixed native/Node AppContainer canaries as 5A, NOT a sandbox claim for OpenCode, npm or Playwright."
+}

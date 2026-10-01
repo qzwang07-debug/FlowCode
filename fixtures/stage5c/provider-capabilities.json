@@ -1,0 +1,8 @@
+{
+  "settingsHash": "a76ad16f250a09fa6c7c29f896c6aa591bb3f127fc4a3f8938cd034600c74f63",
+  "checkedAt": 1790849264019,
+  "toolCalling": "supported",
+  "structuredOutput": "supported",
+  "vision": "unsupported",
+  "detail": "Actual tool, structured argument, and synthetic image probes completed. Vision: unsupported. No recording or store data used."
+}

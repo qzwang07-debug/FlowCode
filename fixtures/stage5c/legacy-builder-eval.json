@@ -1,0 +1,280 @@
+{
+  "schemaVersion": 1,
+  "model": "gpt-6.1-sol",
+  "at": "2026-10-01T05-47-41-691Z",
+  "unchangedLegacyCode": true,
+  "passing": 5,
+  "samples": 10,
+  "result": "not-passing",
+  "cases": [
+    {
+      "id": "github-issue-triage",
+      "ok": true,
+      "durationMs": 18608,
+      "score": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"gh \"",
+            "pass": true,
+            "detail": "found \"gh \""
+          },
+          {
+            "name": "uses one of: \"gh issue\", \"gh api\"",
+            "pass": true,
+            "detail": "found \"gh issue\""
+          },
+          {
+            "name": "avoids \"playwright\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"browser_\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"click\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"navigate to github\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"github.com/acme\"",
+            "pass": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "github-stale-pr-nudge",
+      "ok": false,
+      "durationMs": 13447,
+      "score": {
+        "pass": false,
+        "score": 0.7142857142857143,
+        "checks": [
+          {
+            "name": "uses one of: \"gh \"",
+            "pass": false,
+            "detail": "none of these appeared in the steps"
+          },
+          {
+            "name": "uses one of: \"gh pr\", \"gh api\"",
+            "pass": false,
+            "detail": "none of these appeared in the steps"
+          },
+          {
+            "name": "avoids \"playwright\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"browser_\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"click\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"navigate to github\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"github.com/acme\"",
+            "pass": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "web-to-spreadsheet",
+      "ok": false,
+      "durationMs": 18253,
+      "score": {
+        "pass": false,
+        "score": 0.5,
+        "checks": [
+          {
+            "name": "uses one of: \"web_fetch\"",
+            "pass": false,
+            "detail": "none of these appeared in the steps"
+          },
+          {
+            "name": "uses one of: \"xlsx\"",
+            "pass": true,
+            "detail": "found \"xlsx\""
+          }
+        ]
+      }
+    },
+    {
+      "id": "invoice-extract",
+      "ok": false,
+      "durationMs": 13158,
+      "score": {
+        "pass": false,
+        "score": 0,
+        "checks": [
+          {
+            "name": "uses one of: \"web_fetch\", \"browser_\", \"browser automation\"",
+            "pass": false,
+            "detail": "none of these appeared in the steps"
+          },
+          {
+            "name": "uses one of: \"xlsx\"",
+            "pass": false,
+            "detail": "none of these appeared in the steps"
+          }
+        ]
+      }
+    },
+    {
+      "id": "research-compile",
+      "ok": true,
+      "durationMs": 14172,
+      "score": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"web_fetch\"",
+            "pass": true,
+            "detail": "found \"web_fetch\""
+          },
+          {
+            "name": "uses one of: \"docx\", \"write\", \"note\", \".md\", \".txt\"",
+            "pass": true,
+            "detail": "found \"note\""
+          }
+        ]
+      }
+    },
+    {
+      "id": "directory-lookup",
+      "ok": false,
+      "durationMs": 13640,
+      "score": {
+        "pass": false,
+        "score": 0.6666666666666666,
+        "checks": [
+          {
+            "name": "uses one of: \"web_fetch\", \"workiq_search_people\", \"workiq\"",
+            "pass": false,
+            "detail": "none of these appeared in the steps"
+          },
+          {
+            "name": "uses one of: \"xlsx\"",
+            "pass": true,
+            "detail": "found \"xlsx\""
+          },
+          {
+            "name": "avoids \"playwright\"",
+            "pass": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "expense-report",
+      "ok": true,
+      "durationMs": 13698,
+      "score": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"pdf\", \"view\", \"expense-report\"",
+            "pass": true,
+            "detail": "found \"pdf\""
+          }
+        ]
+      }
+    },
+    {
+      "id": "release-notes",
+      "ok": true,
+      "durationMs": 15980,
+      "score": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"gh \"",
+            "pass": true,
+            "detail": "found \"gh \""
+          },
+          {
+            "name": "uses one of: \"gh pr\", \"gh api\", \"gh release\"",
+            "pass": true,
+            "detail": "found \"gh pr\""
+          },
+          {
+            "name": "avoids \"playwright\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"browser_\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"navigate to github\"",
+            "pass": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "windows-deploy",
+      "ok": false,
+      "durationMs": 14482,
+      "score": {
+        "pass": false,
+        "score": 0.8,
+        "checks": [
+          {
+            "name": "uses one of: \"az \"",
+            "pass": true,
+            "detail": "found \"az \""
+          },
+          {
+            "name": "uses one of: \"az webapp\", \"az login\", \"az group\", \"az account\"",
+            "pass": true,
+            "detail": "found \"az webapp\""
+          },
+          {
+            "name": "uses one of: \"xlsx\"",
+            "pass": false,
+            "detail": "none of these appeared in the steps"
+          },
+          {
+            "name": "avoids \"playwright\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"browser_\"",
+            "pass": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "lead-to-crm",
+      "ok": true,
+      "durationMs": 13354,
+      "score": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"workiq_search_emails\", \"workiq_list_emails\", \"workiq_get_email\", \"workiq\"",
+            "pass": true,
+            "detail": "found \"workiq\""
+          }
+        ]
+      }
+    }
+  ]
+}

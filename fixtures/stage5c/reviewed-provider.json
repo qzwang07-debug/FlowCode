@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "providerId": "flowcode-deepseek",
+  "baseUrl": "https://api.deepseek.com",
+  "modelId": "deepseek-v4-pro",
+  "authentication": "credential-manager",
+  "pricing": "metered",
+  "inputUsdPerMillion": 1.32,
+  "inputCachedUsdPerMillion": 0.044,
+  "outputUsdPerMillion": 3.96,
+  "budget": {
+    "maxSeconds": 600,
+    "maxTokens": 200000,
+    "maxCostUsd": 0.5,
+    "maxTurns": 12
+  }
+}
