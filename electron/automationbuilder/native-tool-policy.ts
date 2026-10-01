@@ -2,7 +2,7 @@ import type { AnalysisSubmission } from "../../common/analysis";
 import type { AutomationPlan } from "../../common/automation";
 import { renderValues } from "../../common/values";
 
-export const NATIVE_TOOL_POLICY_VERSION = "legacy-native-tools.5";
+export const NATIVE_TOOL_POLICY_VERSION = "legacy-native-tools.7";
 
 /** Ignore presentation, not tool identity. A generic "fetch" is NOT web_fetch. */
 export function normalizeToolText(text: string): string {
@@ -72,6 +72,7 @@ export function nativeToolPlanIssues(plan: AutomationPlan, analysis?: AnalysisSu
   ].join("\n")) : "";
   const githubTask = /\bgithub\b|github\.com/.test(context);
   const azureDeploy = /\bdeploy\b/.test(normalizeToolText(analysis?.intent ?? "")) && /\bazure\b/.test(context);
+  const expensifyTask = /\bexpensify\b/.test(context);
   const approvedActions = analysis ? [analysis.intent, ...analysis.steps.map((s) => `${s.title}. ${s.detail}`)].join("\n") : "";
   // Never use summary, labels or skillNames as evidence of actionable tool use.
   const prompts = plan.steps.map((s) => s.prompt).join("\n");
@@ -98,7 +99,8 @@ export function nativeToolPlanIssues(plan: AutomationPlan, analysis?: AnalysisSu
     }
     if (githubStep) {
       // A local changelog step consumes already-fetched PR data, not GitHub itself.
-      const localArtifactStep = /\bchangelog\b|\.md\b|\b(?:local|notes?) file\b/.test(resolved);
+      const githubRead = /\b(?:fetch|list|search|query|retrieve|collect|gather|find|get)\b[^.;\n]{0,120}\b(?:github|prs?|pull requests?|issues?)\b/.test(resolved);
+      const localArtifactStep = /\bchangelog\b|\.md\b|\b(?:local|notes?) file\b/.test(resolved) && !githubRead;
       if (!localArtifactStep && !["gh issue", "gh pr", "gh release", "gh repo", "gh api", "gh gist", "gh run"].some((name) => usesNativeTool(step.prompt, name))) {
         add("github-step-tool", "Name the matching gh command in this GitHub action prompt; a different step cannot supply its tool.", i);
       }
@@ -138,6 +140,20 @@ export function nativeToolPlanIssues(plan: AutomationPlan, analysis?: AnalysisSu
     }
     if (/\b(?:pdf|receipts?)\b/.test(resolved) && affirmativeMatch(step.prompt, /\bpreview\b/g)) {
       add("receipt-viewer-ui", "Read local receipt files with view, not the Preview desktop UI.", i);
+    }
+    if (expensifyTask && usesNativeTool(step.prompt, "expense-report")) {
+      add("expense-skill-mismatch", "The expense-report skill is for internal Dynamics 365 workflows, not Expensify; use its authorized browser UI.", i);
+    }
+    const statementRead = /\b(?:read|fetch|extract|open|navigate\s+to|review)\b[^.;\n]{0,80}\b(?:amex[\w_]*|american express|recent activity)\b/.test(resolved) ||
+      /\b(?:read|fetch|extract|open|navigate\s+to|review)\s+(?:the\s+)?(?:card\s+)?statement\b/.test(resolved);
+    if (expensifyTask && statementRead &&
+      (!usesNativeTool(step.prompt, "browser_navigate") || !usesNativeTool(step.prompt, "browser_snapshot"))) {
+      add("expense-statement-tool", "Read the private card statement with browser_navigate and browser_snapshot; web_fetch or generic fetch prose does not establish authenticated access.", i);
+    }
+    if (/\bpdf\b/.test(context) && /\breceipts?\b/.test(context) && usesAny(["view"]) &&
+      /\breceipts?\b[^.;\n]{0,100}\bpdf\b|\bpdf\b[^.;\n]{0,100}\breceipts?\b/.test(resolved) &&
+      /\b(?:read|open|inspect|check|verify|extract)\b/.test(resolved) && !usesNativeTool(step.prompt, "view")) {
+      add("receipt-step-tool", "Name view in the step that reads receipt PDFs; an unrelated step cannot supply its file-read tool.", i);
     }
     if (affirmativeMatch(step.prompt, /\bgit\s+push\b|\bpush\s+(?:the\s+)?(?:changes|commits?|tags?|branch)\b/g) &&
       !affirmativeMatch(approvedActions, /\bpush(?:ed|ing)?\b/g)) {

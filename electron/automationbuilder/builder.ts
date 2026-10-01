@@ -30,7 +30,7 @@ const log = createLogger("AutomationBuilder");
 
 const TURN_TIMEOUT_MS = 180_000;
 
-const KICKOFF_PROMPT =
+export const AUTOMATION_BUILDER_KICKOFF_PROMPT =
   "Read get_analysis (and get_timeline where the tool mapping or schedule needs evidence), then call " +
   "propose_automation_plan with how you'll generalize this task, a sensible default schedule, and the " +
   "generalized prompt-steps. Stop after propose_automation_plan so the user can review it.";
@@ -100,7 +100,7 @@ export class AutomationBuilder extends AgentBuilder<LiveBuild> {
         await this.disposeLive(sessionId); // fresh conversation for a fresh plan
         live = await this.createLive(sessionId, architecture);
       }
-      const prompt = refining ? renderRefinePrompt(feedback!.trim(), live.lastPlan) : KICKOFF_PROMPT;
+      const prompt = refining ? renderRefinePrompt(feedback!.trim(), live.lastPlan) : AUTOMATION_BUILDER_KICKOFF_PROMPT;
       return await this.runProposeTurn(live, prompt);
     } finally {
       this.active.delete(sessionId);
@@ -114,6 +114,8 @@ export class AutomationBuilder extends AgentBuilder<LiveBuild> {
    *  if the plan has no steps (a bundle needs ≥1). */
   async create(sessionId: string, editedPlan?: AutomationPlan): Promise<{ automation: BuiltAutomation; path: string }> {
     if (this.active.has(sessionId)) throw new Error("Wait for the current step to finish.");
+    const analysis = loadPersistedAnalysis(sessionId);
+    if (!analysis) throw new Error("There is no analysis for this recording yet.");
     const held = this.live.get(sessionId);
     // Prefer the user's edited plan from the review tiles; fall back to the last
     // proposed plan for older callers that don't pass one.
@@ -130,7 +132,7 @@ export class AutomationBuilder extends AgentBuilder<LiveBuild> {
     }
     // Revalidate user-edited tiles at the export boundary. Never rewrite the
     // reviewed plan or bypass validation after a failed model proposal.
-    assertNativeToolPlan(plan, loadPersistedAnalysis(sessionId) ?? undefined);
+    assertNativeToolPlan(plan, analysis);
     if (held) held.lastPlan = plan;
 
     this.active.add(sessionId);

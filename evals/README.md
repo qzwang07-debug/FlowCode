@@ -138,6 +138,25 @@ npm run eval:builder -- --keep             # print the temp sessions dir
 npm run eval:builder -- --model=<model-id> # override the builder model
 ```
 
+The commands above always use the product's **Copilot SDK**. `--model` only
+changes the model requested through Copilot; it does not switch provider. For
+the separate ChatGPT subscription evaluation of the fixed Scout corpus, use
+the test-only Codex app-server driver instead:
+
+```bash
+node --experimental-transform-types --no-warnings --import ./evals/register.mjs evals/builder/codex-run.ts --probe
+node --experimental-transform-types --no-warnings --import ./evals/register.mjs evals/builder/codex-run.ts --rounds=2
+```
+
+The driver requires an existing ChatGPT Codex login and refuses API-key
+environment variables. It calls the real read/proposal handlers and the
+deterministic export boundary, but Codex replaces the Copilot model loop and
+foundation/system context. It writes private working artifacts under ignored
+`evals/results/`; publish only a reviewed, redacted evidence projection. See
+`docs/baselines/2026-10-01-legacy-builder-codex-acceptance.md` for the first
+complete two-round result and its limits. This driver does not change FlowCode's
+product Coding Harness or default model.
+
 **How it isolates the builder.** Each scenario seeds a **fixed, approved
 `Analysis`** (plus a minimal valid `bundle.json`) into a temp sessions dir, then
 runs the real `AutomationBuilder.build()` for a chosen `architecture` and

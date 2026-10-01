@@ -2,15 +2,15 @@
   "schemaVersion": 1,
   "status": "implemented-real-eval-incomplete",
   "currentImplementation": {
-    "promptVersion": "legacy-automation.6",
-    "policyVersion": "legacy-native-tools.5",
+    "promptVersion": "legacy-automation.7",
+    "policyVersion": "legacy-native-tools.7",
     "scorerVersion": "native-tools.2",
     "scenarioHash": "a020a4cbcfadea5835993afc2e91ba137e12b7c111beb5f5b1fb59f643a30675",
     "sourceHashes": {
-      "electron/automationbuilder/builder.ts": "fb6011d3b306364531d9f3621e8e704270ed0be8dfd058a6bf6db1b144b7a4fe",
+      "electron/automationbuilder/builder.ts": "132017141f074f8c73e6d154b3eff9f1fcd2b68540449f5ed117230940ba2237",
       "electron/automationbuilder/tools.ts": "46607e5b48454a171a779352eedcace6342a613d7edc2a972ab80afe38ee2a6d",
-      "electron/automationbuilder/instructions.ts": "0c6dd0ae22c765d8bd090f6f742aaa4a07b8017565fcf83082afeffc9dd87775",
-      "electron/automationbuilder/native-tool-policy.ts": "0ab1492680b0a219db93731e2668c62e9c43322d1474f6fdeb78f36bf22675f6",
+      "electron/automationbuilder/instructions.ts": "4b4d1fc51e1568736f2ae2dfae0106697a11ff0f7f1a354e12bde9596dfb5b62",
+      "electron/automationbuilder/native-tool-policy.ts": "66d13801057906b03b272c70fbaf32201311e990d8f808defffd1b1759cb6c65",
       "evals/builder/score.ts": "40fa4485c3adf369f4f40ea4b4cb8fe427c5d9a9270d982cb667b158a2f7cfd3"
     },
     "realFullTrialsAtTheseVersions": 0
@@ -1115,6 +1115,7 @@
       }
     ]
   },
+  "frozenReassessmentPolicyVersion": "legacy-native-tools.5",
   "attempts": [
     {
       "file": "fixtures/legacy-builder/attempt-2026-10-01T13-08-31-756Z.json",
@@ -1191,5 +1192,13 @@
       "rejectedProposals": 3,
       "durationMs": 167586
     }
-  ]
+  ],
+  "latestReassessment": {
+    "policyVersion": "legacy-native-tools.7",
+    "passingByAttempt": [8, 6, 8, 7, 6],
+    "changedHistoricalCases": [
+      { "attemptIndex": 2, "id": "expense-report", "wasPassing": true, "nowPassing": false },
+      { "attemptIndex": 3, "id": "expense-report", "wasPassing": true, "nowPassing": false }
+    ]
+  }
 }

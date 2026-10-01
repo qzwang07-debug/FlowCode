@@ -12,7 +12,7 @@
  *   2. The reviewed plan **is** the automation — when the user approves, the app builds
  *      and exports it deterministically (no second agent turn).
  */
-export const AUTOMATION_BUILDER_PROMPT_VERSION = "legacy-automation.6";
+export const AUTOMATION_BUILDER_PROMPT_VERSION = "legacy-automation.7";
 
 export const AUTOMATION_BUILDER_INSTRUCTIONS = `
 # Role: Automation Builder
@@ -120,7 +120,10 @@ Each step has a short **label** and a **prompt** — an imperative instruction t
   version bump, commit or deploy. Publish only when the approved intent/recorded
   actions explicitly authorize it; a model-generated plan is not that authorization.
 - Read mailbox leads with workiq_search_emails/list_emails/get_email. Retain genuine
-  browser-only CRM and expense-report steps when the catalogue supports them.
+  browser-only CRM and expense steps when the catalogue supports them. The catalogue's
+  expense-report skill is for internal Dynamics 365 workflows, not Expensify. Read an
+  authorized private Amex statement with browser_navigate and browser_snapshot; do
+  not assume web_fetch can read it without the user's existing browser session.
 - Read local receipt PDFs with view, not the Preview desktop UI. State how receipts
   are located and matched; do not treat a .pdf filename as a file-read tool.
 - Read get_timeline to ground the target platform. Windows deployment commands use

@@ -37,8 +37,12 @@ test("repair evidence binds current sources/corpus and preserves incomplete real
   }
 });
 
-test("every retained candidate is honestly rescored; quota errors never become passing plans", () => {
-  for (const attempt of receipt.attempts) {
+test("frozen Copilot snapshots remain internally consistent; current policy is reassessed separately", () => {
+  assert.equal(receipt.frozenReassessmentPolicyVersion, "legacy-native-tools.5");
+  assert.equal(receipt.latestReassessment.policyVersion, NATIVE_TOOL_POLICY_VERSION);
+  const latestCounts: number[] = [];
+  const changed: { attemptIndex: number; id: string; wasPassing: boolean; nowPassing: boolean }[] = [];
+  for (const [attemptIndex, attempt] of receipt.attempts.entries()) {
     const serialized = read(attempt.file);
     assert.doesNotMatch(serialized, /sr-builder-evals-|Request ID:|nxbw7|TK008B-BR|api[_-]?key\s*[=:]/i);
     const data = JSON.parse(serialized);
@@ -47,6 +51,7 @@ test("every retained candidate is honestly rescored; quota errors never become p
     assert.equal(data.metadata.scenarioHash, receipt.currentImplementation.scenarioHash);
     assert.equal(data.originalPassing, attempt.originalPassing);
     assert.equal(data.currentPassing, attempt.currentPassing);
+    let latestPassing = 0;
     for (const c of data.cases) {
       if (!c.plan) {
         assert.equal(c.originalOk, false);
@@ -59,8 +64,13 @@ test("every retained candidate is honestly rescored; quota errors never become p
       const score = scoreBuilder(plan.steps.map((s) => `${s.label}\n${s.prompt}`).join("\n\n"), scenario.rubric);
       const issues = nativeToolPlanIssues(plan, scenario.analysis);
       assert.deepEqual(JSON.parse(JSON.stringify(score)), c.currentScore);
-      assert.deepEqual(JSON.parse(JSON.stringify(issues)), c.currentPlanIssues);
-      assert.equal(c.currentOk, score.pass && issues.length === 0);
+      assert.equal(c.currentOk, c.currentScore.pass && c.currentPlanIssues.length === 0);
+      const nowPassing = score.pass && issues.length === 0;
+      if (nowPassing) latestPassing++;
+      if (nowPassing !== c.currentOk) changed.push({ attemptIndex, id: c.id, wasPassing: c.currentOk, nowPassing });
     }
+    latestCounts.push(latestPassing);
   }
+  assert.deepEqual(latestCounts, receipt.latestReassessment.passingByAttempt);
+  assert.deepEqual(changed, receipt.latestReassessment.changedHistoricalCases);
 });

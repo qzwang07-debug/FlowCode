@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
@@ -51,7 +51,7 @@ test("missing read tools are rejected; real UI-only invoice, expense and CRM ste
   assert.ok(nativeToolPlanIssues(plan(["Navigate to the directory and search for each person.", "Use xlsx to write the contacts."]), analysis("directory-lookup")).some((i) => i.code === "directory-tool"));
   assert.deepEqual(nativeToolPlanIssues(plan(["Use web_fetch for the public directory, or workiq_search_people for the M365 directory.", "Use the xlsx skill to append every contact to the spreadsheet."]), analysis("directory-lookup")), []);
   assert.deepEqual(nativeToolPlanIssues(plan(["Use browser_navigate and browser_snapshot to read all invoice rows.", "Use the xlsx skill to append each invoice to the spreadsheet."]), analysis("invoice-extract")), []);
-  assert.deepEqual(nativeToolPlanIssues(plan(["Use browser automation to read the statement; use view to read local PDF receipts.", "Use browser automation to file and submit the report."]), analysis("expense-report")), []);
+  assert.deepEqual(nativeToolPlanIssues(plan(["Use browser_navigate and browser_snapshot to read the statement; use view to read local PDF receipts.", "Use browser automation to file and submit the report."]), analysis("expense-report")), []);
   assert.deepEqual(nativeToolPlanIssues(plan(["Use workiq_search_emails to read leads.", "Use browser automation for each CRM contact."]), analysis("lead-to-crm")), []);
 });
 
@@ -106,6 +106,9 @@ test("export rechecks edited steps/architecture, preserves old files and exports
   process.env.SKILL_RECORDER_AUTOMATIONS_DIR = exports;
   const builder = new AutomationBuilder(() => undefined);
   try {
+    await assert.rejects(builder.create("orphan-session", plan(["Use web_fetch to read a public page."])),
+      /analysis.*recording/i);
+    assert.equal(existsSync(exports), false);
     const scenario = builderScenarios.find((s) => s.id === "github-stale-pr-nudge")!;
     seedScenario(sessions, scenario);
     const bad = plan(["Use gh pr list for stale PRs.", "Use browser to submit a PR comment."]);
@@ -115,6 +118,11 @@ test("export rechecks edited steps/architecture, preserves old files and exports
     const result = await builder.create(scenario.id, good);
     assert.deepEqual(JSON.parse(readFileSync(result.path, "utf8")).steps, good.steps);
     assert.deepEqual(loadPersistedAutomation(scenario.id)?.plan, good);
+    const historicalDir = path.join(sessions, "historical-session");
+    mkdirSync(historicalDir, { recursive: true });
+    writeFileSync(path.join(historicalDir, "built-automation.json"),
+      JSON.stringify({ ...result.automation, sessionId: "historical-session", plan: null }));
+    assert.equal(loadPersistedAutomation("historical-session")?.name, good.name);
     const original = readFileSync(result.path, "utf8");
     await assert.rejects(builder.create(scenario.id, bad), /Native-tool plan validation failed/);
     await assert.rejects(builder.create(scenario.id, { ...good, architecture: "cowork" }), /architecture.*available/i);
@@ -148,6 +156,12 @@ test("documented PR review/date qualifiers replace invented query syntax", () =>
 test("each GitHub action names its tool, not only another step", () => {
   const bad = plan(["List open unassigned GitHub bug issues using the CLI.", "Use gh issue comment to request details."]);
   assert.ok(nativeToolPlanIssues(bad, analysis("github-issue-triage")).some((i) => i.code === "github-step-tool" && i.stepIndex === 0));
+  const changelogCover = plan([
+    "Use gh pr list -R {{repo}} to get a preliminary count.",
+    "Use the generic CLI to fetch GitHub merged PRs for CHANGELOG.md, then append the titles.",
+  ]);
+  assert.ok(nativeToolPlanIssues(changelogCover, analysis("release-notes")).some((i) =>
+    i.code === "github-step-tool" && i.stepIndex === 1));
   assert.deepEqual(nativeToolPlanIssues(plan(["Use gh pr list -R {{repo}} to fetch merged PRs.", "Read CHANGELOG.md; append the merged PR titles using the local file tools."]), analysis("release-notes")), []);
 });
 
@@ -173,9 +187,33 @@ test("local PDF reads use view and table updates cannot invent destructive clear
   assert.ok(issues.some((i) => i.code === "receipt-viewer-ui"));
   const good = plan(["Use view to read each local receipt PDF.", "Use browser automation to submit the expense report."]);
   assert.deepEqual(nativeToolPlanIssues(good, analysis("expense-report")), []);
+  const unrelatedView = plan([
+    "Use browser_navigate and browser_snapshot to read the card statement and each matching receipt PDF.",
+    "Use view to read a local configuration note.",
+    "Use browser automation to file the verified expenses and submit the report.",
+  ]);
+  assert.ok(nativeToolPlanIssues(unrelatedView, analysis("expense-report")).some((i) =>
+    i.code === "receipt-step-tool" && i.stepIndex === 0));
   const destructive = plan(["Use web_fetch to read contacts.", "Use xlsx to clear or append to the existing contacts sheet and save."]);
   assert.ok(nativeToolPlanIssues(destructive, analysis("directory-lookup")).some((i) => i.code === "unapproved-sheet-deletion"));
   assert.deepEqual(nativeToolPlanIssues(plan(["Use xlsx to clear existing rows in the spreadsheet."]), { ...analysis("web-to-spreadsheet"), intent: "Clear the existing spreadsheet rows.", steps: [] }), []);
+});
+
+test("Expensify cannot borrow the Dynamics-only expense skill or fetch a private card statement", () => {
+  const wrongSkill = plan([
+    "Use browser_navigate and browser_snapshot to read the Amex card statement.",
+    "Use view to read each matching receipt PDF.",
+    "Use the expense-report skill to create each Expensify expense and submit the report.",
+  ]);
+  assert.ok(nativeToolPlanIssues(wrongSkill, analysis("expense-report")).some((i) =>
+    i.code === "expense-skill-mismatch" && i.stepIndex === 2));
+  const privateFetch = plan([
+    "Use web_fetch to read all charges from the Amex card statement.",
+    "Use view to read each matching receipt PDF.",
+    "Use browser_navigate and browser_snapshot to file verified expenses in Expensify.",
+  ]);
+  assert.ok(nativeToolPlanIssues(privateFetch, analysis("expense-report")).some((i) =>
+    i.code === "expense-statement-tool" && i.stepIndex === 0));
 });
 
 test("release generalization cannot invent Git publication or treat a prohibition as approval", () => {

@@ -1,0 +1,1393 @@
+{
+  "schemaVersion": 1,
+  "status": "interrupted-after-new-policy-defect",
+  "at": "2026-10-01T14-31-00-309Z",
+  "provider": "codex-chatgpt-subscription",
+  "authMethod": "chatgpt",
+  "planType": "pro",
+  "cliVersion": "codex-cli 0.159.0",
+  "requestedModel": "gpt-6-sol",
+  "requestedEffort": "medium",
+  "modelCatalogue": [
+    {
+      "model": "gpt-6.1-sol",
+      "displayName": "GPT-6.1-Sol",
+      "isDefault": true
+    },
+    {
+      "model": "gpt-6-astra",
+      "displayName": "GPT-6-Astra",
+      "isDefault": false
+    },
+    {
+      "model": "gpt-6-sol",
+      "displayName": "GPT-6-Sol",
+      "isDefault": false
+    },
+    {
+      "model": "gpt-6-luna",
+      "displayName": "GPT-6-Luna",
+      "isDefault": false
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "displayName": "GPT-5.6-Sol",
+      "isDefault": false
+    },
+    {
+      "model": "gpt-5.6-terra",
+      "displayName": "GPT-5.6-Terra",
+      "isDefault": false
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "displayName": "GPT-5.6-Luna",
+      "isDefault": false
+    },
+    {
+      "model": "gpt-5.5",
+      "displayName": "GPT-5.5",
+      "isDefault": false
+    }
+  ],
+  "promptVersion": "legacy-automation.6",
+  "policyVersion": "legacy-native-tools.6",
+  "scorerVersion": "native-tools.2",
+  "catalogueVersion": "2026-07-26",
+  "systemPromptHash": "0e9d31829ef90522b965c66fb0b857d04cb882b418d6c2ce76505ca352fe8d29",
+  "scenarioHash": "a020a4cbcfadea5835993afc2e91ba137e12b7c111beb5f5b1fb59f643a30675",
+  "sourceHashes": {
+    "common/automation.ts": "6bd1f0190621b66f093ddd465275444b937aff25c748a862924ff8af68b9e0d2",
+    "electron/automationbuilder/builder.ts": "132017141f074f8c73e6d154b3eff9f1fcd2b68540449f5ed117230940ba2237",
+    "electron/automationbuilder/tools.ts": "46607e5b48454a171a779352eedcace6342a613d7edc2a972ab80afe38ee2a6d",
+    "electron/automationbuilder/instructions.ts": "0c6dd0ae22c765d8bd090f6f742aaa4a07b8017565fcf83082afeffc9dd87775",
+    "electron/automationbuilder/native-tool-policy.ts": "bfa95ca44bc49b900a8bfbd6a7ea808d395cd0c069b5573008bed656ea462edb",
+    "electron/builders/read-tools.ts": "73446d3e7647f87001238e6dc9598f91c2d1e099a85d8ad78cb81b7d338c61a8",
+    "electron/architectures/catalogues/scout-catalogue.ts": "afe64ace3e1b54bca89e8f7c9f8c7247bacef412263325b85b717b8912bb10c4",
+    "evals/builder/score.ts": "40fa4485c3adf369f4f40ea4b4cb8fe427c5d9a9270d982cb667b158a2f7cfd3",
+    "evals/builder/codex-run.ts": "e37af570a34093a4cfb5ef44f2b8d8f5d718d3227206d0525288e2ff202a2f94"
+  },
+  "scenarioIds": [
+    "github-issue-triage",
+    "github-stale-pr-nudge",
+    "web-to-spreadsheet",
+    "invoice-extract",
+    "research-compile",
+    "directory-lookup",
+    "expense-report",
+    "release-notes",
+    "windows-deploy",
+    "lead-to-crm"
+  ],
+  "roundsRequested": 2,
+  "mode": "Codex app-server model loop; production read/proposal handlers and deterministic export; no Scout execution",
+  "cost": null,
+  "costStatus": "unavailable",
+  "results": [
+    {
+      "round": 1,
+      "id": "github-issue-triage",
+      "status": "pass",
+      "threadId": "01a0f7e0-31ef-77d1-9378-72b05aaf9f76",
+      "model": "gpt-6-sol",
+      "modelProvider": "openai",
+      "threadDefaultReasoningEffort": "max",
+      "turnStatus": "completed",
+      "turnError": null,
+      "tokenUsage": {
+        "totalTokens": 25173,
+        "inputTokens": 25094,
+        "cachedInputTokens": 23296,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 79,
+        "reasoningOutputTokens": 0
+      },
+      "toolTrace": [
+        {
+          "name": "get_analysis",
+          "arguments": {},
+          "success": true,
+          "responseHash": "65ff80cfaa3babc182a9da3c32c74d46d35a89086b33bbcaeef46a31cb5e1e1c",
+          "rejection": null,
+          "durationMs": 0
+        },
+        {
+          "name": "get_timeline",
+          "arguments": {},
+          "success": true,
+          "responseHash": "4054a86873464761658b6269ec2f6b858c5cc956eaa39e7e65e4b15b5bffe1a0",
+          "rejection": null,
+          "durationMs": 2
+        },
+        {
+          "name": "propose_automation_plan",
+          "arguments": {
+            "name": "daily-unassigned-bug-triage",
+            "title": "Triage unassigned bug reports",
+            "summary": "Ask for reproduction steps and version details on open, unassigned bug issues, then mark them needs-info.",
+            "description": "Assuming a daily 9:00 a.m. run, review every open, unassigned bug issue in the target GitHub repository, request exact reproduction steps and the reporter's version, and add the needs-info label.",
+            "generalization": "The recording handled one issue. Each run paginates through the full set of matching issues, checks each issue to avoid duplicate comments, and processes every eligible report; issue numbers and report content are discovered at run time.",
+            "trigger": {
+              "type": "schedule",
+              "schedule": {
+                "kind": "single",
+                "time": {
+                  "hour": 9,
+                  "minute": 0
+                },
+                "naturalLanguage": "daily at 9:00am"
+              }
+            },
+            "values": [
+              {
+                "id": "repo",
+                "name": "GitHub repository",
+                "value": "acme/api"
+              },
+              {
+                "id": "bug_label",
+                "name": "Bug label",
+                "value": "bug"
+              },
+              {
+                "id": "needs_info_label",
+                "name": "Needs-info label",
+                "value": "needs-info"
+              },
+              {
+                "id": "request_comment",
+                "name": "Request comment",
+                "value": "Thanks for the report! Could you share exact reproduction steps and the version you're on?"
+              }
+            ],
+            "steps": [
+              {
+                "label": "Find eligible issues",
+                "prompt": "Use the device shell and the signed-in GitHub gh CLI, because GitHub has a first-class CLI. Run gh api --method GET --paginate 'repos/{{repo}}/issues?state=open&labels={{bug_label}}&per_page=100', processing every returned page. Keep issues only (exclude pull requests) with no assignee and without the {{needs_info_label}} label. If gh or authentication is unavailable, stop with a clear prerequisite failure."
+              },
+              {
+                "label": "Check each report",
+                "prompt": "For every matching issue number, run gh issue view NUMBER -R {{repo}} --json body,comments,labels to read the report and conversation. Skip an issue if it has gained an assignee or {{needs_info_label}} label since listing. Check for an earlier identical {{request_comment}} comment by this account so a repeated run cannot post the same request twice."
+              },
+              {
+                "label": "Request details and label",
+                "prompt": "For each still-eligible issue without the earlier request, use gh issue comment NUMBER -R {{repo}} --body with the exact text {{request_comment}} to ask the reporter for reproduction steps and version. Then run gh issue edit NUMBER -R {{repo}} --add-label {{needs_info_label}}. If the earlier request already exists but the label is missing, add only the label. Report the issue numbers commented, labeled, skipped, and any failures."
+              }
+            ]
+          },
+          "success": true,
+          "responseHash": "75d0fbcf137987bb8a4d5ea9254ecd8852f3f381636ec989855dba03aef94b4a",
+          "rejection": null,
+          "durationMs": 7
+        }
+      ],
+      "rejectedProposals": [],
+      "unexpectedTools": [],
+      "finalMessage": "The proposed automation is ready for review. It assumes **daily at 9:00 a.m.** and will check every open, unassigned bug issue in `acme/api`, ask for reproduction steps and a version, then add `needs-info`. It checks existing comments to avoid posting the same request twice.\n\nYou can change the schedule or any step before approving it.",
+      "plan": {
+        "architecture": "scout",
+        "name": "daily-unassigned-bug-triage",
+        "title": "Triage unassigned bug reports",
+        "description": "Assuming a daily 9:00 a.m. run, review every open, unassigned bug issue in the target GitHub repository, request exact reproduction steps and the reporter's version, and add the needs-info label.",
+        "summary": "Ask for reproduction steps and version details on open, unassigned bug issues, then mark them needs-info.",
+        "generalization": "The recording handled one issue. Each run paginates through the full set of matching issues, checks each issue to avoid duplicate comments, and processes every eligible report; issue numbers and report content are discovered at run time.",
+        "trigger": {
+          "type": "schedule",
+          "schedule": {
+            "kind": "single",
+            "naturalLanguage": "daily at 9:00am",
+            "days": [],
+            "time": {
+              "hour": 9,
+              "minute": 0
+            }
+          },
+          "condition": ""
+        },
+        "values": [
+          {
+            "id": "repo",
+            "name": "GitHub repository",
+            "value": "acme/api"
+          },
+          {
+            "id": "bug_label",
+            "name": "Bug label",
+            "value": "bug"
+          },
+          {
+            "id": "needs_info_label",
+            "name": "Needs-info label",
+            "value": "needs-info"
+          },
+          {
+            "id": "request_comment",
+            "name": "Request comment",
+            "value": "Thanks for the report! Could you share exact reproduction steps and the version you're on?"
+          }
+        ],
+        "steps": [
+          {
+            "label": "Find eligible issues",
+            "prompt": "Use the device shell and the signed-in GitHub gh CLI, because GitHub has a first-class CLI. Run gh api --method GET --paginate 'repos/{{repo}}/issues?state=open&labels={{bug_label}}&per_page=100', processing every returned page. Keep issues only (exclude pull requests) with no assignee and without the {{needs_info_label}} label. If gh or authentication is unavailable, stop with a clear prerequisite failure."
+          },
+          {
+            "label": "Check each report",
+            "prompt": "For every matching issue number, run gh issue view NUMBER -R {{repo}} --json body,comments,labels to read the report and conversation. Skip an issue if it has gained an assignee or {{needs_info_label}} label since listing. Check for an earlier identical {{request_comment}} comment by this account so a repeated run cannot post the same request twice."
+          },
+          {
+            "label": "Request details and label",
+            "prompt": "For each still-eligible issue without the earlier request, use gh issue comment NUMBER -R {{repo}} --body with the exact text {{request_comment}} to ask the reporter for reproduction steps and version. Then run gh issue edit NUMBER -R {{repo}} --add-label {{needs_info_label}}. If the earlier request already exists but the label is missing, add only the label. Report the issue numbers commented, labeled, skipped, and any failures."
+          }
+        ],
+        "model": "",
+        "skillNames": []
+      },
+      "score": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"gh \"",
+            "pass": true,
+            "detail": "found \"gh \""
+          },
+          {
+            "name": "uses one of: \"gh issue\", \"gh api\"",
+            "pass": true,
+            "detail": "found \"gh issue\""
+          },
+          {
+            "name": "avoids \"playwright\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"browser_\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"click\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"navigate to github\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"github.com/acme\"",
+            "pass": true
+          }
+        ]
+      },
+      "planIssues": [],
+      "exportSha256": "874375b4be1ae08166e3d65a387672ab4506cad9770f6ac1eac9da8e926be8a6",
+      "analysisRead": true,
+      "ok": true,
+      "durationMs": 67077
+    },
+    {
+      "round": 1,
+      "id": "github-stale-pr-nudge",
+      "status": "pass",
+      "threadId": "01a0f7e1-37f4-7371-8b1d-527c1a8c17e3",
+      "model": "gpt-6-sol",
+      "modelProvider": "openai",
+      "threadDefaultReasoningEffort": "max",
+      "turnStatus": "completed",
+      "turnError": null,
+      "tokenUsage": {
+        "totalTokens": 25165,
+        "inputTokens": 25117,
+        "cachedInputTokens": 23040,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 48,
+        "reasoningOutputTokens": 6
+      },
+      "toolTrace": [
+        {
+          "name": "get_analysis",
+          "arguments": {},
+          "success": true,
+          "responseHash": "75f5f1076d96e4c036982e1e09ab256cff4eff83a747bcd243276e50ca2fc137",
+          "rejection": null,
+          "durationMs": 0
+        },
+        {
+          "name": "get_timeline",
+          "arguments": {},
+          "success": true,
+          "responseHash": "8ea338c278dc81d0c68b11fa6db0f63f0295ccb7bcb2868cd01d481cc4efdf69",
+          "rejection": null,
+          "durationMs": 1
+        },
+        {
+          "name": "propose_automation_plan",
+          "arguments": {
+            "name": "weekday-stale-pr-review-reminders",
+            "title": "Weekday stale PR review reminders",
+            "description": "Every weekday at 9am, check open pull requests in the repository that still require review and have been open for more than 48 hours, then post one gentle reminder tagging each requested reviewer. The weekday morning schedule is a proposed default.",
+            "summary": "Nudge requested reviewers on every qualifying stale pull request.",
+            "generalization": "The recording checked and commented on one PR; each run searches the entire repository, verifies exact age and outstanding review requests for every match, and avoids repeating an already posted reminder while that same review request remains pending.",
+            "trigger": {
+              "type": "schedule",
+              "schedule": {
+                "kind": "single",
+                "days": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5
+                ],
+                "time": {
+                  "hour": 9,
+                  "minute": 0
+                },
+                "naturalLanguage": "every weekday at 9am"
+              }
+            },
+            "values": [
+              {
+                "id": "repo",
+                "name": "GitHub repository",
+                "value": "acme/api"
+              }
+            ],
+            "steps": [
+              {
+                "label": "Find PRs awaiting review",
+                "prompt": "On this Windows device, use PowerShell and the signed-in GitHub CLI (`Bash(gh *)`), since GitHub has a first-class CLI. Calculate the UTC timestamp 48 hours before this run and an ISO search date one calendar day after its date so the date-only search includes every potentially qualifying PR. Run `gh pr list -R {{repo}} --state open --search \"review:required created:<$searchDate sort:created-asc\" --json number,createdAt,reviewRequests --limit 10000`. Process every result; if the result count reaches the limit, use paginated `gh api` reads for {{repo}} to cover the remaining open PRs. Stop with a clear prerequisite failure if `gh` is unavailable or unauthenticated."
+              },
+              {
+                "label": "Verify age and reviewers",
+                "prompt": "For each candidate in {{repo}}, compare its exact `createdAt` with the 48-hour UTC cutoff and keep only PRs older than 48 hours with outstanding requested reviewers. Use `gh pr view $number -R {{repo}} --json createdAt,reviewRequests,comments` to confirm the current requests and inspect existing comments. Skip a PR when no reviewer is currently requested or when an equivalent reminder has already been posted for the same still-pending review request."
+              },
+              {
+                "label": "Post gentle reminders",
+                "prompt": "For each remaining PR in {{repo}}, write one friendly, concise comment asking the currently requested reviewer or reviewers to take a look, tagging their GitHub handles. Post the comment explicitly with `gh pr comment $number -R {{repo}} --body $body` in PowerShell. Report the PR numbers commented on and any failures."
+              }
+            ]
+          },
+          "success": true,
+          "responseHash": "75d0fbcf137987bb8a4d5ea9254ecd8852f3f381636ec989855dba03aef94b4a",
+          "rejection": null,
+          "durationMs": 2
+        }
+      ],
+      "rejectedProposals": [],
+      "unexpectedTools": [],
+      "finalMessage": "I proposed a weekday 9am automation to check every qualifying PR in `acme/api` and post a gentle reviewer reminder. The schedule and steps are ready for your review.",
+      "plan": {
+        "architecture": "scout",
+        "name": "weekday-stale-pr-review-reminders",
+        "title": "Weekday stale PR review reminders",
+        "description": "Every weekday at 9am, check open pull requests in the repository that still require review and have been open for more than 48 hours, then post one gentle reminder tagging each requested reviewer. The weekday morning schedule is a proposed default.",
+        "summary": "Nudge requested reviewers on every qualifying stale pull request.",
+        "generalization": "The recording checked and commented on one PR; each run searches the entire repository, verifies exact age and outstanding review requests for every match, and avoids repeating an already posted reminder while that same review request remains pending.",
+        "trigger": {
+          "type": "schedule",
+          "schedule": {
+            "kind": "single",
+            "naturalLanguage": "every weekday at 9am",
+            "days": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "time": {
+              "hour": 9,
+              "minute": 0
+            }
+          },
+          "condition": ""
+        },
+        "values": [
+          {
+            "id": "repo",
+            "name": "GitHub repository",
+            "value": "acme/api"
+          }
+        ],
+        "steps": [
+          {
+            "label": "Find PRs awaiting review",
+            "prompt": "On this Windows device, use PowerShell and the signed-in GitHub CLI (`Bash(gh *)`), since GitHub has a first-class CLI. Calculate the UTC timestamp 48 hours before this run and an ISO search date one calendar day after its date so the date-only search includes every potentially qualifying PR. Run `gh pr list -R {{repo}} --state open --search \"review:required created:<$searchDate sort:created-asc\" --json number,createdAt,reviewRequests --limit 10000`. Process every result; if the result count reaches the limit, use paginated `gh api` reads for {{repo}} to cover the remaining open PRs. Stop with a clear prerequisite failure if `gh` is unavailable or unauthenticated."
+          },
+          {
+            "label": "Verify age and reviewers",
+            "prompt": "For each candidate in {{repo}}, compare its exact `createdAt` with the 48-hour UTC cutoff and keep only PRs older than 48 hours with outstanding requested reviewers. Use `gh pr view $number -R {{repo}} --json createdAt,reviewRequests,comments` to confirm the current requests and inspect existing comments. Skip a PR when no reviewer is currently requested or when an equivalent reminder has already been posted for the same still-pending review request."
+          },
+          {
+            "label": "Post gentle reminders",
+            "prompt": "For each remaining PR in {{repo}}, write one friendly, concise comment asking the currently requested reviewer or reviewers to take a look, tagging their GitHub handles. Post the comment explicitly with `gh pr comment $number -R {{repo}} --body $body` in PowerShell. Report the PR numbers commented on and any failures."
+          }
+        ],
+        "model": "",
+        "skillNames": []
+      },
+      "score": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"gh \"",
+            "pass": true,
+            "detail": "found \"gh \""
+          },
+          {
+            "name": "uses one of: \"gh pr\", \"gh api\"",
+            "pass": true,
+            "detail": "found \"gh pr\""
+          },
+          {
+            "name": "avoids \"playwright\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"browser_\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"click\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"navigate to github\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"github.com/acme\"",
+            "pass": true
+          }
+        ]
+      },
+      "planIssues": [],
+      "exportSha256": "92eabd738683a9de14869b72def878f2b6461ae84f50ab0a262dda0a2055897f",
+      "analysisRead": true,
+      "ok": true,
+      "durationMs": 70972
+    },
+    {
+      "round": 1,
+      "id": "web-to-spreadsheet",
+      "status": "pass",
+      "threadId": "01a0f7e2-4d35-7221-96a7-f4ddbccb7a23",
+      "model": "gpt-6-sol",
+      "modelProvider": "openai",
+      "threadDefaultReasoningEffort": "max",
+      "turnStatus": "completed",
+      "turnError": null,
+      "tokenUsage": {
+        "totalTokens": 24027,
+        "inputTokens": 23972,
+        "cachedInputTokens": 22912,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 55,
+        "reasoningOutputTokens": 0
+      },
+      "toolTrace": [
+        {
+          "name": "get_analysis",
+          "arguments": {},
+          "success": true,
+          "responseHash": "190d3a68dbb11c146abf7a8adbc0192cc0df99af8d862175e4da5e0edb84a69d",
+          "rejection": null,
+          "durationMs": 1
+        },
+        {
+          "name": "get_timeline",
+          "arguments": {},
+          "success": true,
+          "responseHash": "1a77ba25e7d868338722ecf6fb060a7956c1a2df319babfe7d70379cca40372e",
+          "rejection": null,
+          "durationMs": 1
+        },
+        {
+          "name": "propose_automation_plan",
+          "arguments": {
+            "name": "weekly-pro-plan-budget-prices",
+            "title": "Update Pro plan prices in budget",
+            "description": "Every Monday at 9am, check the Pro plan's monthly and annual prices on the pricing page and update the matching entries in the budget spreadsheet. Weekly timing is an assumption for review.",
+            "summary": "Keep the budget spreadsheet's Pro plan monthly and annual prices current.",
+            "generalization": "Replace the copied example prices with the current prices found on each run. Locate the current budget workbook on the device and update its matching Pro plan entries, preserving other data.",
+            "trigger": {
+              "type": "schedule",
+              "schedule": {
+                "kind": "single",
+                "days": [
+                  1
+                ],
+                "time": {
+                  "hour": 9,
+                  "minute": 0
+                },
+                "naturalLanguage": "every Monday at 9am"
+              }
+            },
+            "values": [
+              {
+                "id": "pricing_url",
+                "name": "Pricing page",
+                "value": "https://acme.example/pricing"
+              },
+              {
+                "id": "plan_name",
+                "name": "Plan name",
+                "value": "Pro"
+              }
+            ],
+            "skillNames": [
+              "xlsx"
+            ],
+            "steps": [
+              {
+                "label": "Read current prices",
+                "prompt": "Use web_fetch to read {{pricing_url}}, a public pricing page. Find the {{plan_name}} plan and extract its current monthly and annual prices, including currency and billing period. If either price is absent or ambiguous, stop and report the issue without changing the budget."
+              },
+              {
+                "label": "Locate the budget workbook",
+                "prompt": "Use glob to locate the current budget workbook or CSV on the device, and invoke the xlsx built-in skill to inspect candidate spreadsheets for entries for the {{plan_name}} plan and its monthly and annual prices. Select the matching current budget file; if no supported .xlsx or .csv file can be identified unambiguously, or the only matching input is an unsupported Numbers document, stop and report the prerequisite."
+              },
+              {
+                "label": "Update and verify prices",
+                "prompt": "Invoke the xlsx built-in skill to update the matching {{plan_name}} monthly and annual price entries in the selected budget workbook or CSV with the prices read from {{pricing_url}}. Preserve all other rows, formulas, and formatting where supported. Read the updated entries with the xlsx skill to verify both values were saved, then report the file and the recorded prices."
+              }
+            ]
+          },
+          "success": true,
+          "responseHash": "75d0fbcf137987bb8a4d5ea9254ecd8852f3f381636ec989855dba03aef94b4a",
+          "rejection": null,
+          "durationMs": 1
+        }
+      ],
+      "rejectedProposals": [],
+      "unexpectedTools": [],
+      "finalMessage": "The proposed automation is ready for review. It would run **every Monday at 9am**, read the current Pro plan’s monthly and annual prices, and update the matching entries in a supported budget spreadsheet. The weekly schedule is an assumption you can change.",
+      "plan": {
+        "architecture": "scout",
+        "name": "weekly-pro-plan-budget-prices",
+        "title": "Update Pro plan prices in budget",
+        "description": "Every Monday at 9am, check the Pro plan's monthly and annual prices on the pricing page and update the matching entries in the budget spreadsheet. Weekly timing is an assumption for review.",
+        "summary": "Keep the budget spreadsheet's Pro plan monthly and annual prices current.",
+        "generalization": "Replace the copied example prices with the current prices found on each run. Locate the current budget workbook on the device and update its matching Pro plan entries, preserving other data.",
+        "trigger": {
+          "type": "schedule",
+          "schedule": {
+            "kind": "single",
+            "naturalLanguage": "every Monday at 9am",
+            "days": [
+              1
+            ],
+            "time": {
+              "hour": 9,
+              "minute": 0
+            }
+          },
+          "condition": ""
+        },
+        "values": [
+          {
+            "id": "pricing_url",
+            "name": "Pricing page",
+            "value": "https://acme.example/pricing"
+          },
+          {
+            "id": "plan_name",
+            "name": "Plan name",
+            "value": "Pro"
+          }
+        ],
+        "steps": [
+          {
+            "label": "Read current prices",
+            "prompt": "Use web_fetch to read {{pricing_url}}, a public pricing page. Find the {{plan_name}} plan and extract its current monthly and annual prices, including currency and billing period. If either price is absent or ambiguous, stop and report the issue without changing the budget."
+          },
+          {
+            "label": "Locate the budget workbook",
+            "prompt": "Use glob to locate the current budget workbook or CSV on the device, and invoke the xlsx built-in skill to inspect candidate spreadsheets for entries for the {{plan_name}} plan and its monthly and annual prices. Select the matching current budget file; if no supported .xlsx or .csv file can be identified unambiguously, or the only matching input is an unsupported Numbers document, stop and report the prerequisite."
+          },
+          {
+            "label": "Update and verify prices",
+            "prompt": "Invoke the xlsx built-in skill to update the matching {{plan_name}} monthly and annual price entries in the selected budget workbook or CSV with the prices read from {{pricing_url}}. Preserve all other rows, formulas, and formatting where supported. Read the updated entries with the xlsx skill to verify both values were saved, then report the file and the recorded prices."
+          }
+        ],
+        "model": "",
+        "skillNames": [
+          "xlsx"
+        ]
+      },
+      "score": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"web_fetch\"",
+            "pass": true,
+            "detail": "found \"web_fetch\""
+          },
+          {
+            "name": "uses one of: \"xlsx\"",
+            "pass": true,
+            "detail": "found \"xlsx\""
+          }
+        ]
+      },
+      "planIssues": [],
+      "exportSha256": "fbd15f71bb7200b6a9fd70e04cc55de0ea94766aefb0cea4a6bb520f2cc65559",
+      "analysisRead": true,
+      "ok": true,
+      "durationMs": 40719
+    },
+    {
+      "round": 1,
+      "id": "invoice-extract",
+      "status": "pass",
+      "threadId": "01a0f7e2-ec48-70b3-b7b3-c840ee7a7e71",
+      "model": "gpt-6-sol",
+      "modelProvider": "openai",
+      "threadDefaultReasoningEffort": "max",
+      "turnStatus": "completed",
+      "turnError": null,
+      "tokenUsage": {
+        "totalTokens": 24043,
+        "inputTokens": 23993,
+        "cachedInputTokens": 22912,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 50,
+        "reasoningOutputTokens": 0
+      },
+      "toolTrace": [
+        {
+          "name": "get_analysis",
+          "arguments": {},
+          "success": true,
+          "responseHash": "af4a526cc29b49827bb3247c31d6354c58ef9cd91f64410092475c07a05c1b0f",
+          "rejection": null,
+          "durationMs": 0
+        },
+        {
+          "name": "get_timeline",
+          "arguments": {},
+          "success": true,
+          "responseHash": "49f16f146fd19d824b5d8eae1cfc6be1bb36035aa4811d576675fed1ee5a5527",
+          "rejection": null,
+          "durationMs": 1
+        },
+        {
+          "name": "propose_automation_plan",
+          "arguments": {
+            "name": "daily-invoice-extract",
+            "title": "Record Acme Books invoices",
+            "description": "Assuming a daily check is useful, run every day at 9am to read all invoice IDs, customers, and amounts from the Acme Books invoices page and record them in the current invoices spreadsheet.",
+            "summary": "Keep the invoices spreadsheet in sync with every row on the Acme Books invoices page.",
+            "generalization": "The three copied rows are examples of a larger invoice table. On each run, collect every row across all pages, then match by invoice ID in a supported current invoices workbook so repeated runs do not create duplicates. The recording does not identify a durable spreadsheet path, so locate the current workbook on the device.",
+            "trigger": {
+              "type": "schedule",
+              "schedule": {
+                "kind": "single",
+                "days": [
+                  0,
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6
+                ],
+                "time": {
+                  "hour": 9,
+                  "minute": 0
+                },
+                "naturalLanguage": "every day at 9am"
+              }
+            },
+            "values": [
+              {
+                "id": "invoices_url",
+                "name": "Invoices page",
+                "value": "https://books.acme.example/invoices"
+              }
+            ],
+            "skillNames": [
+              "xlsx"
+            ],
+            "steps": [
+              {
+                "label": "Read invoice table",
+                "prompt": "Fetch {{invoices_url}} with web_fetch and extract every invoice row, including all pagination, as invoice ID, customer, and amount. If the authorized page requires an authenticated browser session and has no usable API or CLI, use browser_navigate and browser_snapshot before browser_click to traverse every page and read its rows; stop with a clear prerequisite failure if access is unavailable. Keep amounts as shown and do not infer missing fields."
+              },
+              {
+                "label": "Find invoices workbook",
+                "prompt": "Use glob to locate the current invoices workbook on this macOS device; invoke the xlsx built-in skill to inspect candidate .xlsx or .csv files and select the one whose invoice columns match ID, customer, and amount. If no supported workbook can be identified, or the only candidate is a Numbers document, stop with a clear prerequisite failure rather than converting it silently."
+              },
+              {
+                "label": "Record all invoices",
+                "prompt": "Invoke the xlsx built-in skill to read and update the selected .xlsx or .csv workbook. Match every extracted row by invoice ID, update the customer and amount for existing IDs, and append rows for new IDs; preserve unrelated columns and existing rows, and do not add duplicates. Save the workbook and verify that every invoice ID from the page has the recorded customer and amount."
+              }
+            ]
+          },
+          "success": true,
+          "responseHash": "75d0fbcf137987bb8a4d5ea9254ecd8852f3f381636ec989855dba03aef94b4a",
+          "rejection": null,
+          "durationMs": 1
+        }
+      ],
+      "rejectedProposals": [],
+      "unexpectedTools": [],
+      "finalMessage": "The proposed automation is ready for review. It assumes a daily run at 9 a.m., collects every invoice row, and updates a supported Excel or CSV workbook by invoice ID. Please review the schedule and steps in the plan.",
+      "plan": {
+        "architecture": "scout",
+        "name": "daily-invoice-extract",
+        "title": "Record Acme Books invoices",
+        "description": "Assuming a daily check is useful, run every day at 9am to read all invoice IDs, customers, and amounts from the Acme Books invoices page and record them in the current invoices spreadsheet.",
+        "summary": "Keep the invoices spreadsheet in sync with every row on the Acme Books invoices page.",
+        "generalization": "The three copied rows are examples of a larger invoice table. On each run, collect every row across all pages, then match by invoice ID in a supported current invoices workbook so repeated runs do not create duplicates. The recording does not identify a durable spreadsheet path, so locate the current workbook on the device.",
+        "trigger": {
+          "type": "schedule",
+          "schedule": {
+            "kind": "single",
+            "naturalLanguage": "every day at 9am",
+            "days": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "time": {
+              "hour": 9,
+              "minute": 0
+            }
+          },
+          "condition": ""
+        },
+        "values": [
+          {
+            "id": "invoices_url",
+            "name": "Invoices page",
+            "value": "https://books.acme.example/invoices"
+          }
+        ],
+        "steps": [
+          {
+            "label": "Read invoice table",
+            "prompt": "Fetch {{invoices_url}} with web_fetch and extract every invoice row, including all pagination, as invoice ID, customer, and amount. If the authorized page requires an authenticated browser session and has no usable API or CLI, use browser_navigate and browser_snapshot before browser_click to traverse every page and read its rows; stop with a clear prerequisite failure if access is unavailable. Keep amounts as shown and do not infer missing fields."
+          },
+          {
+            "label": "Find invoices workbook",
+            "prompt": "Use glob to locate the current invoices workbook on this macOS device; invoke the xlsx built-in skill to inspect candidate .xlsx or .csv files and select the one whose invoice columns match ID, customer, and amount. If no supported workbook can be identified, or the only candidate is a Numbers document, stop with a clear prerequisite failure rather than converting it silently."
+          },
+          {
+            "label": "Record all invoices",
+            "prompt": "Invoke the xlsx built-in skill to read and update the selected .xlsx or .csv workbook. Match every extracted row by invoice ID, update the customer and amount for existing IDs, and append rows for new IDs; preserve unrelated columns and existing rows, and do not add duplicates. Save the workbook and verify that every invoice ID from the page has the recorded customer and amount."
+          }
+        ],
+        "model": "",
+        "skillNames": [
+          "xlsx"
+        ]
+      },
+      "score": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"web_fetch\", \"browser_\", \"browser automation\"",
+            "pass": true,
+            "detail": "found \"web_fetch\""
+          },
+          {
+            "name": "uses one of: \"xlsx\"",
+            "pass": true,
+            "detail": "found \"xlsx\""
+          }
+        ]
+      },
+      "planIssues": [],
+      "exportSha256": "ef2ba161d48b254a6b15b4e9ce8b439d7c3725dbbce3dbcc8c4976281f58ef85",
+      "analysisRead": true,
+      "ok": true,
+      "durationMs": 44696
+    },
+    {
+      "round": 1,
+      "id": "research-compile",
+      "status": "pass",
+      "threadId": "01a0f7e3-9ae5-77e0-ab3d-1ff2beb1e412",
+      "model": "gpt-6-sol",
+      "modelProvider": "openai",
+      "threadDefaultReasoningEffort": "max",
+      "turnStatus": "completed",
+      "turnError": null,
+      "tokenUsage": {
+        "totalTokens": 24407,
+        "inputTokens": 24354,
+        "cachedInputTokens": 22912,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 53,
+        "reasoningOutputTokens": 0
+      },
+      "toolTrace": [
+        {
+          "name": "get_analysis",
+          "arguments": {},
+          "success": true,
+          "responseHash": "0161f2b5f4b1aa08bb20d2fd23d07205fb5f4a7b2dba06850aa5b90aeb38078c",
+          "rejection": null,
+          "durationMs": 0
+        },
+        {
+          "name": "get_timeline",
+          "arguments": {},
+          "success": true,
+          "responseHash": "11cca3b88336b91b54d5220a05a7324ae3712a3fefd6a379b6dc91529c2da062",
+          "rejection": null,
+          "durationMs": 1
+        },
+        {
+          "name": "propose_automation_plan",
+          "arguments": {
+            "name": "weekly-habit-article-quotes",
+            "title": "Weekly habit article quotes",
+            "description": "Assuming a weekly cadence, every Monday at 9am search for articles about building better habits, read the relevant results, and add one short sourced quote from each to the habits notes file.",
+            "summary": "Collect short, sourced quotes from current habit-building articles in a local notes file.",
+            "generalization": "Treat the two visited articles as examples: on each run, inspect every relevant article result on the first search-results page, choose one brief representative sentence per article, and preserve the existing notes while avoiding duplicate source-and-quote entries.",
+            "trigger": {
+              "type": "schedule",
+              "schedule": {
+                "kind": "single",
+                "days": [
+                  1
+                ],
+                "time": {
+                  "hour": 9,
+                  "minute": 0
+                },
+                "naturalLanguage": "every Monday at 9am"
+              }
+            },
+            "values": [
+              {
+                "id": "topic",
+                "name": "Research topic",
+                "value": "building better habits"
+              },
+              {
+                "id": "notes_filename",
+                "name": "Notes filename",
+                "value": "habits-notes.txt"
+              }
+            ],
+            "steps": [
+              {
+                "label": "Find current articles",
+                "prompt": "Use web_fetch to read a public web search results page for {{topic}} (URL-encode the topic). Collect every relevant article result on the first results page, recording each article URL and title. If that search page cannot be fetched, use another publicly readable search results page for the same topic; stop with a clear failure if no results page is accessible."
+              },
+              {
+                "label": "Read and select quotes",
+                "prompt": "Use web_fetch to read each collected article URL. From every accessible, relevant article, select one representative verbatim sentence of at most 25 words and retain its title and source URL. Skip inaccessible pages and report them; do not invent quotes or source details."
+              },
+              {
+                "label": "Update local notes",
+                "prompt": "On this Mac, use glob to locate {{notes_filename}} in the user's files, then view it to preserve its existing contents. Use the bash device shell to append a dated section with each new quote, article title, and source URL, skipping entries already present by source URL and quote. If the file does not exist, create {{notes_filename}} in the user's Documents folder and write the dated section there. Report the file path and number of quotes added."
+              }
+            ]
+          },
+          "success": true,
+          "responseHash": "75d0fbcf137987bb8a4d5ea9254ecd8852f3f381636ec989855dba03aef94b4a",
+          "rejection": null,
+          "durationMs": 0
+        }
+      ],
+      "rejectedProposals": [],
+      "unexpectedTools": [],
+      "finalMessage": "The proposed automation is ready for review. It assumes **every Monday at 9am** and would add short, sourced quotes about building better habits to `habits-notes.txt`. You can change the schedule or any step before approving it.",
+      "plan": {
+        "architecture": "scout",
+        "name": "weekly-habit-article-quotes",
+        "title": "Weekly habit article quotes",
+        "description": "Assuming a weekly cadence, every Monday at 9am search for articles about building better habits, read the relevant results, and add one short sourced quote from each to the habits notes file.",
+        "summary": "Collect short, sourced quotes from current habit-building articles in a local notes file.",
+        "generalization": "Treat the two visited articles as examples: on each run, inspect every relevant article result on the first search-results page, choose one brief representative sentence per article, and preserve the existing notes while avoiding duplicate source-and-quote entries.",
+        "trigger": {
+          "type": "schedule",
+          "schedule": {
+            "kind": "single",
+            "naturalLanguage": "every Monday at 9am",
+            "days": [
+              1
+            ],
+            "time": {
+              "hour": 9,
+              "minute": 0
+            }
+          },
+          "condition": ""
+        },
+        "values": [
+          {
+            "id": "topic",
+            "name": "Research topic",
+            "value": "building better habits"
+          },
+          {
+            "id": "notes_filename",
+            "name": "Notes filename",
+            "value": "habits-notes.txt"
+          }
+        ],
+        "steps": [
+          {
+            "label": "Find current articles",
+            "prompt": "Use web_fetch to read a public web search results page for {{topic}} (URL-encode the topic). Collect every relevant article result on the first results page, recording each article URL and title. If that search page cannot be fetched, use another publicly readable search results page for the same topic; stop with a clear failure if no results page is accessible."
+          },
+          {
+            "label": "Read and select quotes",
+            "prompt": "Use web_fetch to read each collected article URL. From every accessible, relevant article, select one representative verbatim sentence of at most 25 words and retain its title and source URL. Skip inaccessible pages and report them; do not invent quotes or source details."
+          },
+          {
+            "label": "Update local notes",
+            "prompt": "On this Mac, use glob to locate {{notes_filename}} in the user's files, then view it to preserve its existing contents. Use the bash device shell to append a dated section with each new quote, article title, and source URL, skipping entries already present by source URL and quote. If the file does not exist, create {{notes_filename}} in the user's Documents folder and write the dated section there. Report the file path and number of quotes added."
+          }
+        ],
+        "model": "",
+        "skillNames": []
+      },
+      "score": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"web_fetch\"",
+            "pass": true,
+            "detail": "found \"web_fetch\""
+          },
+          {
+            "name": "uses one of: \"docx\", \"write\", \"note\", \".md\", \".txt\"",
+            "pass": true,
+            "detail": "found \"write\""
+          }
+        ]
+      },
+      "planIssues": [],
+      "exportSha256": "c36bcec3b846d804040987420f6b77a1a834787b5146f7fb23cc6f035697463d",
+      "analysisRead": true,
+      "ok": true,
+      "durationMs": 49028
+    },
+    {
+      "round": 1,
+      "id": "directory-lookup",
+      "status": "pass",
+      "threadId": "01a0f7e4-5a6a-7573-a9a5-b15c32f3c70a",
+      "model": "gpt-6-sol",
+      "modelProvider": "openai",
+      "threadDefaultReasoningEffort": "max",
+      "turnStatus": "completed",
+      "turnError": null,
+      "tokenUsage": {
+        "totalTokens": 24136,
+        "inputTokens": 24078,
+        "cachedInputTokens": 22912,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 58,
+        "reasoningOutputTokens": 0
+      },
+      "toolTrace": [
+        {
+          "name": "get_analysis",
+          "arguments": {},
+          "success": true,
+          "responseHash": "4f6b5b8545cca902928ba3d568d993074915c5d1deed786ecbbf6735071966b1",
+          "rejection": null,
+          "durationMs": 0
+        },
+        {
+          "name": "get_timeline",
+          "arguments": {},
+          "success": true,
+          "responseHash": "6266e077e3f9eed8af1148085cbd01e877356abea2f13b911e777ef58ba8091c",
+          "rejection": null,
+          "durationMs": 2
+        },
+        {
+          "name": "propose_automation_plan",
+          "arguments": {
+            "name": "weekly-team-directory-contacts",
+            "title": "Refresh team directory contacts",
+            "description": "Assuming a weekly refresh is useful, run every Monday at 9am to collect everyone in the company team directory and update a contacts spreadsheet with names, email addresses, and phone numbers.",
+            "summary": "Refresh a contacts spreadsheet from the full team directory, updating existing contacts and adding new ones.",
+            "generalization": "The two copied people were examples from one run. At each run, traverse every person and every directory page, extract the same three contact fields, and upsert the whole collection by email while preserving other spreadsheet rows.",
+            "trigger": {
+              "type": "schedule",
+              "schedule": {
+                "kind": "single",
+                "days": [
+                  1
+                ],
+                "time": {
+                  "hour": 9,
+                  "minute": 0
+                },
+                "naturalLanguage": "every Monday at 9am"
+              }
+            },
+            "values": [
+              {
+                "id": "directory_url",
+                "name": "Team directory URL",
+                "value": "https://intranet.acme.example/directory"
+              }
+            ],
+            "skillNames": [
+              "xlsx"
+            ],
+            "steps": [
+              {
+                "label": "Read the directory",
+                "prompt": "Use web_fetch to read {{directory_url}} and follow its directory pagination or profile links. If this intranet requires an already authorized browser session, use browser_navigate and browser_snapshot, then browser_click as needed to traverse it. If neither route has access, stop and report the directory access prerequisite."
+              },
+              {
+                "label": "Collect every contact",
+                "prompt": "From every person in the directory, extract the name, email address, and phone number. Cover all pages and profiles, normalize whitespace and phone text, deduplicate by email, and retain missing fields as blank rather than inventing values."
+              },
+              {
+                "label": "Update contacts spreadsheet",
+                "prompt": "Use glob to locate the existing Contacts .xlsx or .csv workbook on the device, then invoke the xlsx built-in skill to read it and upsert every collected contact by email into Name, Email, and Phone columns. Preserve unrelated columns and existing rows, updating matching contacts and appending new ones; do not delete contacts absent from the directory. If the only contacts file is an unsupported Numbers document, stop and report that a supported .xlsx or .csv workbook is required."
+              }
+            ]
+          },
+          "success": true,
+          "responseHash": "75d0fbcf137987bb8a4d5ea9254ecd8852f3f381636ec989855dba03aef94b4a",
+          "rejection": null,
+          "durationMs": 1
+        }
+      ],
+      "rejectedProposals": [],
+      "unexpectedTools": [],
+      "finalMessage": "I’ve proposed a weekly Monday 9am refresh for review. It covers everyone in the directory, updates existing contacts by email, and adds new ones. The plan also flags that a supported Excel or CSV contacts file is needed if the existing sheet is only in Numbers.",
+      "plan": {
+        "architecture": "scout",
+        "name": "weekly-team-directory-contacts",
+        "title": "Refresh team directory contacts",
+        "description": "Assuming a weekly refresh is useful, run every Monday at 9am to collect everyone in the company team directory and update a contacts spreadsheet with names, email addresses, and phone numbers.",
+        "summary": "Refresh a contacts spreadsheet from the full team directory, updating existing contacts and adding new ones.",
+        "generalization": "The two copied people were examples from one run. At each run, traverse every person and every directory page, extract the same three contact fields, and upsert the whole collection by email while preserving other spreadsheet rows.",
+        "trigger": {
+          "type": "schedule",
+          "schedule": {
+            "kind": "single",
+            "naturalLanguage": "every Monday at 9am",
+            "days": [
+              1
+            ],
+            "time": {
+              "hour": 9,
+              "minute": 0
+            }
+          },
+          "condition": ""
+        },
+        "values": [
+          {
+            "id": "directory_url",
+            "name": "Team directory URL",
+            "value": "https://intranet.acme.example/directory"
+          }
+        ],
+        "steps": [
+          {
+            "label": "Read the directory",
+            "prompt": "Use web_fetch to read {{directory_url}} and follow its directory pagination or profile links. If this intranet requires an already authorized browser session, use browser_navigate and browser_snapshot, then browser_click as needed to traverse it. If neither route has access, stop and report the directory access prerequisite."
+          },
+          {
+            "label": "Collect every contact",
+            "prompt": "From every person in the directory, extract the name, email address, and phone number. Cover all pages and profiles, normalize whitespace and phone text, deduplicate by email, and retain missing fields as blank rather than inventing values."
+          },
+          {
+            "label": "Update contacts spreadsheet",
+            "prompt": "Use glob to locate the existing Contacts .xlsx or .csv workbook on the device, then invoke the xlsx built-in skill to read it and upsert every collected contact by email into Name, Email, and Phone columns. Preserve unrelated columns and existing rows, updating matching contacts and appending new ones; do not delete contacts absent from the directory. If the only contacts file is an unsupported Numbers document, stop and report that a supported .xlsx or .csv workbook is required."
+          }
+        ],
+        "model": "",
+        "skillNames": [
+          "xlsx"
+        ]
+      },
+      "score": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"web_fetch\", \"workiq_search_people\", \"workiq\"",
+            "pass": true,
+            "detail": "found \"web_fetch\""
+          },
+          {
+            "name": "uses one of: \"xlsx\"",
+            "pass": true,
+            "detail": "found \"xlsx\""
+          },
+          {
+            "name": "avoids \"playwright\"",
+            "pass": true
+          }
+        ]
+      },
+      "planIssues": [],
+      "exportSha256": "c7073b7cbbea56c8144d9e1deaec262d28e7484d50e580c11e9472444e8cd9de",
+      "analysisRead": true,
+      "ok": true,
+      "durationMs": 78741
+    },
+    {
+      "round": 1,
+      "id": "expense-report",
+      "status": "pass",
+      "threadId": "01a0f7e5-8e03-7ca0-b1c6-ad9f25925fb6",
+      "model": "gpt-6-sol",
+      "modelProvider": "openai",
+      "threadDefaultReasoningEffort": "max",
+      "turnStatus": "completed",
+      "turnError": null,
+      "tokenUsage": {
+        "totalTokens": 25142,
+        "inputTokens": 25084,
+        "cachedInputTokens": 24192,
+        "cacheWriteInputTokens": 0,
+        "outputTokens": 58,
+        "reasoningOutputTokens": 0
+      },
+      "toolTrace": [
+        {
+          "name": "get_analysis",
+          "arguments": {},
+          "success": true,
+          "responseHash": "64b101184673ee75e8dc5ad5dd1a95a2c7e88a6be1b5bbbed7951e5eaf0bd495",
+          "rejection": null,
+          "durationMs": 0
+        },
+        {
+          "name": "get_timeline",
+          "arguments": {},
+          "success": true,
+          "responseHash": "ffcb6207cb4b9e5e6529a3e888d6f83f58d3738c41f5c3c7e22cc8f3a36e8b06",
+          "rejection": null,
+          "durationMs": 1
+        },
+        {
+          "name": "propose_automation_plan",
+          "arguments": {
+            "name": "weekly-trip-expense-reconciliation",
+            "title": "Weekly trip expense reconciliation",
+            "description": "Assuming a weekly cadence, every Monday at 9am review new American Express business-trip charges, verify their receipt PDFs, file matched expenses in Expensify, and submit completed trip reports.",
+            "summary": "Match new business-trip card charges to receipts, file each verified expense, and submit completed reports.",
+            "generalization": "The three recorded charges are examples. On each run, inspect all unfiled business-trip charges in the relevant activity period, match each to a local receipt, and process every verified charge while avoiding duplicate expenses and submissions.",
+            "trigger": {
+              "type": "schedule",
+              "schedule": {
+                "kind": "single",
+                "days": [
+                  1
+                ],
+                "time": {
+                  "hour": 9,
+                  "minute": 0
+                },
+                "naturalLanguage": "every Monday at 9am"
+              }
+            },
+            "values": [
+              {
+                "id": "amex_activity_url",
+                "name": "American Express activity",
+                "value": "https://www.americanexpress.com/activity"
+              },
+              {
+                "id": "expensify_new_expense_url",
+                "name": "Expensify new expense",
+                "value": "https://www.expensify.com/expenses/new"
+              },
+              {
+                "id": "expensify_submit_url",
+                "name": "Expensify report submission",
+                "value": "https://www.expensify.com/reports/submit"
+              }
+            ],
+            "steps": [
+              {
+                "label": "Collect trip charges",
+                "prompt": "Use browser_navigate to open {{amex_activity_url}} and browser_snapshot before interacting with the authenticated card activity UI, because this private web workflow has no evidenced CLI or API. Read all new, unfiled business-trip charges since the previous run, capturing merchant, date, currency, and amount. If the signed-in account is unavailable, stop with a clear prerequisite failure."
+              },
+              {
+                "label": "Match receipt PDFs",
+                "prompt": "Use glob to locate receipt PDFs on the device and view to read each candidate. Match every collected charge by merchant, date, currency, and amount; confirm that the receipt supports a business trip and capture the details needed for the expense. Do not file charges without a reliable receipt match; retain them for a later run and report the exceptions."
+              },
+              {
+                "label": "File verified expenses",
+                "prompt": "Use browser_navigate to open {{expensify_new_expense_url}}, browser_snapshot before each UI action, and browser_fill_form, browser_type, or browser_click as needed because Expensify's recorded workflow is browser-only. Check existing expenses and reports for duplicates, then create one expense for every newly verified charge, enter the receipt-supported date, merchant, amount, currency, and business purpose, attach its matching PDF, and associate it with the correct trip report."
+              },
+              {
+                "label": "Submit completed reports",
+                "prompt": "Use browser_navigate to open {{expensify_submit_url}} and browser_snapshot before interacting with the Expensify UI. Review each trip report containing the newly filed expenses against the verified charges and receipts, then explicitly submit each complete, unsubmitted report once. Leave incomplete reports unsubmitted and report any unmatched charges, filing failures, or submission failures."
+              }
+            ]
+          },
+          "success": false,
+          "responseHash": "6d7706c14e66f2b6d1dae66668b1f0dd0338040d93e7afd52e65fbef2a9bf861",
+          "rejection": "Native-tool plan validation failed. Revise the affected prompts:\n- step 3 [receipt-step-tool]: Name view in the step that reads receipt PDFs; an unrelated step cannot supply its file-read tool.",
+          "durationMs": 1
+        },
+        {
+          "name": "propose_automation_plan",
+          "arguments": {
+            "name": "weekly-trip-expense-reconciliation",
+            "title": "Weekly trip expense reconciliation",
+            "description": "Assuming a weekly cadence, every Monday at 9am review new American Express business-trip charges, verify their receipt PDFs, file matched expenses in Expensify, and submit completed trip reports.",
+            "summary": "Match new business-trip card charges to receipts, file each verified expense, and submit completed reports.",
+            "generalization": "The three recorded charges are examples. On each run, inspect all unfiled business-trip charges in the relevant activity period, match each to a local receipt, and process every verified charge while avoiding duplicate expenses and submissions.",
+            "trigger": {
+              "type": "schedule",
+              "schedule": {
+                "kind": "single",
+                "days": [
+                  1
+                ],
+                "time": {
+                  "hour": 9,
+                  "minute": 0
+                },
+                "naturalLanguage": "every Monday at 9am"
+              }
+            },
+            "values": [
+              {
+                "id": "amex_activity_url",
+                "name": "American Express activity",
+                "value": "https://www.americanexpress.com/activity"
+              },
+              {
+                "id": "expensify_new_expense_url",
+                "name": "Expensify new expense",
+                "value": "https://www.expensify.com/expenses/new"
+              },
+              {
+                "id": "expensify_submit_url",
+                "name": "Expensify report submission",
+                "value": "https://www.expensify.com/reports/submit"
+              }
+            ],
+            "steps": [
+              {
+                "label": "Collect trip charges",
+                "prompt": "Use browser_navigate to open {{amex_activity_url}} and browser_snapshot before interacting with the authenticated card activity UI, because this private web workflow has no evidenced CLI or API. Read all new, unfiled business-trip charges since the previous run, capturing merchant, date, currency, and amount. If the signed-in account is unavailable, stop with a clear prerequisite failure."
+              },
+              {
+                "label": "Match receipt PDFs",
+                "prompt": "Use glob to locate receipt PDFs on the device and view to read each candidate. Match every collected charge by merchant, date, currency, and amount; confirm that the receipt supports a business trip and capture the details needed for the expense. Do not file charges without a reliable receipt match; retain them for a later run and report the exceptions."
+              },
+              {
+                "label": "File verified expenses",
+                "prompt": "Use view to confirm each matched receipt PDF before attaching it. Use browser_navigate to open {{expensify_new_expense_url}}, browser_snapshot before each UI action, and browser_fill_form, browser_type, or browser_click as needed because Expensify's recorded workflow is browser-only. Check existing expenses and reports for duplicates, then create one expense for every newly verified charge, enter the receipt-supported date, merchant, amount, currency, and business purpose, attach its matching PDF, and associate it with the correct trip report."
+              },
+              {
+                "label": "Submit completed reports",
+                "prompt": "Use browser_navigate to open {{expensify_submit_url}} and browser_snapshot before interacting with the Expensify UI. Review each trip report containing the newly filed expenses against the verified charges and receipts, then explicitly submit each complete, unsubmitted report once. Leave incomplete reports unsubmitted and report any unmatched charges, filing failures, or submission failures."
+              }
+            ]
+          },
+          "success": true,
+          "responseHash": "75d0fbcf137987bb8a4d5ea9254ecd8852f3f381636ec989855dba03aef94b4a",
+          "rejection": null,
+          "durationMs": 1
+        }
+      ],
+      "rejectedProposals": [
+        "Native-tool plan validation failed. Revise the affected prompts:\n- step 3 [receipt-step-tool]: Name view in the step that reads receipt PDFs; an unrelated step cannot supply its file-read tool."
+      ],
+      "unexpectedTools": [],
+      "finalMessage": "The automation plan is ready for review. It proposes running **every Monday at 9am** to match new business-trip card charges with receipt PDFs, file verified expenses in Expensify, and submit completed reports. You can adjust the schedule or steps before approving it.",
+      "plan": {
+        "architecture": "scout",
+        "name": "weekly-trip-expense-reconciliation",
+        "title": "Weekly trip expense reconciliation",
+        "description": "Assuming a weekly cadence, every Monday at 9am review new American Express business-trip charges, verify their receipt PDFs, file matched expenses in Expensify, and submit completed trip reports.",
+        "summary": "Match new business-trip card charges to receipts, file each verified expense, and submit completed reports.",
+        "generalization": "The three recorded charges are examples. On each run, inspect all unfiled business-trip charges in the relevant activity period, match each to a local receipt, and process every verified charge while avoiding duplicate expenses and submissions.",
+        "trigger": {
+          "type": "schedule",
+          "schedule": {
+            "kind": "single",
+            "naturalLanguage": "every Monday at 9am",
+            "days": [
+              1
+            ],
+            "time": {
+              "hour": 9,
+              "minute": 0
+            }
+          },
+          "condition": ""
+        },
+        "values": [
+          {
+            "id": "amex_activity_url",
+            "name": "American Express activity",
+            "value": "https://www.americanexpress.com/activity"
+          },
+          {
+            "id": "expensify_new_expense_url",
+            "name": "Expensify new expense",
+            "value": "https://www.expensify.com/expenses/new"
+          },
+          {
+            "id": "expensify_submit_url",
+            "name": "Expensify report submission",
+            "value": "https://www.expensify.com/reports/submit"
+          }
+        ],
+        "steps": [
+          {
+            "label": "Collect trip charges",
+            "prompt": "Use browser_navigate to open {{amex_activity_url}} and browser_snapshot before interacting with the authenticated card activity UI, because this private web workflow has no evidenced CLI or API. Read all new, unfiled business-trip charges since the previous run, capturing merchant, date, currency, and amount. If the signed-in account is unavailable, stop with a clear prerequisite failure."
+          },
+          {
+            "label": "Match receipt PDFs",
+            "prompt": "Use glob to locate receipt PDFs on the device and view to read each candidate. Match every collected charge by merchant, date, currency, and amount; confirm that the receipt supports a business trip and capture the details needed for the expense. Do not file charges without a reliable receipt match; retain them for a later run and report the exceptions."
+          },
+          {
+            "label": "File verified expenses",
+            "prompt": "Use view to confirm each matched receipt PDF before attaching it. Use browser_navigate to open {{expensify_new_expense_url}}, browser_snapshot before each UI action, and browser_fill_form, browser_type, or browser_click as needed because Expensify's recorded workflow is browser-only. Check existing expenses and reports for duplicates, then create one expense for every newly verified charge, enter the receipt-supported date, merchant, amount, currency, and business purpose, attach its matching PDF, and associate it with the correct trip report."
+          },
+          {
+            "label": "Submit completed reports",
+            "prompt": "Use browser_navigate to open {{expensify_submit_url}} and browser_snapshot before interacting with the Expensify UI. Review each trip report containing the newly filed expenses against the verified charges and receipts, then explicitly submit each complete, unsubmitted report once. Leave incomplete reports unsubmitted and report any unmatched charges, filing failures, or submission failures."
+          }
+        ],
+        "model": "",
+        "skillNames": []
+      },
+      "score": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"pdf\", \"view\", \"expense-report\"",
+            "pass": true,
+            "detail": "found \"pdf\""
+          }
+        ]
+      },
+      "planIssues": [],
+      "exportSha256": "42f8f7d2ead9845922fc38f544dd925578270c571252cb196dcbaeea85b6fc65",
+      "analysisRead": true,
+      "ok": true,
+      "durationMs": 59129
+    }
+  ],
+  "interruptionReason": "Stopped after finding Expensify/Dynamics skill and private Amex statement tool-selection defects; seven of twenty scheduled samples completed. These results predate legacy-native-tools.7 and legacy-automation.7."
+}
