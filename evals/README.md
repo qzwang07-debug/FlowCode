@@ -138,6 +138,25 @@ npm run eval:builder -- --keep             # print the temp sessions dir
 npm run eval:builder -- --model=<model-id> # override the builder model
 ```
 
+The commands above always use the product's **Copilot SDK**. `--model` only
+changes the model requested through Copilot; it does not switch provider. For
+the separate ChatGPT subscription evaluation of the fixed Scout corpus, use
+the test-only Codex app-server driver instead:
+
+```bash
+node --experimental-transform-types --no-warnings --import ./evals/register.mjs evals/builder/codex-run.ts --probe
+node --experimental-transform-types --no-warnings --import ./evals/register.mjs evals/builder/codex-run.ts --rounds=2
+```
+
+The driver requires an existing ChatGPT Codex login and refuses API-key
+environment variables. It calls the real read/proposal handlers and the
+deterministic export boundary, but Codex replaces the Copilot model loop and
+foundation/system context. It writes private working artifacts under ignored
+`evals/results/`; publish only a reviewed, redacted evidence projection. See
+`docs/baselines/2026-10-01-legacy-builder-codex-acceptance.md` for the first
+complete two-round result and its limits. This driver does not change FlowCode's
+product Coding Harness or default model.
+
 **How it isolates the builder.** Each scenario seeds a **fixed, approved
 `Analysis`** (plus a minimal valid `bundle.json`) into a temp sessions dir, then
 runs the real `AutomationBuilder.build()` for a chosen `architecture` and
@@ -149,9 +168,28 @@ for *explaining* which tool it avoided.
 
 **Rubric** (`score.ts`): a scenario passes only if the steps satisfy every
 `mustUseAny` group (each group is a set of synonyms; at least one must appear) and
-contain **none** of the `forbidden` tokens — all case-insensitive substring
-matches over the step `label` + `prompt` text. A forbidden hit fails the scenario
-outright.
+contain **none** of the `forbidden` tokens. Native-tool references are
+case/Markdown/whitespace normalized and must be positive references; a negated
+tool, URL or `.xlsx` filename does not invoke a tool. Output hints such as a note
+or `.md` retain their original literal meaning. Every original required group
+and forbidden token remains in place. A `browser_` prohibition also catches
+informal UI replay ("use browser", "navigate to the PR page", Chrome), so mentioning
+`gh` alongside a browser comment step no longer earns a pass.
+
+The harness additionally checks the production `nativeToolPlanIssues` policy on
+**prompts**, with the approved analysis; labels/summary/skillNames cannot satisfy
+this check. The proposal tool rejects invalid candidates before publishing them
+and the export path checks user-edited tiles again without rewriting them. This
+bounded legacy Scout policy is not a general natural-language verifier, OS sandbox
+or the future FlowCode Playwright project Builder.
+
+Reports retain prompt/policy/scorer versions, the complete system-prompt and
+scenario hashes, model/provider, durations and rejected-proposal diagnostics.
+One run is one trial per case (a rejected proposal may be corrected within the
+same bounded agent turn). For repeatability, run the full unchanged suite twice
+with the same model and versions and retain **both** reports, including failures.
+Copilot account cost may be unavailable; do not report it as zero. These are
+plan-only tests: no PR comments, deployments or other business actions execute.
 
 **Coverage.** Ten scenarios (`scenarios.ts` + `native-tool-scenarios.ts`), spanning
 macOS and Windows. Two guard the original **gh-vs-browser** regression directly

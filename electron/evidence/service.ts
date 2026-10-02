@@ -20,6 +20,7 @@ import { isValidSessionId, sessionDir, sessionsRoot } from "../recorder/session-
 import type { ProjectManager } from "../projects/project-manager";
 import { scanSensitiveTexts } from "../sensitive/scanner";
 import { writeBlueprintExport } from "./exporter";
+import { BlueprintRevisionStore } from "../analyzer/revision-store";
 import {
   BLUEPRINT_FILE,
   BLUEPRINT_V2_FILE,
@@ -139,7 +140,7 @@ export class EvidenceService {
     await writeBlueprintExport({
       destination,
       sessionDir: sessionDir(sessionId),
-      blueprint: processed.blueprintV2,
+      blueprint: (await new BlueprintRevisionStore(sessionDir(sessionId)).current(processed.blueprintV2)).blueprint,
       evidenceIndex: snapshot.index,
       browserEvents: processed.evidence.events
         .filter((event) => event.source === "browser" || event.source === "cdp")

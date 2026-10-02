@@ -15,13 +15,15 @@ import type { SkillArchitecture } from "../../common/skill";
 export interface BuilderRubric {
   /**
    * Each group is a set of synonyms; the built output must contain at least one
-   * member of every group (case-insensitive). Use it to require the RIGHT native
+   * member of every group (case/format normalized, positive tool reference). Use
+   * it to require the RIGHT native
    * tool, e.g. [["gh "], ["gh issue", "gh api"]].
    */
   mustUseAny: string[][];
   /**
    * None of these may appear in the built output (case-insensitive) — the signals
    * of the WRONG tool, e.g. replaying the UI ("playwright", "browser_", "click").
+   * A browser_ prohibition also catches informal browser UI instructions.
    */
   forbidden: string[];
 }

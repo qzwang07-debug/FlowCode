@@ -16,15 +16,19 @@
 //   --keep             print the temp sessions dir (artifacts kept for inspection)
 //   --model=<id>       override the builder model
 
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 
 import { AutomationBuilder } from "../../electron/automationbuilder/builder";
+import { AUTOMATION_BUILDER_INSTRUCTIONS, AUTOMATION_BUILDER_PROMPT_VERSION } from "../../electron/automationbuilder/instructions";
+import { NATIVE_TOOL_POLICY_VERSION, nativeToolPlanIssues, type NativeToolPlanIssue } from "../../electron/automationbuilder/native-tool-policy";
+import { requireCatalogue } from "../../electron/architectures/catalogue-registry";
 import type { AutomationPlan } from "../../common/automation";
 import { seedScenario } from "../lib/seed";
 import { builderScenarios } from "./scenarios";
-import { scoreBuilder, type BuilderScoreResult } from "./score";
+import { BUILDER_SCORER_VERSION, scoreBuilder, type BuilderScoreResult } from "./score";
 
 interface Flags {
   only: Set<string> | null;
@@ -50,6 +54,9 @@ interface Result {
   durationMs: number;
   plan?: AutomationPlan;
   score?: BuilderScoreResult;
+  planIssues?: NativeToolPlanIssue[];
+  /** Validation rejections are retained, not silently discarded as successes. */
+  rejectedProposals: string[];
 }
 
 /** The actionable text we score: the ordered step labels + prompts. */
@@ -58,6 +65,15 @@ function stepsText(plan: AutomationPlan): string {
 }
 
 const bar = "─".repeat(64);
+const hash = (text: string) => createHash("sha256").update(text).digest("hex");
+// Capture before any model call: later workspace edits cannot relabel the run.
+const sourceHashes = Object.fromEntries([
+  "../../electron/automationbuilder/builder.ts",
+  "../../electron/automationbuilder/tools.ts",
+  "../../electron/automationbuilder/instructions.ts",
+  "../../electron/automationbuilder/native-tool-policy.ts",
+  "./score.ts",
+].map((file) => [file, hash(readFileSync(new URL(file, import.meta.url), "utf8").replace(/\r\n/g, "\n"))]));
 
 async function main(): Promise<void> {
   const flags = parseFlags(process.argv.slice(2));
@@ -79,21 +95,25 @@ async function main(): Promise<void> {
   console.error(`${selected.length} scenario(s) · sessions root: ${root}`);
   console.error(bar);
 
+  let current: Result | undefined;
   const builder = new AutomationBuilder((p) => {
     if (p.message) process.stderr.write(`   · [${p.sessionId}] ${p.message}\n`);
+    if (p.message.startsWith("Rejected plan: ")) current?.rejectedProposals.push(p.message.slice(15));
   });
 
   const results: Result[] = [];
   for (const scenario of selected) {
     console.error(`\n▶ ${scenario.id} — ${scenario.title}`);
     const started = Date.now();
-    const res: Result = { id: scenario.id, title: scenario.title, ok: false, durationMs: 0 };
+    const res: Result = { id: scenario.id, title: scenario.title, ok: false, durationMs: 0, rejectedProposals: [] };
+    current = res;
     try {
       seedScenario(root, scenario);
       const plan = await builder.build({ sessionId: scenario.id, architecture: scenario.architecture });
       res.plan = plan;
       res.score = scoreBuilder(stepsText(plan), scenario.rubric);
-      res.ok = res.score.pass;
+      res.planIssues = nativeToolPlanIssues(plan, scenario.analysis);
+      res.ok = res.score.pass && res.planIssues.length === 0;
     } catch (err) {
       res.error = err instanceof Error ? err.message : String(err);
     }
@@ -107,7 +127,18 @@ async function main(): Promise<void> {
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   const outFile = path.join(process.cwd(), "evals", "results", `builder-${stamp}.json`);
   mkdirSync(path.dirname(outFile), { recursive: true });
-  writeFileSync(outFile, JSON.stringify({ at: stamp, root, results }, null, 2));
+  const catalogues = [...new Set(selected.map((s) => s.architecture))].map((architecture) => {
+    const catalogue = requireCatalogue(architecture, "automation");
+    return { architecture, version: catalogue.version, systemPromptHash: hash(`${AUTOMATION_BUILDER_INSTRUCTIONS}\n\n${catalogue.content}`.trim()) };
+  });
+  writeFileSync(outFile, JSON.stringify({ at: stamp, root, metadata: {
+    provider: "github-copilot", model: flags.model ?? process.env.SKILL_RECORDER_MODEL ?? "provider-default",
+    promptVersion: AUTOMATION_BUILDER_PROMPT_VERSION, scorerVersion: BUILDER_SCORER_VERSION,
+    policyVersion: NATIVE_TOOL_POLICY_VERSION, scenarioHash: hash(JSON.stringify(selected)),
+    sourceHashes,
+    samples: selected.length, repeats: 1, catalogues, cost: "unavailable (not zero)",
+    mode: "plan-only; no business actions executed",
+  }, results }, null, 2));
 
   console.error(`\n${bar}\nSummary`);
   const passed = results.filter((r) => r.ok).length;
@@ -135,6 +166,7 @@ function printResult(r: Result): void {
   for (const c of r.score?.checks ?? []) {
     if (!c.pass) console.error(`     ✗ ${c.name}${c.detail ? ` — ${c.detail}` : ""}`);
   }
+  for (const issue of r.planIssues ?? []) console.error(`     ✗ [${issue.code}] ${issue.message}`);
 }
 
 main().catch((err) => {

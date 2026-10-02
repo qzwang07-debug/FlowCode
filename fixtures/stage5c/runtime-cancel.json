@@ -1,0 +1,22 @@
+{
+  "runtime": "1.18.29",
+  "actualRuntimeCancellation": "pass",
+  "previewTokenInvalidated": true,
+  "originalBlueprintRetained": true,
+  "result": {
+    "schemaVersion": 1,
+    "id": "59f2ee6e-21e5-4ac9-bba3-2548aef42d5c",
+    "sessionId": "fixture-session",
+    "phase": "canceled",
+    "startedAt": 1790851494398,
+    "finishedAt": 1790851498916,
+    "elapsedMs": 4518,
+    "provider": "flowcode-provider",
+    "model": "protocol-fixture",
+    "promptVersion": "flowcode-analyzer-5c.9",
+    "schemaVersionName": "blueprint-v2.5c.4",
+    "baseHash": "a68c4356073d2068c34d357e0c14b69bff88ffc80011af9cd08be53873b8b2e9",
+    "settingsHash": "8aaa0a0a45f1c9db04be88619e1732bb8063aa6bd1b06f4e0c9e22f848e417b8",
+    "error": "Analysis canceled/time limit reached; authorization revoked. Prior review and evidence retained."
+  }
+}

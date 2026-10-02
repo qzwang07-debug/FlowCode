@@ -7,6 +7,7 @@ release
 .compliance-review
 .stage5a/
 .stage5b/
+.stage5c/
 .flowcode-build/
 *.log
 .DS_Store

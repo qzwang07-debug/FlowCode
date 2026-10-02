@@ -1,0 +1,1119 @@
+{
+  "rawReport": "builder-2026-10-01T13-20-34-602Z.json",
+  "rawReportSha256": "d8a29adbc413ea21f563bc470b11e9bc8ed2a98c88746571099771a0fe174592",
+  "at": "2026-10-01T13-20-34-602Z",
+  "metadata": {
+    "provider": "github-copilot",
+    "model": "gpt-6.1-sol",
+    "promptVersion": "legacy-automation.4",
+    "scorerVersion": "native-tools.2",
+    "policyVersion": "legacy-native-tools.3",
+    "scenarioHash": "a020a4cbcfadea5835993afc2e91ba137e12b7c111beb5f5b1fb59f643a30675",
+    "samples": 10,
+    "repeats": 1,
+    "catalogues": [
+      {
+        "architecture": "scout",
+        "version": "2026-07-26",
+        "systemPromptHash": "d994b4d38c0462ec30aa0eeea98372190b80181410e52108ec2ccf52adb1a4ce"
+      }
+    ],
+    "cost": "unavailable (not zero)",
+    "mode": "plan-only; no business actions executed"
+  },
+  "kind": "development",
+  "originalPassing": 10,
+  "currentPassing": 9,
+  "currentAssessment": "Offline reassessment under the final policy, NOT a new model run",
+  "cases": [
+    {
+      "id": "github-issue-triage",
+      "originalOk": true,
+      "originalScore": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"gh \"",
+            "pass": true,
+            "detail": "found \"gh \""
+          },
+          {
+            "name": "uses one of: \"gh issue\", \"gh api\"",
+            "pass": true,
+            "detail": "found \"gh issue\""
+          },
+          {
+            "name": "avoids \"playwright\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"browser_\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"click\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"navigate to github\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"github.com/acme\"",
+            "pass": true
+          }
+        ]
+      },
+      "durationMs": 25419,
+      "plan": {
+        "architecture": "scout",
+        "name": "triage-unassigned-bugs",
+        "title": "Triage unassigned bug issues",
+        "description": "Automatically triage unassigned bug issues in the acme/api repository by commenting with a request for reproduction steps and version info, then adding the 'needs-info' label.",
+        "summary": "This automation runs daily to find all open, unassigned bug issues in acme/api and requests additional info from reporters by posting a standardized comment and applying the 'needs-info' label, keeping bug triage fresh without manual intervention.",
+        "generalization": "The recording processed one issue (#214) through a search → read → comment → label cycle. The automation generalizes by querying for ALL open unassigned bug issues (not just one), then iterating through each to apply the same comment and label — the comment text and label name stay fixed, but the issue numbers vary per run.",
+        "trigger": {
+          "type": "schedule",
+          "schedule": {
+            "kind": "single",
+            "naturalLanguage": "every weekday at 9:00 AM",
+            "days": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "time": {
+              "hour": 9,
+              "minute": 0
+            }
+          },
+          "condition": ""
+        },
+        "values": [
+          {
+            "id": "repo",
+            "name": "Target repository",
+            "value": "acme/api"
+          },
+          {
+            "id": "comment_text",
+            "name": "Request comment",
+            "value": "Thanks for the report! Could you share exact reproduction steps and the version you're on?"
+          },
+          {
+            "id": "label",
+            "name": "Triage label",
+            "value": "needs-info"
+          }
+        ],
+        "steps": [
+          {
+            "label": "Find all open unassigned bug issues",
+            "prompt": "Use gh issue list -R {{repo}} --label bug --state open --search 'no:assignee' to retrieve all open bug issues with no assignee. Parse the output to extract the issue numbers."
+          },
+          {
+            "label": "Post reproduction request and label each issue",
+            "prompt": "For each issue number from the previous step, use gh issue comment to post '{{comment_text}}' and then use gh issue edit to add the {{label}} label. Apply both the comment and label to every issue found."
+          }
+        ],
+        "model": "",
+        "skillNames": []
+      },
+      "rejectedProposals": [
+        "Native-tool plan validation failed. Revise the affected prompts:\n- plan [github-tool]: Name the matching gh command (gh issue/pr/release/repo/api), not a generic browser or CLI.\n- plan [github-comment-tool]: GitHub supports comments: use gh issue comment or the corresponding gh api request.\n- step 1 [github-step-tool]: Name the matching gh command in this GitHub action prompt; a different step cannot supply its tool.\n- step 2 [github-step-tool]: Name the matching gh command in this GitHub action prompt; a different step cannot supply its tool."
+      ],
+      "currentScore": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"gh \"",
+            "pass": true,
+            "detail": "found \"gh \""
+          },
+          {
+            "name": "uses one of: \"gh issue\", \"gh api\"",
+            "pass": true,
+            "detail": "found \"gh issue\""
+          },
+          {
+            "name": "avoids \"playwright\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"browser_\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"click\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"navigate to github\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"github.com/acme\"",
+            "pass": true
+          }
+        ]
+      },
+      "currentPlanIssues": [],
+      "currentOk": true
+    },
+    {
+      "id": "github-stale-pr-nudge",
+      "originalOk": true,
+      "originalScore": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"gh \"",
+            "pass": true,
+            "detail": "found \"gh \""
+          },
+          {
+            "name": "uses one of: \"gh pr\", \"gh api\"",
+            "pass": true,
+            "detail": "found \"gh pr\""
+          },
+          {
+            "name": "avoids \"playwright\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"browser_\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"click\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"navigate to github\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"github.com/acme\"",
+            "pass": true
+          }
+        ]
+      },
+      "durationMs": 14465,
+      "plan": {
+        "architecture": "scout",
+        "name": "github-stale-pr-nudge",
+        "title": "GitHub Stale PR Nudge",
+        "description": "Finds open pull requests in acme/api awaiting review for more than 2 days and posts a reminder comment on each.",
+        "summary": "Daily check for stale PRs awaiting review and post gentle reminder comments to nudge reviewers.",
+        "generalization": "The recording checked one specific PR (338) and posted a reminder to it. The automation generalizes this to query ALL open PRs in acme/api that are awaiting review (review:required status) and have been open for more than 2 days, then iterate over each one to post a reminder comment. The cutoff date is computed at run time (2 days ago from today).",
+        "trigger": {
+          "type": "schedule",
+          "schedule": {
+            "kind": "single",
+            "naturalLanguage": "every weekday at 9am",
+            "days": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "time": {
+              "hour": 9,
+              "minute": 0
+            }
+          },
+          "condition": ""
+        },
+        "values": [
+          {
+            "id": "repo",
+            "name": "Target repo",
+            "value": "acme/api"
+          },
+          {
+            "id": "days_threshold",
+            "name": "Days awaiting review threshold",
+            "value": "2"
+          },
+          {
+            "id": "reminder_message",
+            "name": "Reminder comment text",
+            "value": "Friendly ping — this PR has been waiting on review for a couple of days, could you take a look?"
+          }
+        ],
+        "steps": [
+          {
+            "label": "Query stale open PRs awaiting review",
+            "prompt": "Use the GitHub CLI to list all open pull requests in {{repo}} that are awaiting review and were created more than {{days_threshold}} days ago. Use `gh pr list -R {{repo}} --state open --search 'review:required created:<DATE'` where DATE is {{days_threshold}} days before today in YYYY-MM-DD format. Capture the PR numbers and creation dates."
+          },
+          {
+            "label": "Post reminder comment on each stale PR",
+            "prompt": "For each PR identified in the previous step, post a comment using `gh pr comment <pr_number> -R {{repo}} -b '{{reminder_message}}'`. Execute this for every PR in the list. Stop if there are no PRs to process."
+          }
+        ],
+        "model": "",
+        "skillNames": []
+      },
+      "rejectedProposals": [],
+      "currentScore": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"gh \"",
+            "pass": true,
+            "detail": "found \"gh \""
+          },
+          {
+            "name": "uses one of: \"gh pr\", \"gh api\"",
+            "pass": true,
+            "detail": "found \"gh pr\""
+          },
+          {
+            "name": "avoids \"playwright\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"browser_\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"click\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"navigate to github\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"github.com/acme\"",
+            "pass": true
+          }
+        ]
+      },
+      "currentPlanIssues": [],
+      "currentOk": true
+    },
+    {
+      "id": "web-to-spreadsheet",
+      "originalOk": true,
+      "originalScore": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"web_fetch\"",
+            "pass": true,
+            "detail": "found \"web_fetch\""
+          },
+          {
+            "name": "uses one of: \"xlsx\"",
+            "pass": true,
+            "detail": "found \"xlsx\""
+          }
+        ]
+      },
+      "durationMs": 13468,
+      "plan": {
+        "architecture": "scout",
+        "name": "acme-pricing-sync",
+        "title": "Acme pricing sync to budget",
+        "description": "Fetches the current Pro plan's monthly and annual prices from the Acme pricing page and records both figures in the budget spreadsheet every week.",
+        "summary": "Weekly automation to check Acme's Pro plan pricing and update the budget spreadsheet with the latest figures.",
+        "generalization": "The recording captured one manual fetch and copy-paste. The automation generalizes this into a repeatable weekly check: fetch the public pricing page via native web_fetch (avoiding browser UI), parse both the monthly and annual prices for the Pro plan, and then use the xlsx built-in skill to locate the budget spreadsheet and write the prices to the appropriate cells.",
+        "trigger": {
+          "type": "schedule",
+          "schedule": {
+            "kind": "single",
+            "naturalLanguage": "every Thursday at 9am",
+            "days": [
+              4
+            ],
+            "time": {
+              "hour": 9,
+              "minute": 0
+            }
+          },
+          "condition": ""
+        },
+        "values": [
+          {
+            "id": "acme_pricing_url",
+            "name": "Acme pricing page URL",
+            "value": "https://acme.example/pricing"
+          },
+          {
+            "id": "budget_file",
+            "name": "Budget spreadsheet filename",
+            "value": "Budget 2026.numbers"
+          }
+        ],
+        "steps": [
+          {
+            "label": "Fetch Acme pricing page",
+            "prompt": "Use web_fetch to fetch {{acme_pricing_url}} and extract the Pro plan's monthly price (e.g., $49 / month) and annual price (e.g., $490 / year) from the page content."
+          },
+          {
+            "label": "Update budget spreadsheet",
+            "prompt": "Using the xlsx built-in skill, open the budget spreadsheet {{budget_file}}, locate the cells for Acme Pro pricing (monthly and annual), and write the prices extracted from the pricing page. Save the file."
+          }
+        ],
+        "model": "",
+        "skillNames": [
+          "xlsx"
+        ]
+      },
+      "rejectedProposals": [],
+      "currentScore": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"web_fetch\"",
+            "pass": true,
+            "detail": "found \"web_fetch\""
+          },
+          {
+            "name": "uses one of: \"xlsx\"",
+            "pass": true,
+            "detail": "found \"xlsx\""
+          }
+        ]
+      },
+      "currentPlanIssues": [],
+      "currentOk": true
+    },
+    {
+      "id": "invoice-extract",
+      "originalOk": true,
+      "originalScore": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"web_fetch\", \"browser_\", \"browser automation\"",
+            "pass": true,
+            "detail": "found \"web_fetch\""
+          },
+          {
+            "name": "uses one of: \"xlsx\"",
+            "pass": true,
+            "detail": "found \"xlsx\""
+          }
+        ]
+      },
+      "durationMs": 13645,
+      "plan": {
+        "architecture": "scout",
+        "name": "acme-invoices-extract",
+        "title": "Acme invoices extract to spreadsheet",
+        "description": "Fetches the latest invoices from Acme Books, extracts invoice ID, customer, and amount, then records them in a spreadsheet. Runs daily at 9am.",
+        "summary": "This automation retrieves all invoice records from the Acme Books invoices page, parses the invoice table, and appends each invoice row (ID, customer, amount) to a local spreadsheet, making the data queryable and persistent.",
+        "generalization": "The recording showed copying 3 specific invoice rows. The generalized automation fetches the entire invoices page, extracts all invoice records programmatically (not just the 3 examples), and writes them to a spreadsheet using the xlsx built-in skill. This way it handles any number of invoices present on the page.",
+        "trigger": {
+          "type": "schedule",
+          "schedule": {
+            "kind": "single",
+            "naturalLanguage": "daily at 9am",
+            "days": [],
+            "time": {
+              "hour": 9,
+              "minute": 0
+            }
+          },
+          "condition": ""
+        },
+        "values": [
+          {
+            "id": "invoices_url",
+            "name": "Invoices page URL",
+            "value": "https://books.acme.example/invoices"
+          },
+          {
+            "id": "output_spreadsheet",
+            "name": "Output spreadsheet path",
+            "value": "Q3 Invoices.xlsx"
+          }
+        ],
+        "steps": [
+          {
+            "label": "Fetch invoices page",
+            "prompt": "Fetch {{invoices_url}} using web_fetch to retrieve the HTML page containing the invoice table. Parse the invoice table to extract all invoice rows with their ID, customer name, and amount."
+          },
+          {
+            "label": "Open or create spreadsheet",
+            "prompt": "Using the xlsx built-in skill, open or create the spreadsheet at {{output_spreadsheet}}. If it already exists, read the current content to identify the last row; if not, create it with headers: id, customer, amount."
+          },
+          {
+            "label": "Append invoices to spreadsheet",
+            "prompt": "For each invoice extracted from the page, append a new row to the spreadsheet with the invoice ID, customer, and amount. Write the updated spreadsheet back to {{output_spreadsheet}} using the xlsx skill."
+          }
+        ],
+        "model": "",
+        "skillNames": [
+          "xlsx"
+        ]
+      },
+      "rejectedProposals": [],
+      "currentScore": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"web_fetch\", \"browser_\", \"browser automation\"",
+            "pass": true,
+            "detail": "found \"web_fetch\""
+          },
+          {
+            "name": "uses one of: \"xlsx\"",
+            "pass": true,
+            "detail": "found \"xlsx\""
+          }
+        ]
+      },
+      "currentPlanIssues": [],
+      "currentOk": true
+    },
+    {
+      "id": "research-compile",
+      "originalOk": true,
+      "originalScore": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"web_fetch\"",
+            "pass": true,
+            "detail": "found \"web_fetch\""
+          },
+          {
+            "name": "uses one of: \"docx\", \"write\", \"note\", \".md\", \".txt\"",
+            "pass": true,
+            "detail": "found \"note\""
+          }
+        ]
+      },
+      "durationMs": 13696,
+      "plan": {
+        "architecture": "scout",
+        "name": "web-research-digest",
+        "title": "Web Research & Quote Digest",
+        "description": "Search the web for a research topic, read the top articles, extract key quotes from each, and compile them into a notes document. Runs daily at 9am.",
+        "summary": "Automates research compilation by searching a topic, reading top articles, extracting key quotes, and saving them to a document.",
+        "generalization": "One recorded run searched for a specific topic (building better habits) and copied one quote per article (from 2 sources). The automation generalizes to any research topic and handles all top results returned by the search—it extracts a key quote from each article found and appends them to an evolving notes document.",
+        "trigger": {
+          "type": "schedule",
+          "schedule": {
+            "kind": "single",
+            "naturalLanguage": "daily at 9am",
+            "days": [],
+            "time": {
+              "hour": 9,
+              "minute": 0
+            }
+          },
+          "condition": ""
+        },
+        "values": [
+          {
+            "id": "research_topic",
+            "name": "Research topic",
+            "value": "building better habits"
+          },
+          {
+            "id": "output_file",
+            "name": "Output notes file",
+            "value": "~/habits-notes.txt"
+          }
+        ],
+        "steps": [
+          {
+            "label": "Search the web for the topic",
+            "prompt": "Use web_fetch to search Google for the topic '{{research_topic}}' and retrieve the top 5 search results. Parse the URLs and titles from the results to identify the most relevant articles."
+          },
+          {
+            "label": "Read articles and extract key quotes",
+            "prompt": "For each of the top articles from the search results, use web_fetch to read the full article content. For each article, identify and extract one key quote or important sentence that captures the main insight. Store the quote with a reference to the article's title and URL."
+          },
+          {
+            "label": "Compile quotes into the notes document",
+            "prompt": "Read the existing notes file at {{output_file}} to preserve any earlier quotes. Append today's newly extracted quotes (with their article sources) to the document, using a format that separates each quote clearly. Save the updated document."
+          }
+        ],
+        "model": "",
+        "skillNames": []
+      },
+      "rejectedProposals": [],
+      "currentScore": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"web_fetch\"",
+            "pass": true,
+            "detail": "found \"web_fetch\""
+          },
+          {
+            "name": "uses one of: \"docx\", \"write\", \"note\", \".md\", \".txt\"",
+            "pass": true,
+            "detail": "found \"note\""
+          }
+        ]
+      },
+      "currentPlanIssues": [],
+      "currentOk": true
+    },
+    {
+      "id": "directory-lookup",
+      "originalOk": true,
+      "originalScore": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"web_fetch\", \"workiq_search_people\", \"workiq\"",
+            "pass": true,
+            "detail": "found \"web_fetch\""
+          },
+          {
+            "name": "uses one of: \"xlsx\"",
+            "pass": true,
+            "detail": "found \"xlsx\""
+          },
+          {
+            "name": "avoids \"playwright\"",
+            "pass": true
+          }
+        ]
+      },
+      "durationMs": 20542,
+      "plan": {
+        "architecture": "scout",
+        "name": "company-directory-contacts",
+        "title": "Company Directory Contacts Lookup",
+        "description": "Look up people in the company team directory, retrieve their contact details (name, email, phone), and populate a contacts spreadsheet.",
+        "summary": "Automates looking up team members in the company directory and adding their contact information to a spreadsheet.",
+        "generalization": "The recording showed looking up 2 specific people and copying their details from the team directory into a Numbers spreadsheet. The automation generalizes this to handle a list of people (names to look up, provided at run time via the spreadsheet or a list), fetch each person's details from the web-based directory, and systematically populate the contacts spreadsheet with name, email, and phone information.",
+        "trigger": {
+          "type": "schedule",
+          "schedule": {
+            "kind": "single",
+            "naturalLanguage": "daily at 9am",
+            "days": [],
+            "time": {
+              "hour": 9,
+              "minute": 0
+            }
+          },
+          "condition": ""
+        },
+        "values": [
+          {
+            "id": "directory_url",
+            "name": "Team Directory URL",
+            "value": "https://intranet.acme.example/directory"
+          },
+          {
+            "id": "contacts_file",
+            "name": "Contacts Spreadsheet",
+            "value": "~/Contacts.xlsx"
+          }
+        ],
+        "steps": [
+          {
+            "label": "Read the list of people to look up",
+            "prompt": "Use the xlsx skill to open {{contacts_file}}, read the list of names in the first column that need contact details filled in (email and phone)."
+          },
+          {
+            "label": "Fetch each person from the team directory",
+            "prompt": "For each name in the list, use web_fetch to visit {{directory_url}} and search for that person. Extract their name, email, and phone number from the directory."
+          },
+          {
+            "label": "Update the contacts spreadsheet",
+            "prompt": "Use the xlsx skill to open {{contacts_file}}, add or update each person's record with the contact details (name, email, phone), and save the file. Preserve any existing rows and append new contacts."
+          }
+        ],
+        "model": "",
+        "skillNames": [
+          "xlsx"
+        ]
+      },
+      "rejectedProposals": [
+        "Native-tool plan validation failed. Revise the affected prompts:\n- step 1 [spreadsheet-tool]: Name and use the xlsx built-in skill in this spreadsheet step; a filename or another step is not a tool."
+      ],
+      "currentScore": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"web_fetch\", \"workiq_search_people\", \"workiq\"",
+            "pass": true,
+            "detail": "found \"web_fetch\""
+          },
+          {
+            "name": "uses one of: \"xlsx\"",
+            "pass": true,
+            "detail": "found \"xlsx\""
+          },
+          {
+            "name": "avoids \"playwright\"",
+            "pass": true
+          }
+        ]
+      },
+      "currentPlanIssues": [],
+      "currentOk": true
+    },
+    {
+      "id": "expense-report",
+      "originalOk": true,
+      "originalScore": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"pdf\", \"view\", \"expense-report\"",
+            "pass": true,
+            "detail": "found \"pdf\""
+          }
+        ]
+      },
+      "durationMs": 20739,
+      "plan": {
+        "architecture": "scout",
+        "name": "reconcile-business-trip-expenses",
+        "title": "Reconcile business trip expenses",
+        "description": "Reconcile each business-trip charge from the American Express statement against its receipt PDF, then file and submit the expense report in Expensify.",
+        "summary": "Fetches the AmEx statement, matches each charge to its receipt PDF on the device, enters the reconciled expenses in Expensify, and submits the report.",
+        "generalization": "The recording reconciled 3 specific charges; the generalized automation reads the complete AmEx activity feed (all recent charges), iterates over each charge, locates and verifies its matching receipt PDF using the view tool, files each as an expense in Expensify, and submits the final report. The iteration handles every charge on the statement, not just the recorded examples.",
+        "trigger": {
+          "type": "schedule",
+          "schedule": {
+            "kind": "single",
+            "naturalLanguage": "every Monday at 9am",
+            "days": [
+              1
+            ],
+            "time": {
+              "hour": 9,
+              "minute": 0
+            }
+          },
+          "condition": ""
+        },
+        "values": [
+          {
+            "id": "amex_url",
+            "name": "AmEx statement URL",
+            "value": "https://www.americanexpress.com/activity"
+          },
+          {
+            "id": "expensify_url",
+            "name": "Expensify expenses URL",
+            "value": "https://www.expensify.com"
+          }
+        ],
+        "steps": [
+          {
+            "label": "Fetch card statement charges",
+            "prompt": "Fetch the American Express recent activity page at {{amex_url}} and extract all recent business-trip charges (vendor, amount, and date). List each charge clearly."
+          },
+          {
+            "label": "Verify each charge against receipt PDFs",
+            "prompt": "For each charge from the statement, locate the matching receipt PDF file on the device (typically in a Downloads, Receipts, or Documents folder, named by vendor and date). Use the view tool to read the PDF and confirm the amount matches the statement. Skip any charges without a found receipt and note them."
+          },
+          {
+            "label": "File verified expenses in Expensify",
+            "prompt": "For each verified charge, use the expense-report skill to create a new expense in Expensify at {{expensify_url}}: enter the vendor, amount, date, and category (Travel). Attach or reference the receipt PDF path."
+          },
+          {
+            "label": "Submit the expense report",
+            "prompt": "Once all verified charges are entered, submit the expense report in Expensify."
+          }
+        ],
+        "model": "",
+        "skillNames": [
+          "expense-report"
+        ]
+      },
+      "rejectedProposals": [
+        "Native-tool plan validation failed. Revise the affected prompts:\n- plan [receipt-read-tool]: Use view to read local receipt PDFs; mentioning a PDF or opening a viewer is not a native read tool."
+      ],
+      "currentScore": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"pdf\", \"view\", \"expense-report\"",
+            "pass": true,
+            "detail": "found \"pdf\""
+          }
+        ]
+      },
+      "currentPlanIssues": [],
+      "currentOk": true
+    },
+    {
+      "id": "release-notes",
+      "originalOk": true,
+      "originalScore": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"gh \"",
+            "pass": true,
+            "detail": "found \"gh \""
+          },
+          {
+            "name": "uses one of: \"gh pr\", \"gh api\", \"gh release\"",
+            "pass": true,
+            "detail": "found \"gh pr\""
+          },
+          {
+            "name": "avoids \"playwright\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"browser_\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"navigate to github\"",
+            "pass": true
+          }
+        ]
+      },
+      "durationMs": 30345,
+      "plan": {
+        "architecture": "scout",
+        "name": "release-milestone-workflow",
+        "title": "Release Milestone Workflow",
+        "description": "Compile release notes from merged PRs in a milestone, update the CHANGELOG, bump the version, deploy to production, and health-check the deployment. Runs on demand or on a scheduled release day.",
+        "summary": "This automation pulls the latest main, fetches all merged PRs for a target milestone using the GitHub CLI, updates the CHANGELOG.md, bumps the version with npm, creates a release commit, deploys via the production script, and verifies the health endpoint.",
+        "generalization": "The recording released milestone v2.4.0 by gathering three specific PR titles. The generalization discovers all merged PRs for the target milestone (not hardcoded examples), adds their titles to CHANGELOG.md, and runs the full release pipeline (version bump, deploy, health-check) on the local device.",
+        "trigger": {
+          "type": "schedule",
+          "schedule": {
+            "kind": "single",
+            "naturalLanguage": "on demand (or edit this to a scheduled release day, e.g. 'every second Tuesday at 2pm')",
+            "days": [],
+            "time": {
+              "hour": 14,
+              "minute": 0
+            }
+          },
+          "condition": ""
+        },
+        "values": [
+          {
+            "id": "repo",
+            "name": "GitHub repo (owner/name)",
+            "value": "acme/api"
+          },
+          {
+            "id": "milestone",
+            "name": "Target milestone",
+            "value": "v2.4.0"
+          },
+          {
+            "id": "health_endpoint",
+            "name": "Health-check URL",
+            "value": "https://api.acme.example/health"
+          }
+        ],
+        "steps": [
+          {
+            "label": "Pull the latest main branch",
+            "prompt": "Use the shell to checkout main and pull the latest commits: 'git checkout main && git pull'. Confirm main is up-to-date."
+          },
+          {
+            "label": "Fetch PRs and update CHANGELOG",
+            "prompt": "Use the GitHub CLI to fetch all merged PRs for milestone {{milestone}} in repo {{repo}}: run 'gh pr list -R {{repo}} --milestone {{milestone}} --state merged --json number,title'. Read CHANGELOG.md using the file view tool, locate the section for {{milestone}}, and append the PR titles (formatted as '- [#NNN] Title'). Save the updated CHANGELOG.md."
+          },
+          {
+            "label": "Bump version, commit, and deploy",
+            "prompt": "Run 'npm version minor' to bump the version, then allow git to auto-commit the change, then './deploy.sh production' to deploy to the production environment. Verify the deploy script exits successfully."
+          },
+          {
+            "label": "Verify production deployment health",
+            "prompt": "Use curl to health-check the production endpoint at {{health_endpoint}}: 'curl -s {{health_endpoint}}'. Verify it responds with HTTP 200 and the service is healthy."
+          }
+        ],
+        "model": "",
+        "skillNames": []
+      },
+      "rejectedProposals": [
+        "Native-tool plan validation failed. Revise the affected prompts:\n- step 3 [github-step-tool]: Name the matching gh command in this GitHub action prompt; a different step cannot supply its tool.",
+        "Native-tool plan validation failed. Revise the affected prompts:\n- step 3 [github-step-tool]: Name the matching gh command in this GitHub action prompt; a different step cannot supply its tool."
+      ],
+      "currentScore": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"gh \"",
+            "pass": true,
+            "detail": "found \"gh \""
+          },
+          {
+            "name": "uses one of: \"gh pr\", \"gh api\", \"gh release\"",
+            "pass": true,
+            "detail": "found \"gh pr\""
+          },
+          {
+            "name": "avoids \"playwright\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"browser_\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"navigate to github\"",
+            "pass": true
+          }
+        ]
+      },
+      "currentPlanIssues": [
+        {
+          "code": "github-pr-list-flag",
+          "stepIndex": 1,
+          "message": "gh pr list has no --milestone flag; use --search 'milestone:VALUE' and --state merged for release notes."
+        }
+      ],
+      "currentOk": false
+    },
+    {
+      "id": "windows-deploy",
+      "originalOk": true,
+      "originalScore": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"az \"",
+            "pass": true,
+            "detail": "found \"az \""
+          },
+          {
+            "name": "uses one of: \"az webapp\", \"az login\", \"az group\", \"az account\"",
+            "pass": true,
+            "detail": "found \"az webapp\""
+          },
+          {
+            "name": "uses one of: \"xlsx\"",
+            "pass": true,
+            "detail": "found \"xlsx\""
+          },
+          {
+            "name": "avoids \"playwright\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"browser_\"",
+            "pass": true
+          }
+        ]
+      },
+      "durationMs": 17948,
+      "plan": {
+        "architecture": "scout",
+        "name": "azure-webapp-deployment",
+        "title": "Deploy Azure web app and record URL",
+        "description": "Deploy a Node.js web app to Azure using the CLI, verify it's live, and record the deployment URL in a tracking spreadsheet.",
+        "summary": "This automation deploys an Azure web app (contoso-crm) via the Azure CLI from the command line, verifies the deployment by fetching the live site, and updates the Deployments.xlsx spreadsheet with the deployment URL and timestamp.",
+        "generalization": "The recorded task deployed one specific app (contoso-crm) to a resource group. The automation generalizes this by accepting a configurable app name, resource group, and runtime, then running the same three-step process: deploy with `az webapp up`, verify the live URL, and append the result to the local deployments tracking sheet.",
+        "trigger": {
+          "type": "schedule",
+          "schedule": {
+            "kind": "single",
+            "naturalLanguage": "every weekday at 9am",
+            "days": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "time": {
+              "hour": 9,
+              "minute": 0
+            }
+          },
+          "condition": ""
+        },
+        "values": [
+          {
+            "id": "app_name",
+            "name": "Web app name",
+            "value": "contoso-crm"
+          },
+          {
+            "id": "resource_group",
+            "name": "Resource group",
+            "value": "web-prod"
+          },
+          {
+            "id": "runtime",
+            "name": "Runtime",
+            "value": "NODE:20-lts"
+          },
+          {
+            "id": "deployments_file",
+            "name": "Deployments spreadsheet",
+            "value": "Deployments.xlsx"
+          }
+        ],
+        "steps": [
+          {
+            "label": "Sign in to Azure and deploy",
+            "prompt": "Use the Azure CLI to sign in and deploy the web app. Run `az login` to ensure authenticated, then run `az webapp up --name {{app_name}} --resource-group {{resource_group}} --runtime {{runtime}}` to deploy the app. Capture the deployment output URL (it will be printed in the format https://[app-name].azurewebsites.net). Trim and store it."
+          },
+          {
+            "label": "Verify the site is live",
+            "prompt": "Fetch the deployed URL using web_fetch to confirm the site is live and responding. If the fetch succeeds (HTTP 200 or similar), note the live URL; if it fails, do not proceed to record it."
+          },
+          {
+            "label": "Record the deployment URL",
+            "prompt": "Using the xlsx built-in skill, open {{deployments_file}} and append a new row with: today's date (YYYY-MM-DD), the app name {{app_name}}, the verified live URL, and current timestamp. Save the file."
+          }
+        ],
+        "model": "",
+        "skillNames": [
+          "xlsx"
+        ]
+      },
+      "rejectedProposals": [],
+      "currentScore": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"az \"",
+            "pass": true,
+            "detail": "found \"az \""
+          },
+          {
+            "name": "uses one of: \"az webapp\", \"az login\", \"az group\", \"az account\"",
+            "pass": true,
+            "detail": "found \"az webapp\""
+          },
+          {
+            "name": "uses one of: \"xlsx\"",
+            "pass": true,
+            "detail": "found \"xlsx\""
+          },
+          {
+            "name": "avoids \"playwright\"",
+            "pass": true
+          },
+          {
+            "name": "avoids \"browser_\"",
+            "pass": true
+          }
+        ]
+      },
+      "currentPlanIssues": [],
+      "currentOk": true
+    },
+    {
+      "id": "lead-to-crm",
+      "originalOk": true,
+      "originalScore": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"workiq_search_emails\", \"workiq_list_emails\", \"workiq_get_email\", \"workiq\"",
+            "pass": true,
+            "detail": "found \"workiq_search_emails\""
+          }
+        ]
+      },
+      "durationMs": 19577,
+      "plan": {
+        "architecture": "scout",
+        "name": "qualify-and-crm-leads",
+        "title": "Qualify and import inbound sales leads to Salesforce",
+        "description": "Each weekday morning, reads new sales-lead emails from the mailbox using WorkIQ, enriches each lead via LinkedIn lookup, and creates a new Salesforce contact and opportunity.",
+        "summary": "Automates the intake of inbound sales leads: uses WorkIQ to retrieve unread lead emails, looks up each person on LinkedIn for enrichment, and creates matching CRM records in Salesforce via browser automation.",
+        "generalization": "The recording showed two example leads read from the mailbox and entered into Salesforce. The automation must generalize to iterate over ALL unread or new leads in the Sales Leads inbox (not just the recorded two), enrich each via LinkedIn, and create a contact record in Salesforce for every lead found.",
+        "trigger": {
+          "type": "schedule",
+          "schedule": {
+            "kind": "single",
+            "naturalLanguage": "every weekday at 9:00 AM",
+            "days": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "time": {
+              "hour": 9,
+              "minute": 0
+            }
+          },
+          "condition": ""
+        },
+        "values": [
+          {
+            "id": "mailbox_folder",
+            "name": "Mailbox folder for sales leads",
+            "value": "Sales Leads"
+          },
+          {
+            "id": "salesforce_url",
+            "name": "Salesforce org URL",
+            "value": "https://acme.lightning.force.com"
+          },
+          {
+            "id": "linkedin_domain",
+            "name": "LinkedIn domain",
+            "value": "https://www.linkedin.com"
+          }
+        ],
+        "steps": [
+          {
+            "label": "Retrieve unread lead emails",
+            "prompt": "Use workiq_search_emails to find new unread emails in the {{mailbox_folder}} folder matching sales leads. For each email, extract the lead name, company, title, and email address from the message body or subject."
+          },
+          {
+            "label": "Enrich each lead via LinkedIn",
+            "prompt": "For each lead found, use web_fetch to search LinkedIn at {{linkedin_domain}} for the person's profile. Verify their identity and capture their headline, location, and current company from their profile."
+          },
+          {
+            "label": "Create Salesforce contacts and opportunities",
+            "prompt": "For each enriched lead, navigate to {{salesforce_url}} using browser_navigate, create a new Contact record with the lead's name, company, email, title, and LinkedIn profile URL, then create a matching Opportunity record marked as a qualified lead."
+          }
+        ],
+        "model": "",
+        "skillNames": []
+      },
+      "rejectedProposals": [
+        "Native-tool plan validation failed. Revise the affected prompts:\n- plan [mail-tool]: Use the catalogue's WorkIQ email read tools, not the Mail desktop UI."
+      ],
+      "currentScore": {
+        "pass": true,
+        "score": 1,
+        "checks": [
+          {
+            "name": "uses one of: \"workiq_search_emails\", \"workiq_list_emails\", \"workiq_get_email\", \"workiq\"",
+            "pass": true,
+            "detail": "found \"workiq_search_emails\""
+          }
+        ]
+      },
+      "currentPlanIssues": [],
+      "currentOk": true
+    }
+  ]
+}

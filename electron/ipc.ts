@@ -68,6 +68,7 @@ export function registerIpc(
   sensitiveModels: SensitiveModelManager,
   isRecordingStartPending: () => boolean,
   browserCaptureStatus: () => BrowserCaptureStatus,
+  beforeDeleteSession?: (sessionId: string) => Promise<void>,
 ): void {
   ipcMain.handle(IPC.stop, () => recorder.stop());
   ipcMain.handle(IPC.discard, () => recorder.discard());
@@ -345,6 +346,7 @@ export function registerIpc(
     }
     try {
       await describer.forget(sessionId); // release any idle agent holding the folder
+      await beforeDeleteSession?.(sessionId);
       await builder.forget(sessionId);
       await automationBuilder.forget(sessionId);
       await deleteSession(sessionId);

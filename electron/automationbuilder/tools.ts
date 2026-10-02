@@ -5,14 +5,20 @@ import {
   type AutomationPlan,
 } from "../../common/automation";
 import type { SkillArchitecture } from "../../common/skill";
+import type { AnalysisSubmission } from "../../common/analysis";
+import { formatNativeToolIssues, nativeToolPlanIssues } from "./native-tool-policy";
 
 /** Everything the builder's automation-specific tools are bound to for one session. */
 export interface AutomationToolContext {
   architecture: SkillArchitecture;
+  /** Approved task for intent-level native-tool checks; never exposed in errors. */
+  analysis?: AnalysisSubmission;
   /** Streamed to the UI as the agent works. */
   onProgress?: (message: string) => void;
   /** Called when the agent proposes a (validated) plan for review. */
   onPlan: (plan: AutomationPlan) => void;
+  /** Clear any earlier candidate if the latest proposal is rejected. */
+  onRejectedPlan?: () => void;
 }
 
 /** A wall-clock time-of-day object, reused across the schedule fields. */
@@ -180,12 +186,19 @@ export function createAutomationBuilderTools(ctx: AutomationToolContext): Tool[]
       const merged = { ...(raw as Record<string, unknown>), architecture };
       const parsed = AutomationPlanSchema.safeParse(merged);
       if (!parsed.success) {
+        ctx.onRejectedPlan?.();
         return {
           textResultForLlm:
             "propose_automation_plan rejected — the payload did not match the schema. Fix these and call again:\n" +
             parsed.error.issues.map((i) => `- ${i.path.join(".") || "(root)"}: ${i.message}`).join("\n"),
           resultType: "failure",
         };
+      }
+      const issues = nativeToolPlanIssues(parsed.data, ctx.analysis);
+      if (issues.length) {
+        ctx.onRejectedPlan?.();
+        progress("Rejected plan: " + formatNativeToolIssues(issues));
+        return { textResultForLlm: formatNativeToolIssues(issues), resultType: "failure" };
       }
       progress("Proposed an automation plan for your review.");
       onPlan(parsed.data);

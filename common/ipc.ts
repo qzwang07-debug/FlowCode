@@ -1,4 +1,7 @@
 import { z } from "zod";
+import type { AnalyzerPreview, AnalyzerRun, AnalyzerSnapshot, AnalyzerResult, ProviderSettings, ProviderCapabilities,
+  AnalyzerStartSchema, AnalyzerPreviewRequestSchema, BlueprintEditRequestSchema, ProviderSaveSchema } from "./analyzer";
+import type { BlueprintCompareSchema, BlueprintComparison } from "./analyzer";
 
 import type { Analysis, AnalysisFeedback, AnalysisStep, Confidence } from "./analysis";
 import type { AutomationPlan, BuiltAutomation } from "./automation";
@@ -660,6 +663,18 @@ export const IPC = {
   getEvidenceReview: "evidence:review-get",
   updateEvidenceReview: "evidence:review-update",
   exportBlueprint: "evidence:blueprint-export",
+  analyzerSettings: "analyzer:settings",
+  analyzerSaveSettings: "analyzer:settings-save",
+  analyzerTestProvider: "analyzer:provider-test",
+  analyzerSelectRuntime: "analyzer:runtime-select",
+  analyzerSnapshot: "analyzer:snapshot",
+  analyzerEdit: "analyzer:edit",
+  analyzerCompare: "analyzer:compare",
+  analyzerPreview: "analyzer:preview",
+  analyzerStart: "analyzer:start",
+  analyzerCancel: "analyzer:cancel",
+  analyzerRevoke: "analyzer:revoke",
+  analyzerProgress: "analyzer:progress",
   buildSkill: "skill:build",
   createSkill: "skill:create",
   getSkill: "skill:get",
@@ -673,6 +688,7 @@ export const IPC = {
   revealAutomation: "automation:reveal",
   automationProgress: "automation:progress",
   openLibrary: "ui:open-library",
+  openLegacyLibrary: "ui:open-legacy-library",
   closeLibrary: "ui:close-library",
   openProjectStudio: "ui:open-project-studio",
   closeProjectStudio: "ui:close-project-studio",
@@ -798,6 +814,19 @@ export interface SkillRecorderApi {
   getEvidenceReview(input: EvidenceSessionRequest): Promise<EvidenceReviewResult>;
   updateEvidenceReview(input: EvidenceReviewUpdateRequest): Promise<EvidenceReviewResult>;
   exportBlueprint(input: EvidenceExportRequest): Promise<BlueprintExportResult>;
+  analyzerSettings(): Promise<AnalyzerResult<{ settings: ProviderSettings; capabilities: ProviderCapabilities | null; keyPresent: boolean;
+    runtime: { available: boolean; version: string; detail: string }; defaultAnalyzer: string; migrationGate: string }>>;
+  analyzerSaveSettings(input: z.infer<typeof ProviderSaveSchema>): Promise<AnalyzerResult<{ settings: ProviderSettings; capabilities: ProviderCapabilities | null; keyPresent: boolean }>>;
+  analyzerTestProvider(): Promise<AnalyzerResult<ProviderCapabilities>>;
+  analyzerSelectRuntime(): Promise<AnalyzerResult<unknown>>;
+  analyzerSnapshot(input: EvidenceSessionRequest): Promise<AnalyzerResult<AnalyzerSnapshot>>;
+  analyzerEdit(input: z.infer<typeof BlueprintEditRequestSchema>): Promise<AnalyzerResult<AnalyzerSnapshot>>;
+  analyzerCompare(input: z.infer<typeof BlueprintCompareSchema>): Promise<AnalyzerResult<BlueprintComparison>>;
+  analyzerPreview(input: z.infer<typeof AnalyzerPreviewRequestSchema>): Promise<AnalyzerResult<AnalyzerPreview>>;
+  analyzerStart(input: z.infer<typeof AnalyzerStartSchema>): Promise<AnalyzerResult<AnalyzerRun>>;
+  analyzerCancel(input: { runId: string }): Promise<AnalyzerResult<AnalyzerRun | null>>;
+  analyzerRevoke(input: EvidenceSessionRequest): Promise<AnalyzerResult<{ revoked: true }>>;
+  onAnalyzerProgress(cb: (run: AnalyzerRun) => void): () => void;
   /**
    * Propose (or refine) a skill from a recording's analysis. Pass `feedback` to
    * revise the current plan in the same multi-turn conversation.
@@ -836,6 +865,7 @@ export interface SkillRecorderApi {
   onAutomationProgress(cb: (progress: AutomationBuildProgress) => void): () => void;
   /** Open (and focus) the Sessions library window, docked to the recorder. */
   openLibrary(): Promise<void>;
+  openLegacyLibrary(): Promise<void>;
   /** Close the Sessions library window from within it. */
   closeLibrary(): Promise<void>;
   /** Open (and focus) the Project Studio window. */

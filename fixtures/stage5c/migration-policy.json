@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "qualityPassed": true,
+  "samples": 21,
+  "individualCasesMet": true,
+  "safetyMet": true,
+  "promptVersion": "flowcode-analyzer-5c.9",
+  "schemaVersionName": "blueprint-v2.5c.4",
+  "promptHash": "f21dfb4606f9d74c95566fdde5917141820a313dc9f5d9ea18ce395818570d36",
+  "settingsHash": "a76ad16f250a09fa6c7c29f896c6aa591bb3f127fc4a3f8938cd034600c74f63",
+  "receiptHash": "75efdf91fa0bf8e2ba633d79759a9ea093611696ce91ca8db486cd8c9d999081",
+  "inputHash": "cdfc36e1c9319d019c213a9ba0cf461a590e014736e266aa197ebbd6f3837ca7"
+}
