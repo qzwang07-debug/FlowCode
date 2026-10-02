@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
 
 import { AutomationPlanSchema } from "../../common/automation";
@@ -87,6 +90,32 @@ test("per-thread total usage is derived from matching local Codex rollouts, not 
   }
   assert.ok(usage.results.some((item: { totalTokenUsage: { total_tokens: number }; lastTokenUsage: { total_tokens: number } }) =>
     item.totalTokenUsage.total_tokens > item.lastTokenUsage.total_tokens));
+});
+
+test("an autocrlf checkout preserves immutable Codex evidence bytes and its usage binding", () => {
+  const fixture = "fixtures/legacy-builder/codex-acceptance-2026-10-01.json";
+  // Exercise a fresh hydration (not an up-to-date index/stat cache), including
+  // the unrestricted control that reproduced the original Windows CI failure.
+  for (const withPolicy of [false, true]) {
+    const dir = mkdtempSync(path.join(os.tmpdir(), "flowcode-evidence-eol-"));
+    const git = (...args: string[]) => execFileSync("git", ["-C", dir, ...args], { windowsHide: true, stdio: "pipe" });
+    try {
+      mkdirSync(path.dirname(path.join(dir, fixture)), { recursive: true });
+      writeFileSync(path.join(dir, fixture), evidenceText);
+      writeFileSync(path.join(dir, ".gitattributes"), withPolicy ? read(".gitattributes") : "");
+      git("init", "--quiet");
+      git("config", "core.autocrlf", "true");
+      git("add", ".gitattributes", fixture);
+      unlinkSync(path.join(dir, fixture));
+      git("checkout-index", "--force", "--", fixture);
+      const checkedOut = readFileSync(path.join(dir, fixture), "utf8");
+      assert.equal(checkedOut.includes("\r\n"), !withPolicy);
+      if (withPolicy) assert.equal(hash(checkedOut), usage.sourceEvidenceSha256);
+      else assert.notEqual(hash(checkedOut), usage.sourceEvidenceSha256);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }
 });
 
 test("interrupted development attempt is retained without being counted as final acceptance", () => {
